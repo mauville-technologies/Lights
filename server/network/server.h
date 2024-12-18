@@ -12,6 +12,8 @@
 namespace OZZ {
     using asio::ip::tcp;
 
+    using OnNewClientSignature = std::function<void(std::shared_ptr<ConnectedClient>)>;
+
     class Server {
     public:
         Server(asio::io_context& inContext, short inPort);
@@ -19,10 +21,13 @@ namespace OZZ {
     private:
         void startAccept();
 
-        void clientDisconnected(ConnectedClient* client);
+    public:
+        OnNewClientSignature OnNewClient;
 
     private:
         asio::io_context& context;
+        asio::executor_work_guard<asio::io_context::executor_type> workGuard;
+
         tcp::acceptor acceptor;
         std::vector<std::shared_ptr<ConnectedClient>> clients;
         std::vector<std::thread> threadPool;

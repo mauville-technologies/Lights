@@ -2,33 +2,24 @@
 // Created by ozzadar on 2024-12-17.
 //
 
-
 #include <lights/lights.h>
 #include <spdlog/spdlog.h>
 #include <asio.hpp>
 
-#include "network/server.h"
-
-asio::io_context context;
-
-// if ctrl+c is pressed, stop the context
-void signal_handler(int signum) {
-    spdlog::info("Interrupt signal ({}) received", signum);
-    context.stop();
-}
+#include "database/database.h"
+#include "game/game.h"
 
 int main() {
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
 
-    try {
-        // set up signal handler
-        signal(SIGINT, signal_handler);
+    /**
+     * Database Testing
+     */
 
-        OZZ::Server server(context, 8080);
-        context.run();
-    } catch (std::exception &e) {
-        spdlog::error("Exception: {}", e.what());
-    }
+    auto db = std::make_shared<OZZ::Database>();
+
+    OZZ::Game game {db};
+    game.Run();
 
     return 0;
 }

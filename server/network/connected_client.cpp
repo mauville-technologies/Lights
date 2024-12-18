@@ -8,10 +8,10 @@
 #include "lights/network/server_messages.h"
 
 namespace OZZ {
-    ConnectedClient::ConnectedClient(std::shared_ptr<asio::ip::tcp::socket> Insocket, OnCloseHandler inCloseHandler)
-        : socket(std::move(Insocket)), queuedMessageType(ClientMessageType::Unknown), closeHandler(std::move(inCloseHandler)), timer(socket->get_executor()) {
+    ConnectedClient::ConnectedClient(std::shared_ptr<asio::ip::tcp::socket> Insocket)
+        : socket(std::move(Insocket)), queuedMessageType(ClientMessageType::Unknown) {
         read();
-        ScheduleWrite();
+//        ScheduleWrite();
     }
 
     ConnectedClient::~ConnectedClient() {
@@ -25,8 +25,11 @@ namespace OZZ {
             } else {
                 if (ec == asio::error::eof || ec == asio::error::connection_reset) {
                     spdlog::info("Connection closed by client");
-                    if (closeHandler) {
-                        closeHandler(this);
+                    {
+                        std::lock_guard<std::mutex> lock(ClientMutex);
+                        if (OnClose) {
+                            OnClose();
+                        }
                     }
                     return;
                 }
@@ -41,11 +44,17 @@ namespace OZZ {
         switch (queuedMessageType) {
             case ClientMessageType::ConnectionRequest: {
                 auto receivedMessage = ConnectionRequestMessage::Deserialize(*socket);
+                {
+                    std::lock_guard<std::mutex> lock(ClientMutex);
+                    if (OnLoginRequest) {
+                        OnLoginRequest(receivedMessage.GetEmail(), receivedMessage.GetPassword());
+                    }
+                }
                 spdlog::info("Received message: {}", std::string(receivedMessage));
 
                 // Send connected message back
                 std::string welcomeMessage = "Welcome to the server: ";
-                welcomeMessage += receivedMessage.GetName();
+                welcomeMessage += receivedMessage.GetEmail();
                 ClientConnectedMessage connectedMessage (welcomeMessage);
                 auto outMessage = ClientConnectedMessage::Serialize(connectedMessage);
                 socket->write_some(asio::buffer(outMessage), ec);
@@ -62,9 +71,6 @@ namespace OZZ {
     }
 
     void ConnectedClient::close() {
-        // kill timer
-        timer.cancel();
-
         if (!socket || !socket->is_open()) {
             spdlog::error("Socket is null or not open");
         } else {
@@ -80,31 +86,8 @@ namespace OZZ {
         }
     }
 
-    void ConnectedClient::ScheduleWrite() {
-        timer.expires_after(std::chrono::seconds(5));
-        timer.async_wait([this](std::error_code ec) {
-            if (!ec) {
-                spdlog::info("Timer expired");
-
-                if (socket && socket->is_open()) {
-                    // send a message to the client
-                    ClientConnectedMessage connectedMessage("Server message");
-                    auto outMessage = ClientConnectedMessage::Serialize(connectedMessage);
-                    socket->write_some(asio::buffer(outMessage), ec);
-
-                    if (ec) {
-                        spdlog::error("Error sending message: {}", ec.message());
-                    }
-                }
-                ScheduleWrite();
-            } else {
-                if (ec == asio::error::operation_aborted) {
-                    spdlog::info("Timer cancelled");
-                }  else {
-                    spdlog::error("Error waiting for timer: {}", ec.message());
-                }
-            }
-        });
+    void ConnectedClient::SendLoginResponse(bool success) {
+        spdlog::info("Sending login response: {}", success);
     }
 
 } // OZZ

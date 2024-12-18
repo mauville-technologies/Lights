@@ -11,4 +11,4 @@ add_library(Lights_Shared_Lib STATIC src/fake.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static)
+target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp)

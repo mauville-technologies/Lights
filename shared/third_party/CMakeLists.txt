@@ -16,3 +16,11 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(mongocxx)
+
+FetchContent_Declare(
+    cryptopp_cmake
+    GIT_REPOSITORY git@github.com:abdes/cryptopp-cmake.git
+    GIT_TAG CRYPTOPP_8_9_0
+)
+
+FetchContent_MakeAvailable(cryptopp_cmake)

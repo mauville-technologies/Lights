@@ -33,5 +33,6 @@ namespace OZZ::util::bytes {
         size_t endingIndex = startingIndex + length;
         return T(bytes + startingIndex, bytes + endingIndex);
     }
+
 }
 
