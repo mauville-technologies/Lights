@@ -66,6 +66,19 @@ namespace OZZ {
                     playersToRemove.emplace(lostPlayer);
                 };
 
+                newPlayer->OnPlayerLoggedIn = [this](Player *loggedInPlayer) {
+                    spdlog::info("Player logged in: {}", loggedInPlayer->GetEmail());
+
+                    // the same player logged in again, disconnect the previous client
+                    for (const auto& player : players) {
+                        if (player.get() != loggedInPlayer && player->GetEmail() == loggedInPlayer->GetEmail()) {
+                            player->LoggedInElsewhere();
+                            playersToRemove.emplace(player.get());
+                            break;
+                        }
+                    }
+                };
+
                 spdlog::info("Connected Player Count: {}", players.size());
             };
             bRunning = true;

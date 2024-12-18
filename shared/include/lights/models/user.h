@@ -11,6 +11,7 @@ namespace OZZ {
         std::string Email;
         std::string Password;
         std::string Salt;
+        bool bLoggedIn;
     };
 
     // provide from_bson function for serialization
@@ -19,6 +20,7 @@ namespace OZZ {
         user.Email = view["email"].get_string().value;
         user.Password = view["password"].get_string().value;
         user.Salt = view["salt"].get_string().value;
+        user.bLoggedIn = view["bLoggedIn"].get_bool().value;
     }
 
     inline void to_bson(const User& user, bsoncxx::document::value& view) {
@@ -27,7 +29,8 @@ namespace OZZ {
                 kvp("name", user.Name),
                 kvp("email", user.Email),
                 kvp("password", user.Password),
-                kvp("salt", user.Salt)
+                kvp("salt", user.Salt),
+                kvp("bLoggedIn", user.bLoggedIn)
         );
     }
 }

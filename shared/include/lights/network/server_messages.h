@@ -12,7 +12,41 @@
 
 enum class ServerMessageType : uint8_t {
     Unknown,
-    ClientConnected
+    AuthenticationFailed,
+    ClientConnected,
+    AccountLoggedInElsewhere,
+};
+
+struct AccountLoggedInElsewhereMessage {
+    static ServerMessageType GetMessageType() {
+        return ServerMessageType::AccountLoggedInElsewhere;
+    }
+
+    operator std::vector<uint8_t>() {
+        std::vector<uint8_t> bytes;
+        bytes.push_back(static_cast<uint8_t>(GetMessageType()));
+        return bytes;
+    }
+
+    static AccountLoggedInElsewhereMessage Deserialize(asio::ip::tcp::socket& socket) {
+        return AccountLoggedInElsewhereMessage();
+    }
+};
+
+struct AuthenticationFailedMessage {
+    static ServerMessageType GetMessageType() {
+        return ServerMessageType::AuthenticationFailed;
+    }
+
+    operator std::vector<uint8_t>() {
+        std::vector<uint8_t> bytes;
+        bytes.push_back(static_cast<uint8_t>(GetMessageType()));
+        return bytes;
+    }
+
+    static AuthenticationFailedMessage Deserialize(asio::ip::tcp::socket& socket) {
+        return AuthenticationFailedMessage();
+    }
 };
 
 struct ClientConnectedMessage {
@@ -29,16 +63,16 @@ struct ClientConnectedMessage {
         return ServerMessageType::ClientConnected;
     }
 
-    static std::vector<uint8_t> Serialize(const ClientConnectedMessage& inMessage) {
+    operator std::vector<uint8_t>() {
         std::vector<uint8_t> bytes;
         bytes.push_back(static_cast<uint8_t>(GetMessageType()));
 
         for (auto i = 0; i < sizeof(size_t); ++i) {
-            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&inMessage.Length))[i];
+            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&Length))[i];
             bytes.push_back(byte);
         }
 
-        for (const char& c : inMessage.Message) {
+        for (const char& c : Message) {
             bytes.push_back(c);
         }
         return bytes;
@@ -46,7 +80,6 @@ struct ClientConnectedMessage {
 
     static ClientConnectedMessage Deserialize(asio::ip::tcp::socket& socket) {
         ClientConnectedMessage message;
-
 
         asio::error_code ec;
         // the connection request has a length to determine the rest of the message

@@ -36,25 +36,25 @@ struct ConnectionRequestMessage {
         return ClientMessageType::ConnectionRequest;
     }
 
-    static std::vector<uint8_t> Serialize(const ConnectionRequestMessage& inMessage) {
+    operator std::vector<uint8_t>() {
         std::vector<uint8_t> bytes;
         bytes.push_back(static_cast<uint8_t>(GetMessageType()));
 
         for (auto i = 0; i < sizeof(size_t); ++i) {
-            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&inMessage.EmailLength))[i];
+            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&EmailLength))[i];
             bytes.push_back(byte);
         }
 
-        for (const char& c : inMessage.Email) {
+        for (const char& c : Email) {
             bytes.push_back(c);
         }
 
         for (auto i = 0; i < sizeof(size_t); ++i) {
-            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&inMessage.PasswordLength))[i];
+            auto byte = reinterpret_cast<uint8_t*>(const_cast<size_t*>(&PasswordLength))[i];
             bytes.push_back(byte);
         }
 
-        for (const char& c : inMessage.Password) {
+        for (const char& c : Password) {
             bytes.push_back(c);
         }
         return bytes;

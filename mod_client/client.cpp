@@ -40,10 +40,18 @@ namespace OZZ {
             return;
         }
         switch (queuedMessageType) {
+            case ServerMessageType::AuthenticationFailed: {
+                spdlog::error("Authentication failed; exiting!");
+                return;
+            }
             case ServerMessageType::ClientConnected: {
                 auto receivedMessage = ClientConnectedMessage::Deserialize(socket);
                 spdlog::info("Received message from server: {}", receivedMessage.GetMessage());
                 break;
+            }
+            case ServerMessageType::AccountLoggedInElsewhere: {
+                spdlog::error("Account logged in elsewhere; exiting!");
+                return;
             }
             default:
                 spdlog::error("Unknown message type: {}", static_cast<uint8_t>(queuedMessageType));
@@ -56,7 +64,7 @@ namespace OZZ {
         // Connection Request message
         ConnectionRequestMessage message("p.a.mauviel@gmail.com", "password");
         asio::error_code ec;
-        auto length = socket.write_some(asio::buffer(ConnectionRequestMessage::Serialize(message)), ec);
+        auto length = socket.write_some(asio::buffer(std::vector<uint8_t>(message)), ec);
         if (!ec) {
             spdlog::info("Sent {} bytes to server: {}", length, std::string(message));
         } else {

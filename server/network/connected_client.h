@@ -19,11 +19,24 @@ namespace OZZ {
         ~ConnectedClient();
 
         void SendLoginResponse(bool success);
+        void LoggedInElsewhere();
 
     private:
         void read();
         void handleRead();
-        void write();
+
+        template<typename T>
+        void write(T message) {
+            asio::error_code ec;
+            socket->write_some(asio::buffer(std::vector<uint8_t>(message)), ec);
+
+            if (ec) {
+                spdlog::error("Error writing to client: {}", ec.message());
+                OnClose();
+            }
+        };
+
+        // close() is called from destructor. If we want to disconnect the client from elsewhere, we should call OnClose to trigger the destruction chain
         void close();
     public:
         OnCloseHandler OnClose;

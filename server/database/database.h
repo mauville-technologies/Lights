@@ -23,7 +23,7 @@ namespace OZZ {
         std::optional<User> FindUser(std::string email);
         bool CreateUser(User &user);
         std::optional<User> LoginUser(const std::string& email, const std::string& password);
-
+        void LogoutUser(const std::string& email);
     private:
         void migrate();
 

@@ -50,24 +50,12 @@ namespace OZZ {
                         OnLoginRequest(receivedMessage.GetEmail(), receivedMessage.GetPassword());
                     }
                 }
-                spdlog::info("Received message: {}", std::string(receivedMessage));
-
-                // Send connected message back
-                std::string welcomeMessage = "Welcome to the server: ";
-                welcomeMessage += receivedMessage.GetEmail();
-                ClientConnectedMessage connectedMessage (welcomeMessage);
-                auto outMessage = ClientConnectedMessage::Serialize(connectedMessage);
-                socket->write_some(asio::buffer(outMessage), ec);
                 break;
             }
             default:
                 spdlog::error("Unknown message type: {}", (int)queuedMessageType);
         }
         read();
-    }
-
-    void ConnectedClient::write() {
-
     }
 
     void ConnectedClient::close() {
@@ -87,7 +75,16 @@ namespace OZZ {
     }
 
     void ConnectedClient::SendLoginResponse(bool success) {
-        spdlog::info("Sending login response: {}", success);
+        if (!success) {
+            write(AuthenticationFailedMessage());
+            return;
+        }
+        auto ClientConnected = ClientConnectedMessage("Welcome to the server!");
+        write(ClientConnected);
+    }
+
+    void ConnectedClient::LoggedInElsewhere() {
+        write(AccountLoggedInElsewhereMessage());
     }
 
 } // OZZ

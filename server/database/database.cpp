@@ -105,8 +105,29 @@ namespace OZZ {
             return std::nullopt;
         }
 
-        // hash the password
-        return OZZ::VerifyPassword(User->Salt + password, User->Password) ? User : std::nullopt;
+        bool success = OZZ::VerifyPassword(User->Salt + password, User->Password);
+
+        if (success) {
+            // Set LoggedIn on user
+            User->bLoggedIn = true;
+            // save to database
+            auto users = mainDB["users"];
+            auto result = users.update_one(make_document(kvp("email", email)), make_document(kvp("$set", make_document(kvp("bLoggedIn", true)))));
+            if (!result) {
+                spdlog::error("Failed to update user login status");
+                return std::nullopt;
+            }
+        }
+
+        return success ? User : std::nullopt;
+    }
+
+    void Database::LogoutUser(const std::string &email) {
+        auto users = mainDB["users"];
+        auto result = users.update_one(make_document(kvp("email", email)), make_document(kvp("$set", make_document(kvp("bLoggedIn", false)))));
+        if (!result) {
+            spdlog::error("Failed to update user login status");
+        }
     }
 
 } // OZZ
