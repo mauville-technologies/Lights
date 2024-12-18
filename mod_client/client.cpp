@@ -54,7 +54,7 @@ namespace OZZ {
 
     void Client::write() {
         // Connection Request message
-        ConnectionRequestMessage message("p.a.mauviel@gmail.com", "pass2word");
+        ConnectionRequestMessage message("p.a.mauviel@gmail.com", "password");
         asio::error_code ec;
         auto length = socket.write_some(asio::buffer(ConnectionRequestMessage::Serialize(message)), ec);
         if (!ec) {
