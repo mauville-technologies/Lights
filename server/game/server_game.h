@@ -5,14 +5,14 @@
 #pragma once
 #include <queue>
 #include <asio.hpp>
-#include "player.h"
+#include "server_player.h"
 #include "network/server.h"
 
 namespace OZZ {
 
-    class Game {
+    class ServerGame {
     public:
-        Game(std::shared_ptr<Database> InDatabase);
+        ServerGame(std::shared_ptr<Database> InDatabase);
 
         void Run();
 
@@ -22,8 +22,8 @@ namespace OZZ {
 
     private:
         std::mutex playersMutex;
-        std::queue<Player*> playersToRemove;
-        std::vector<std::shared_ptr<Player>> players;
+        std::queue<ServerPlayer*> playersToRemove;
+        std::vector<std::shared_ptr<ServerPlayer>> players;
 
         std::shared_ptr<Server> server;
         std::shared_ptr<Database> database;

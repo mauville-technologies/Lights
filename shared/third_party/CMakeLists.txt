@@ -1,4 +1,6 @@
 add_subdirectory(asio)
+add_subdirectory(glad)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -24,3 +26,19 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(cryptopp_cmake)
+
+FetchContent_Declare(
+    glfwlib
+    GIT_REPOSITORY git@github.com:glfw/glfw.git
+    GIT_TAG 3.4
+)
+
+FetchContent_MakeAvailable(glfwlib)
+
+FetchContent_Declare(
+    glmlib
+    GIT_REPOSITORY git@github.com:g-truc/glm.git
+    GIT_TAG 1.0.1
+)
+
+FetchContent_MakeAvailable(glmlib)

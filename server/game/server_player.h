@@ -9,13 +9,13 @@
 
 namespace OZZ {
 
-    using OnPlayerLeftSignature = std::function<void(class Player *)>;
-    using OnPlayerLoggedInSignature = std::function<void(class Player *)>;
+    using OnPlayerLeftSignature = std::function<void(class ServerPlayer *)>;
+    using OnPlayerLoggedInSignature = std::function<void(class ServerPlayer *)>;
 
-    class Player {
+    class ServerPlayer {
     public:
-        explicit Player(std::shared_ptr<ConnectedClient> Client, std::shared_ptr<Database> InDatabase);
-        ~Player();
+        explicit ServerPlayer(std::shared_ptr<ConnectedClient> Client, std::shared_ptr<Database> InDatabase);
+        ~ServerPlayer();
 
         void LoggedInElsewhere();
 

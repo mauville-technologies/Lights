@@ -2,12 +2,12 @@
 // Created by ozzadar on 2024-12-17.
 //
 
-#include "player.h"
+#include "server_player.h"
 
 #include <utility>
 
 namespace OZZ {
-    Player::Player(std::shared_ptr<ConnectedClient> ConnectedClient, std::shared_ptr<Database> InDatabase) : connectedClient(std::move(ConnectedClient)), database(std::move(InDatabase)) {
+    ServerPlayer::ServerPlayer(std::shared_ptr<ConnectedClient> ConnectedClient, std::shared_ptr<Database> InDatabase) : connectedClient(std::move(ConnectedClient)), database(std::move(InDatabase)) {
         connectedClient->OnClose = [this]() {
             database->LogoutUser(user.Email);
             OnPlayerLeft(this);
@@ -29,12 +29,12 @@ namespace OZZ {
         };
     }
 
-    Player::~Player() {
+    ServerPlayer::~ServerPlayer() {
         connectedClient->OnClose = nullptr;
         connectedClient.reset();
     }
 
-    void Player::LoggedInElsewhere() {
+    void ServerPlayer::LoggedInElsewhere() {
         connectedClient->LoggedInElsewhere();
     }
 

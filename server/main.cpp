@@ -7,7 +7,7 @@
 #include <asio.hpp>
 
 #include "database/database.h"
-#include "game/game.h"
+#include "game/server_game.h"
 
 int main() {
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
@@ -18,7 +18,7 @@ int main() {
 
     auto db = std::make_shared<OZZ::Database>();
 
-    OZZ::Game game {db};
+    OZZ::ServerGame game {db};
     game.Run();
 
     return 0;

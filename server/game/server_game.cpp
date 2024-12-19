@@ -3,16 +3,16 @@
 //
 
 #include <chrono>
-#include "game.h"
+#include "server_game.h"
 #include "network/server.h"
-#include "player.h"
+#include "server_player.h"
 
 namespace OZZ {
-    Game::Game(std::shared_ptr<Database> InDatabase) : database(std::move(InDatabase)) {
+    ServerGame::ServerGame(std::shared_ptr<Database> InDatabase) : database(std::move(InDatabase)) {
 
     }
 
-    void Game::Run() {
+    void ServerGame::Run() {
         startServer();
 
         // use high precision clock to tick at 30 FPS
@@ -32,7 +32,7 @@ namespace OZZ {
         }
     }
 
-    void Game::tick() {
+    void ServerGame::tick() {
         // drop any players that have left
         {
             std::lock_guard<std::mutex> lock(playersMutex);
@@ -40,7 +40,7 @@ namespace OZZ {
                 auto player = playersToRemove.front();
                 playersToRemove.pop();
 
-                std::erase_if (players, [player](const std::shared_ptr<Player>& p) {
+                std::erase_if (players, [player](const std::shared_ptr<ServerPlayer>& p) {
                     return p.get() == player;
                 });
 
@@ -49,7 +49,7 @@ namespace OZZ {
         }
     }
 
-    void Game::startServer() {
+    void ServerGame::startServer() {
         try {
             server = std::make_shared<Server>(context, 8080);
             server->OnNewClient = [this](const std::shared_ptr<OZZ::ConnectedClient> &client) {
@@ -57,16 +57,16 @@ namespace OZZ {
                 spdlog::info("New client connected");
 
                 // create a new player object and add it to the list
-                std::shared_ptr<Player> newPlayer;
+                std::shared_ptr<ServerPlayer> newPlayer;
                 {
-                    newPlayer = players.emplace_back(std::make_shared<Player>(client, database));
+                    newPlayer = players.emplace_back(std::make_shared<ServerPlayer>(client, database));
                 }
 
-                newPlayer->OnPlayerLeft = [this](Player *lostPlayer) {
+                newPlayer->OnPlayerLeft = [this](ServerPlayer *lostPlayer) {
                     playersToRemove.emplace(lostPlayer);
                 };
 
-                newPlayer->OnPlayerLoggedIn = [this](Player *loggedInPlayer) {
+                newPlayer->OnPlayerLoggedIn = [this](ServerPlayer *loggedInPlayer) {
                     spdlog::info("Player logged in: {}", loggedInPlayer->GetEmail());
 
                     // the same player logged in again, disconnect the previous client

@@ -2,7 +2,7 @@
 // Created by ozzadar on 2024-12-17.
 //
 
-#include "client.h"
+#include "network/client.h"
 #include "lights/network/client_messages.h"
 #include "lights/network/server_messages.h"
 
@@ -46,7 +46,7 @@ namespace OZZ {
             }
             case ServerMessageType::ClientConnected: {
                 auto receivedMessage = ClientConnectedMessage::Deserialize(socket);
-                spdlog::info("Received message from server: {}", receivedMessage.GetMessage());
+                spdlog::info("Connected to server: {}", receivedMessage.GetMessage());
                 break;
             }
             case ServerMessageType::AccountLoggedInElsewhere: {
