@@ -1,7 +1,17 @@
 cmake_minimum_required(VERSION 3.29)
 project(Lights)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/dist/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE})
+set(OZZ_OUTPUT_BASE_DIR ${CMAKE_SOURCE_DIR}/dist/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE})
+
+## function for setting base directory
+function(set_base_dir target)
+    message(STATUS "Setting base directory for ${target} to ${OZZ_OUTPUT_BASE_DIR}/${target}")
+    set_target_properties(${target} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
+            LIBRARY_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
+            ARCHIVE_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
+    )
+endfunction()
 
 # if release build
 if (CMAKE_BUILD_TYPE MATCHES "Release")
@@ -18,6 +28,6 @@ endif()
 
 add_subdirectory(shared)
 add_subdirectory(server)
-add_subdirectory(mod_client)
+add_subdirectory(client)
 
 add_subdirectory(cli_tool)
