@@ -34,12 +34,7 @@ namespace OZZ {
 
                 if (currentTime - lastTickTime >= renderRate) {
                     lastTickTime = currentTime;
-                    renderer->RenderScene(windowScene.get());
-
-                    // TODO: This is obviously always true but keep it here as a reminder for later when I can have multiple scenes rendering.
-                    if (windowScene == windowScene) {
-                        window->SwapBuffers();
-                    }
+                    drawScene(windowScene.get());
                 }
 
             }
@@ -54,6 +49,10 @@ namespace OZZ {
         };
         window->OnWindowResized = [this](glm::ivec2 size) {
             updateViewport(size);
+            if (windowScene) {
+                windowScene->RenderTargetResized(size);
+                drawScene(windowScene.get());
+            }
         };
     }
 
@@ -65,6 +64,8 @@ namespace OZZ {
 
     void ClientGame::initScene() {
         windowScene = std::make_unique<MainMenuScene>();
+        windowScene->Init();
+        windowScene->RenderTargetResized(window->GetSize());
     }
 
     void ClientGame::initRenderer() {
@@ -73,6 +74,14 @@ namespace OZZ {
 
     void ClientGame::updateViewport(glm::ivec2 size) {
         glViewport(0, 0, size.x, size.y);
+    }
+
+    void ClientGame::drawScene(Scene *scene) {
+        renderer->RenderScene(scene);
+
+        if (scene == windowScene.get()) {
+            window->SwapBuffers();
+        }
     }
 
 } // OZZ

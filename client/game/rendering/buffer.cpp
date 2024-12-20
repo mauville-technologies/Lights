@@ -46,7 +46,7 @@ namespace OZZ {
     void IndexVertexBuffer::UploadData(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices) {
         vertexBuffer->UploadData(vertices.data(), vertices.size() * sizeof(Vertex));
         indexBuffer->UploadData(indices.data(), indices.size() * sizeof(uint32_t));
-        indexCount = indices.size();
+        indexCount = static_cast<int>(indices.size());
     }
 
     void IndexVertexBuffer::Bind() const {

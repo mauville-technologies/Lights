@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "spdlog/spdlog.h"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 
 namespace OZZ {
@@ -37,6 +38,14 @@ namespace OZZ {
         glUseProgram(shaderId);
 
         // TODO: In the hangouts engine, I attached texturesamplerbindings to the shader and bound them here
+    }
+
+    void Shader::SetInteger(const std::string &name, int value) {
+        glUniform1i(getUniformLocation(name), value);
+    }
+
+    void Shader::SetMat4(const std::string &name, const glm::mat4& value) {
+        glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
     void Shader::compile(const std::string &vertexSource, const std::string &fragmentSource) {
@@ -82,5 +91,11 @@ namespace OZZ {
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     }
+
+    int Shader::getUniformLocation(const std::string &name) const {
+        return glGetUniformLocation(shaderId, name.c_str());
+    }
+
+
 
 } // OZZ

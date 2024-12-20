@@ -4,6 +4,7 @@
 
 #pragma once
 #include <filesystem>
+#include <glm/glm.hpp>
 
 namespace OZZ {
     class Shader {
@@ -12,9 +13,13 @@ namespace OZZ {
         Shader(const path& vertexPath, const path& fragmentPath);
         ~Shader();
 
+        void SetInteger(const std::string& name, int value);
+        void SetMat4(const std::string& name, const glm::mat4& value);
+
         void Bind();
     private:
         void compile(const std::string& vertexSource, const std::string& fragmentSource);
+        int getUniformLocation(const std::string& name) const;
 
     private:
         uint32_t shaderId;

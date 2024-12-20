@@ -32,11 +32,11 @@ namespace OZZ {
         void Bind() const;
         void Unbind() const;
 
-        [[nodiscard]] uint32_t GetIndexCount() const { return indexCount; };
+        [[nodiscard]] int GetIndexCount() const { return indexCount; };
 
     private:
         uint32_t vao;
-        uint32_t indexCount;
+        int indexCount;
 
         std::unique_ptr<Buffer> vertexBuffer;
         std::unique_ptr<Buffer> indexBuffer;

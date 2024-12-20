@@ -28,6 +28,7 @@ namespace OZZ {
         // TODO: The viewport will probably live in a render target
         void updateViewport(glm::ivec2 size);
 
+        void drawScene(Scene* scene);
     private:
         bool bRunning{false};
         std::shared_ptr<Window> window;

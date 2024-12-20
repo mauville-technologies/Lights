@@ -1,5 +1,6 @@
 add_subdirectory(asio)
 add_subdirectory(glad)
+add_subdirectory(stb)
 
 include(FetchContent)
 

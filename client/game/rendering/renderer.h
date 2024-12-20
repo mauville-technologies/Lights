@@ -7,6 +7,9 @@
 #include "game/scene/scene.h"
 #include "buffer.h"
 #include "shader.h"
+#include "lights/util/image.h"
+#include "texture.h"
+#include "material.h"
 
 namespace OZZ {
     class Renderer {
@@ -14,12 +17,5 @@ namespace OZZ {
         Renderer();
 
         void RenderScene(Scene* scene);
-
-    private:
-        uint32_t vertexVAO;
-
-        // TODO: Temp while testing
-        std::unique_ptr<IndexVertexBuffer> mesh;
-        std::unique_ptr<Shader> shader;
     };
 }

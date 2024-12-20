@@ -11,6 +11,7 @@ find_package(OpenGL REQUIRED)
 
 set(SOURCES
     src/platform/window.cpp
+    src/util/image.cpp
 )
 
 add_library(Lights_Shared_Lib STATIC ${SOURCES})
@@ -21,5 +22,5 @@ if (DEFINED set_base_dir)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm)
+target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb)
 

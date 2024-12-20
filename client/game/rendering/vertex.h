@@ -8,10 +8,10 @@
 
 namespace OZZ {
     struct Vertex {
-        glm::vec3 position;
-        glm::vec3 color;
-        glm::vec3 normal;
-        glm::vec2 texCoords;
+        glm::vec3 position {0.f, 0.f, 0.f};
+        glm::vec4 color {1.f, 1.f, 1.f, 1.f};
+        glm::vec3 normal {0.f, 0.f, 0.f};
+        glm::vec2 uv {0.f, 0.f};
 
         inline static void BindAttribPointers() {
             // Position
@@ -19,13 +19,13 @@ namespace OZZ {
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
             // Color
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
             // Normal
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
             // TexCoords
             glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
         }
     };
 } // OZZ
