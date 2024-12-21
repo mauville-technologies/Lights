@@ -5,6 +5,7 @@
 #pragma once
 #include <cstdint>
 
+// TODO: Revisit render pass
 namespace OZZ {
     enum class RenderTargetType {
         Window,

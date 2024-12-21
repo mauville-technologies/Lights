@@ -8,6 +8,7 @@
 #include "lights/platform/window.h"
 #include "game/scene/scene.h"
 #include "game/rendering/renderer.h"
+#include "lights/input/input_subsystem.h"
 
 namespace OZZ {
 
@@ -22,6 +23,7 @@ namespace OZZ {
     private:
         void initWindow();
         void initGL();
+        void initInput();
         void initScene();
         void initRenderer();
 
@@ -32,9 +34,11 @@ namespace OZZ {
     private:
         bool bRunning{false};
         std::shared_ptr<Window> window;
+        std::shared_ptr<InputSubsystem> input;
 
         std::unique_ptr<Scene> windowScene;
         std::unique_ptr<Renderer> renderer;
+
     };
 
 } // OZZ

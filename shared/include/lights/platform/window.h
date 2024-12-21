@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <functional>
+#include "lights/input/input_keys.h"
 #include "glm/glm.hpp"
 
 namespace OZZ {
@@ -13,6 +14,7 @@ namespace OZZ {
     public:
         using OnWindowCloseCallback = std::function<void()>;
         using OnWindowResizedCallback = std::function<void(glm::ivec2)>;
+        using OnKeyPressedCallback = std::function<void(EKey, EKeyState)>;
 
         Window();
         ~Window();
@@ -25,6 +27,7 @@ namespace OZZ {
     public:
         OnWindowCloseCallback OnWindowClose;
         OnWindowResizedCallback OnWindowResized;
+        OnKeyPressedCallback OnKeyPressed;
     private:
         void initWindow();
 

@@ -3,6 +3,7 @@
 //
 
 #include "lights/platform/window.h"
+#include "lights/input/glfw_keys.h"
 #include <spdlog/spdlog.h>
 
 namespace OZZ {
@@ -46,6 +47,15 @@ namespace OZZ {
             auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
             if (win->OnWindowResized) {
                 win->OnWindowResized({width, height});
+            }
+        });
+
+        glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+            auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+            if (win->OnKeyPressed) {
+                if (action == GLFW_REPEAT) return; // Repeat is not needed.
+                GLFWKeyState glfwKeyState(action);
+                win->OnKeyPressed(GLFWKey(key), glfwKeyState);
             }
         });
     }

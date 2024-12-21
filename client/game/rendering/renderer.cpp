@@ -22,14 +22,16 @@ namespace OZZ {
 
         // TODO: Render the scene
         // Render all scene objects
-        for (auto& object: scene->GetObjects()) {
-            auto& [transform, objMesh, objMat] = *object;
-            objMat->Bind();
-            objMat->GetShader()->SetMat4("view", scene->GetCamera()->ViewMatrix);
-            objMat->GetShader()->SetMat4("projection", scene->GetCamera()->ProjectionMatrix);
-            objMat->GetShader()->SetMat4("model", transform);
-            objMesh->Bind();
-            glDrawElements(GL_TRIANGLES, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+        for (auto& layer : scene->Layers) {
+            for (auto &object: layer->Objects) {
+                auto &[transform, objMesh, objMat] = *object;
+                objMat->Bind();
+                objMat->GetShader()->SetMat4("view", layer->LayerCamera.ViewMatrix);
+                objMat->GetShader()->SetMat4("projection", layer->LayerCamera.ProjectionMatrix);
+                objMat->GetShader()->SetMat4("model", transform);
+                objMesh->Bind();
+                glDrawElements(GL_TRIANGLES, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+            }
         }
 
 

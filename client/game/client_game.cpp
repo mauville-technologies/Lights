@@ -17,12 +17,14 @@ namespace OZZ {
 
     void ClientGame::Run() {
         bRunning = true;
+        initInput();
         initWindow();
         initGL();
         initScene();
         initRenderer();
 
         auto lastTickTime = std::chrono::high_resolution_clock::now();
+        auto lastRenderTime = std::chrono::high_resolution_clock::now();
         auto FPS = 60.f;
         auto renderRate = std::chrono::duration<float>(1.0f / FPS);
 
@@ -30,16 +32,20 @@ namespace OZZ {
             {
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 // Tick and render all scenes
-                windowScene->Tick(0.f);
+                windowScene->Tick(std::chrono::duration<float>(currentTime - lastTickTime).count());
 
-                if (currentTime - lastTickTime >= renderRate) {
-                    lastTickTime = currentTime;
+                if (currentTime - lastRenderTime >= renderRate) {
                     drawScene(windowScene.get());
+                    lastRenderTime = currentTime;
                 }
-
+                lastTickTime = currentTime;
             }
             window->PollEvents();
         }
+    }
+
+    void ClientGame::initInput() {
+        input = std::make_shared<InputSubsystem>();
     }
 
     void ClientGame::initWindow() {
@@ -54,6 +60,10 @@ namespace OZZ {
                 drawScene(windowScene.get());
             }
         };
+
+        window->OnKeyPressed = [this](EKey key, EKeyState state) {
+            input->NotifyKeyboardEvent({ key, state });
+        };
     }
 
     void ClientGame::initGL() {
@@ -62,9 +72,10 @@ namespace OZZ {
         updateViewport(size);
     }
 
+
     void ClientGame::initScene() {
         windowScene = std::make_unique<MainMenuScene>();
-        windowScene->Init();
+        windowScene->Init(input);
         windowScene->RenderTargetResized(window->GetSize());
     }
 
@@ -83,5 +94,6 @@ namespace OZZ {
             window->SwapBuffers();
         }
     }
+
 
 } // OZZ

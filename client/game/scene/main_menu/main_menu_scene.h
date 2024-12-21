@@ -9,24 +9,38 @@
 
 namespace OZZ {
 
+    class UILayer : public SceneLayer {
+    public:
+        void Init(std::shared_ptr<InputSubsystem> Input) override;
+        void Tick(float DeltaTime) override;
+        void RenderTargetResized(glm::ivec2 size) override;
+    };
+
+    class PepeLayer : public SceneLayer {
+    public:
+        PepeLayer();
+        void Init(std::shared_ptr<InputSubsystem> Input) override;
+        void Tick(float DeltaTime) override;
+        void RenderTargetResized(glm::ivec2 size) override;
+
+        void ChangeDirection();
+    private:
+        std::shared_ptr<Pepe> pepe { nullptr };
+        glm::ivec2 movement { 0 };
+
+        bool direction { false };
+    };
+
     class MainMenuScene : public Scene {
     public:
         ~MainMenuScene() override = default;
 
-        void Init() override;
+        void Init(std::shared_ptr<InputSubsystem> Input) override;
         void Tick(float DeltaTime) override;
-
-        [[nodiscard]] const std::vector<std::shared_ptr<SceneObject>> &GetObjects() const override;
-        [[nodiscard]] const std::vector<std::shared_ptr<LightSource>> &GetLights() const override;
-        [[nodiscard]] std::shared_ptr<Camera> GetCamera() const override;
-
-        void RenderTargetResized(glm::ivec2 size) override;
-
     private:
-        std::shared_ptr<Pepe> pepe;
-        std::vector<std::shared_ptr<SceneObject>> objects {};
-        std::vector<std::shared_ptr<LightSource>> lights {};
-        std::shared_ptr<Camera> camera { nullptr };
+
+        std::shared_ptr<PepeLayer> pepeLayer;
+        std::shared_ptr<PepeLayer> pepeLayer2;
     };
 
 } // OZZ
