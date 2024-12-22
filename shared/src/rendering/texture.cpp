@@ -2,7 +2,7 @@
 // Created by ozzadar on 2024-12-19.
 //
 
-#include "texture.h"
+#include "lights/rendering/texture.h"
 #include "spdlog/spdlog.h"
 #include <glad/glad.h>
 

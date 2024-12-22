@@ -2,7 +2,7 @@
 // Created by ozzadar on 2024-12-20.
 //
 
-#include "render_pass.h"
+#include "lights/rendering/render_pass.h"
 #include <glad/glad.h>
 
 namespace OZZ {

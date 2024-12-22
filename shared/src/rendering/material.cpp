@@ -2,7 +2,7 @@
 // Created by ozzadar on 2024-12-19.
 //
 
-#include "material.h"
+#include "lights/rendering/material.h"
 #include <glad/glad.h>
 
 namespace OZZ {

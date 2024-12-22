@@ -4,12 +4,14 @@
 
 #pragma once
 #include <memory>
-#include "game/scene/scene.h"
-#include "buffer.h"
-#include "shader.h"
+#include "lights/rendering/buffer.h"
+#include "lights/rendering/shader.h"
+#include "lights/rendering/texture.h"
+#include "lights/rendering/material.h"
+
+#include "lights/scene/scene.h"
+
 #include "lights/util/image.h"
-#include "texture.h"
-#include "material.h"
 
 namespace OZZ {
     class Renderer {

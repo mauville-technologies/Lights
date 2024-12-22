@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "game/scene/scene.h"
+#include "lights/scene/scene.h"
 #include "game/scene/main_menu/objects/pepe.h"
 
 namespace OZZ {

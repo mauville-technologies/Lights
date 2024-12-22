@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "game/scene/scene.h"
+#include "lights/scene/scene.h"
 
 namespace OZZ {
     class Pepe : public SceneObject {

@@ -3,7 +3,7 @@
 //
 
 #include <fstream>
-#include "shader.h"
+#include "lights/rendering/shader.h"
 #include "spdlog/spdlog.h"
 
 #include <glm/gtc/type_ptr.hpp>

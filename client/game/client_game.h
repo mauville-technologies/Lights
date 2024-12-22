@@ -5,10 +5,10 @@
 #pragma once
 
 #include <memory>
-#include "lights/platform/window.h"
-#include "game/scene/scene.h"
-#include "game/rendering/renderer.h"
 #include "lights/input/input_subsystem.h"
+#include "lights/platform/window.h"
+#include "lights/rendering/renderer.h"
+#include "lights/scene/scene.h"
 
 namespace OZZ {
 

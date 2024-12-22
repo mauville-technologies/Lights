@@ -2,10 +2,8 @@
 // Created by ozzadar on 2024-12-18.
 //
 
-#include "renderer.h"
+#include "lights/rendering/renderer.h"
 #include "glad/glad.h"
-#include "spdlog/spdlog.h"
-#include "shapes.h"
 
 namespace OZZ {
     Renderer::Renderer() {

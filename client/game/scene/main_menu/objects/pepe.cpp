@@ -3,7 +3,7 @@
 //
 
 #include "pepe.h"
-#include "game/rendering/shapes.h"
+#include "lights/rendering/shapes.h"
 #include "glm/ext/matrix_transform.hpp"
 
 namespace OZZ {

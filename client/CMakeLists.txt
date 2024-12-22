@@ -8,13 +8,6 @@ set (SOURCES
 
         game/client_game.cpp
 
-        game/rendering/buffer.cpp
-        game/rendering/material.cpp
-        game/rendering/render_pass.cpp
-        game/rendering/renderer.cpp
-        game/rendering/shader.cpp
-        game/rendering/texture.cpp
-
         game/scene/main_menu/main_menu_scene.cpp
         game/scene/main_menu/objects/pepe.cpp
 )

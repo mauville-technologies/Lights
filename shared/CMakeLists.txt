@@ -10,12 +10,20 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
-        src/platform/window.cpp
-        src/util/image.cpp
-
         src/input/glfw_keys.cpp
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
+
+        src/platform/window.cpp
+
+        src/rendering/buffer.cpp
+        src/rendering/material.cpp
+        src/rendering/render_pass.cpp
+        src/rendering/renderer.cpp
+        src/rendering/shader.cpp
+        src/rendering/texture.cpp
+
+        src/util/image.cpp
 )
 
 add_library(Lights_Shared_Lib STATIC ${SOURCES})

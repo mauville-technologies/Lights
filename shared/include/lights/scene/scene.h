@@ -8,8 +8,8 @@
 #include <glm/glm.hpp>
 #include <utility>
 #include <vector>
-#include "game/rendering/buffer.h"
-#include "game/rendering/material.h"
+#include "lights/rendering/buffer.h"
+#include "lights/rendering/material.h"
 #include "lights/input/input_subsystem.h"
 
 

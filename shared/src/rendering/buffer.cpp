@@ -2,7 +2,7 @@
 // Created by ozzadar on 2024-12-18.
 //
 
-#include "buffer.h"
+#include "lights/rendering/buffer.h"
 
 namespace OZZ {
     Buffer::Buffer(uint32_t bufferType) : type(bufferType) {
