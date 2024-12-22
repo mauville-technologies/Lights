@@ -12,6 +12,8 @@ namespace OZZ {
     }
 
     ClientGame::~ClientGame() {
+        client->Stop();
+        networkThread.join();
         window.reset();
     }
 
@@ -22,6 +24,7 @@ namespace OZZ {
         initGL();
         initScene();
         initRenderer();
+        initNetwork();
 
         auto lastTickTime = std::chrono::high_resolution_clock::now();
         auto lastRenderTime = std::chrono::high_resolution_clock::now();
@@ -74,13 +77,34 @@ namespace OZZ {
 
 
     void ClientGame::initScene() {
-        windowScene = std::make_unique<MainMenuScene>();
-        windowScene->Init(input);
+        windowScene = std::make_unique<MainMenuScene>(input);
+        windowScene->Init();
         windowScene->RenderTargetResized(window->GetSize());
     }
 
     void ClientGame::initRenderer() {
         renderer = std::make_unique<Renderer>();
+    }
+
+    void ClientGame::initNetwork() {
+        client = std::make_unique<Client>();
+        client->OnAuthenticationFailed = [this]() {
+            spdlog::error("Authentication failed, exiting!");
+            bRunning = false;
+        };
+
+        client->OnClientConnected = [this](const ClientConnectedMessage& message) {
+            spdlog::info("Connected to server: {}", message.GetMessage());
+        };
+
+        client->OnAccountLoggedInElsewhere = [this]() {
+            spdlog::error("Account logged in elsewhere, exiting!");
+            bRunning = false;
+        };
+
+        networkThread = std::thread([this]() {
+            client->Run("127.0.0.1", 8080);
+        });
     }
 
     void ClientGame::updateViewport(glm::ivec2 size) {
@@ -94,6 +118,4 @@ namespace OZZ {
             window->SwapBuffers();
         }
     }
-
-
 } // OZZ

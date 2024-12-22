@@ -9,14 +9,17 @@
 using asio::ip::tcp;
 
 namespace OZZ {
-    Client::Client(asio::io_context &inContext, const std::string &host, short port) : socket(inContext) {
-        connect(host, port);
-    }
+    Client::Client() : socket(context) {}
 
-    void Client::Run() {
+    void Client::Run(const std::string& host, short port) {
+        connect(host, port);
         write();
         read();
-//        close();
+        context.run();
+    }
+
+    void Client::Stop() {
+        context.stop();
     }
 
     void Client::connect(const std::string& host, short port) {
@@ -41,16 +44,16 @@ namespace OZZ {
         }
         switch (queuedMessageType) {
             case ServerMessageType::AuthenticationFailed: {
-                spdlog::error("Authentication failed; exiting!");
+                OnAuthenticationFailed();
                 return;
             }
             case ServerMessageType::ClientConnected: {
                 auto receivedMessage = ClientConnectedMessage::Deserialize(socket);
-                spdlog::info("Connected to server: {}", receivedMessage.GetMessage());
+                OnClientConnected(receivedMessage);
                 break;
             }
             case ServerMessageType::AccountLoggedInElsewhere: {
-                spdlog::error("Account logged in elsewhere; exiting!");
+                OnAccountLoggedInElsewhere();
                 return;
             }
             default:
@@ -81,4 +84,5 @@ namespace OZZ {
             spdlog::error("Error closing connection: {}", ec.message());
         }
     }
+
 }

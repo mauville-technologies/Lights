@@ -9,6 +9,7 @@
 #include "lights/platform/window.h"
 #include "lights/rendering/renderer.h"
 #include "lights/scene/scene.h"
+#include "network/client.h"
 
 namespace OZZ {
 
@@ -26,6 +27,7 @@ namespace OZZ {
         void initInput();
         void initScene();
         void initRenderer();
+        void initNetwork();
 
         // TODO: The viewport will probably live in a render target
         void updateViewport(glm::ivec2 size);
@@ -33,12 +35,15 @@ namespace OZZ {
         void drawScene(Scene* scene);
     private:
         bool bRunning{false};
+
         std::shared_ptr<Window> window;
         std::shared_ptr<InputSubsystem> input;
 
         std::unique_ptr<Scene> windowScene;
         std::unique_ptr<Renderer> renderer;
 
+        std::thread networkThread;
+        std::unique_ptr<Client> client;
     };
 
 } // OZZ

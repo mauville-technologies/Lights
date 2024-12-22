@@ -11,7 +11,7 @@ namespace OZZ {
 
     class UILayer : public SceneLayer {
     public:
-        void Init(std::shared_ptr<InputSubsystem> Input) override;
+        void Init() override;
         void Tick(float DeltaTime) override;
         void RenderTargetResized(glm::ivec2 size) override;
     };
@@ -19,28 +19,35 @@ namespace OZZ {
     class PepeLayer : public SceneLayer {
     public:
         PepeLayer();
-        void Init(std::shared_ptr<InputSubsystem> Input) override;
+        void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
+        void Init() override;
         void Tick(float DeltaTime) override;
         void RenderTargetResized(glm::ivec2 size) override;
 
         void ChangeDirection();
     private:
+        void unregisterMappings(std::shared_ptr<InputSubsystem> inInput);
+        void registerMappings(std::shared_ptr<InputSubsystem> inInput);
+    private:
         std::shared_ptr<Pepe> pepe { nullptr };
         glm::ivec2 movement { 0 };
 
         bool direction { false };
+
+        std::shared_ptr<InputSubsystem> input;
     };
 
     class MainMenuScene : public Scene {
     public:
+        explicit MainMenuScene(std::shared_ptr<InputSubsystem> inInput);
         ~MainMenuScene() override = default;
 
-        void Init(std::shared_ptr<InputSubsystem> Input) override;
+        void Init() override;
         void Tick(float DeltaTime) override;
     private:
-
         std::shared_ptr<PepeLayer> pepeLayer;
         std::shared_ptr<PepeLayer> pepeLayer2;
+        std::shared_ptr<InputSubsystem> input;
     };
 
 } // OZZ

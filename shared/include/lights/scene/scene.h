@@ -38,9 +38,7 @@ namespace OZZ {
     public:
         virtual ~SceneLayer() = default;
 
-        virtual void Init(std::shared_ptr<InputSubsystem> Input) {
-            input = std::move(Input);
-        };
+        virtual void Init() {};
         virtual void Tick(float DeltaTime) {};
         virtual void RenderTargetResized(glm::ivec2 size) = 0;
 
@@ -48,16 +46,11 @@ namespace OZZ {
         Camera LayerCamera {};
         std::vector<std::shared_ptr<SceneObject>> Objects;
         std::vector<std::shared_ptr<LightSource>> Lights;
-
-    protected:
-        std::shared_ptr<InputSubsystem> input { nullptr };
     };
 
     class Scene {
     public:
-        virtual void Init(std::shared_ptr<InputSubsystem> Input) {
-            input = std::move(Input);
-        };
+        virtual void Init() {};
 
         virtual void Tick(float DeltaTime) {
             for (auto &Layer: Layers) {
@@ -76,8 +69,5 @@ namespace OZZ {
 
     public:
         std::vector<std::shared_ptr<SceneLayer>> Layers {};
-
-    protected:
-        std::shared_ptr<InputSubsystem> input { nullptr };
     };
 }

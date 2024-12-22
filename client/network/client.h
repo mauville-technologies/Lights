@@ -10,9 +10,21 @@
 namespace OZZ {
     class Client {
     public:
-        Client(asio::io_context& inContext, const std::string& host, short port);
+        using OnAuthenticationFailedCallback = std::function<void()>;
+        using OnClientConnectedCallback = std::function<void(ClientConnectedMessage)>;
+        using OnAccountLoggedInElsewhereCallback = std::function<void()>;
+        using OnUnknownMessageCallback = std::function<void(ServerMessageType)>;
 
-        void Run();
+        Client();
+
+        void Run(const std::string& host, short port);
+        void Stop();
+
+        OnAuthenticationFailedCallback OnAuthenticationFailed;
+        OnClientConnectedCallback OnClientConnected;
+        OnAccountLoggedInElsewhereCallback OnAccountLoggedInElsewhere;
+        OnUnknownMessageCallback OnUnknownMessage;
+
     private:
         void connect(const std::string& host, short port);
         void read();
@@ -21,6 +33,7 @@ namespace OZZ {
         void close();
 
     private:
+        asio::io_context context;
         asio::ip::tcp::socket socket;
         ServerMessageType queuedMessageType;
     };

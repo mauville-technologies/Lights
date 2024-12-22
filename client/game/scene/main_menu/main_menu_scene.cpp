@@ -3,6 +3,8 @@
 //
 
 #include "main_menu_scene.h"
+
+#include <utility>
 #include "game/scene/main_menu/objects/pepe.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -10,19 +12,17 @@
 
 namespace OZZ {
 
-    void MainMenuScene::Init(std::shared_ptr<InputSubsystem> Input) {
-        Scene::Init(Input);
-        spdlog::info("Main Menu Scene Initialized");
-
+    void MainMenuScene::Init() {
         pepeLayer = std::make_shared<PepeLayer>();
         pepeLayer2 = std::make_shared<PepeLayer>();
+        pepeLayer2->SetInputSubsystem(input);
         pepeLayer2->ChangeDirection();
 
         Layers.push_back(pepeLayer);
         Layers.push_back(pepeLayer2);
 
         for (auto &Layer: Layers) {
-            Layer->Init(Input);
+            Layer->Init();
         }
     }
 
@@ -30,12 +30,19 @@ namespace OZZ {
         Scene::Tick(DeltaTime);
     }
 
+    MainMenuScene::MainMenuScene(std::shared_ptr<InputSubsystem> inInput) : input(std::move(inInput)){}
+
     PepeLayer::PepeLayer() {
 
     }
 
-    void PepeLayer::Init(std::shared_ptr<InputSubsystem> Input) {
-        SceneLayer::Init(Input);
+    void PepeLayer::SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput) {
+        unregisterMappings(inInput);
+        registerMappings(inInput);
+        input = inInput;
+    }
+
+    void PepeLayer::Init() {
         LayerCamera.ViewMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 3.f),  // Camera position
                                          glm::vec3(0.f, 0.f, 0.f),  // Target to look at
                                          glm::vec3(0.f, 1.f, 0.f)); // Up vector
@@ -45,66 +52,6 @@ namespace OZZ {
         Objects.push_back(pepe);
 
         pepe->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
-
-        // scale da pepe
-        // TODO: Multiple keys, scales per key
-        input->RegisterInputMapping({
-           .Action = "MoveUp",
-              .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
-                            spdlog::info("Move Up");
-                            movement.y = 1;
-                        },
-                        .OnReleased = [this]() {
-                            spdlog::info("Stop Up");
-                            movement.y = 0;
-                        }
-                }
-        });
-        input->RegisterInputMapping({
-                .Action = "MoveDown",
-                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
-                            spdlog::info("Move Up");
-                            movement.y = -1;
-                        },
-                        .OnReleased = [this]() {
-                            spdlog::info("Stop Up");
-                            movement.y = 0;
-                        }
-                }
-        });
-        input->RegisterInputMapping({
-                .Action = "Quit",
-                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::LControl, EKey::LAlt, EKey::X}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
-                            spdlog::info("Quit hotkey pressed");
-                        },
-                        .OnReleased = []() {
-                            spdlog::info("Quit hotkey released");
-                        }
-                }
-        });
-
-        input->RegisterInputMapping({
-                .Action = "Konami",
-                .Chord = {
-                        .Keys = std::vector<EKey>{EKey::Up, EKey::Up, EKey::Down, EKey::Down,
-                                                  EKey::Left, EKey::Right, EKey::Left, EKey::Right,
-                                                  EKey::B, EKey::A},
-                        .bIsSequence = true,
-                        .TimeBetweenKeys = 1000ms
-
-                },
-                .Callbacks = {
-                        .OnPressed = []() {
-                            spdlog::info("Konami Code Entered");
-                        }
-                }
-        });
     }
 
     void PepeLayer::Tick(float DeltaTime) {
@@ -126,8 +73,85 @@ namespace OZZ {
         direction = !direction;
     }
 
-    void UILayer::Init(std::shared_ptr<InputSubsystem> Input) {
-        SceneLayer::Init(Input);
+    void PepeLayer::unregisterMappings(std::shared_ptr<InputSubsystem> inInput) {
+        if (!inInput) {
+            return;
+        }
+
+        inInput->UnregisterInputMapping("MoveUp");
+        inInput->UnregisterInputMapping("MoveDown");
+        inInput->UnregisterInputMapping("Quit");
+        inInput->UnregisterInputMapping("Konami");
+    }
+
+    void PepeLayer::registerMappings(std::shared_ptr<InputSubsystem> inInput) {
+        if (!inInput) {
+            return;
+        }
+
+        inInput->RegisterInputMapping({
+           .Action = "MoveUp",
+              .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
+                .Callbacks = {
+                        .OnPressed = [this]() {
+                            spdlog::info("Move Up");
+                            movement.y = 1;
+                        },
+                        .OnReleased = [this]() {
+                            spdlog::info("Stop Up");
+                            movement.y = 0;
+                        }
+                }
+        });
+
+        inInput->RegisterInputMapping({
+                .Action = "MoveDown",
+                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
+                .Callbacks = {
+                        .OnPressed = [this]() {
+                            spdlog::info("Move Up");
+                            movement.y = -1;
+                        },
+                        .OnReleased = [this]() {
+                            spdlog::info("Stop Up");
+                            movement.y = 0;
+                        }
+                }
+        });
+
+        inInput->RegisterInputMapping({
+                .Action = "Quit",
+                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::LControl, EKey::LAlt, EKey::X}},
+                .Callbacks = {
+                        .OnPressed = [this]() {
+                            spdlog::info("Quit hotkey pressed");
+                        },
+                        .OnReleased = []() {
+                            spdlog::info("Quit hotkey released");
+                        }
+                }
+        });
+
+        inInput->RegisterInputMapping({
+                .Action = "Konami",
+                .Chord = {
+                        .Keys = std::vector<EKey>{EKey::Up, EKey::Up, EKey::Down, EKey::Down,
+                                                  EKey::Left, EKey::Right, EKey::Left, EKey::Right,
+                                                  EKey::B, EKey::A},
+                        .bIsSequence = true,
+                        .TimeBetweenKeys = 1000ms
+
+                },
+                .Callbacks = {
+                        .OnPressed = []() {
+                            spdlog::info("Konami Code Entered");
+                        }
+                }
+        });
+    }
+
+
+    void UILayer::Init() {
     }
 
     void UILayer::RenderTargetResized(glm::ivec2 size) {
