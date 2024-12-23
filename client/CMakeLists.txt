@@ -10,6 +10,8 @@ set (SOURCES
 
         game/scene/main_menu/main_menu_scene.cpp
         game/scene/main_menu/objects/pepe.cpp
+
+        game/ui/debug_window.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -20,6 +22,7 @@ if (COMMAND set_base_dir)
 endif()
 
 target_link_libraries(${PROJECT_NAME} Lights_Shared_Lib)
+target_compile_definitions(Lights_Shared_Lib PRIVATE OZZ_RENDERER_OPENGL OZZ_WINDOW_GLFW)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE

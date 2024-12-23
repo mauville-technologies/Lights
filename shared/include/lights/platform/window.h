@@ -24,6 +24,7 @@ namespace OZZ {
         void SwapBuffers();
 
         [[nodiscard]] glm::ivec2 GetSize() const;
+        void* GetWindowHandle() const;
     public:
         OnWindowCloseCallback OnWindowClose;
         OnWindowResizedCallback OnWindowResized;

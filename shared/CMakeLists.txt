@@ -23,6 +23,8 @@ set(SOURCES
         src/rendering/shader.cpp
         src/rendering/texture.cpp
 
+        src/ui/user_interface.cpp
+
         src/util/image.cpp
 )
 
@@ -34,5 +36,5 @@ if (DEFINED set_base_dir)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay)
+target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui)
 

@@ -53,21 +53,21 @@ namespace OZZ {
         virtual void Init() {};
 
         virtual void Tick(float DeltaTime) {
-            for (auto &Layer: Layers) {
+            for (auto &Layer: GetLayers()) {
                 Layer->Tick(DeltaTime);
             }
         };
 
         // Marked virtual to allow derived Scenes with custom entities
         void RenderTargetResized(glm::ivec2 size) {
-            for (auto &Layer: Layers) {
+            for (auto &Layer: GetLayers()) {
                 Layer->RenderTargetResized(size);
             }
         }
 
         virtual ~Scene() = default;
 
+        virtual std::vector<std::shared_ptr<SceneLayer>>& GetLayers() = 0;
     public:
-        std::vector<std::shared_ptr<SceneLayer>> Layers {};
     };
 }

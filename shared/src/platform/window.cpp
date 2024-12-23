@@ -82,4 +82,8 @@ namespace OZZ {
         glfwGetWindowSize(window, &width, &height);
         return {width, height};
     }
+
+    void *Window::GetWindowHandle() const {
+        return window;
+    }
 } // OZZ

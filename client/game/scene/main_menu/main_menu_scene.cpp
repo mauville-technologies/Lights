@@ -12,7 +12,28 @@
 
 namespace OZZ {
 
+    MainMenuScene::MainMenuScene(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) : input(std::move(inInput)), ui(std::move(inUI)) {}
+
+    MainMenuScene::~MainMenuScene() {
+        input.reset();
+
+        for (auto &Layer: Layers) {
+            Layer->Objects.clear();
+            Layer->Lights.clear();
+        }
+
+        Layers.clear();
+
+        pepeLayer.reset();
+        pepeLayer2.reset();
+        debugWindow.reset();
+        ui.reset();
+    }
+
     void MainMenuScene::Init() {
+        debugWindow = std::make_shared<DebugWindow>();
+        ui->AddComponent(debugWindow);
+
         pepeLayer = std::make_shared<PepeLayer>();
         pepeLayer2 = std::make_shared<PepeLayer>();
         pepeLayer2->SetInputSubsystem(input);
@@ -30,7 +51,6 @@ namespace OZZ {
         Scene::Tick(DeltaTime);
     }
 
-    MainMenuScene::MainMenuScene(std::shared_ptr<InputSubsystem> inInput) : input(std::move(inInput)){}
 
     PepeLayer::PepeLayer() {
 

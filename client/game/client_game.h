@@ -5,11 +5,12 @@
 #pragma once
 
 #include <memory>
-#include "lights/input/input_subsystem.h"
 #include "lights/platform/window.h"
 #include "lights/rendering/renderer.h"
+#include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
 #include "network/client.h"
+#include "lights/ui/user_interface.h"
 
 namespace OZZ {
 
@@ -27,6 +28,7 @@ namespace OZZ {
         void initInput();
         void initScene();
         void initRenderer();
+        void initUI();
         void initNetwork();
 
         // TODO: The viewport will probably live in a render target
@@ -38,6 +40,7 @@ namespace OZZ {
 
         std::shared_ptr<Window> window;
         std::shared_ptr<InputSubsystem> input;
+        std::shared_ptr<UserInterface> ui;
 
         std::unique_ptr<Scene> windowScene;
         std::unique_ptr<Renderer> renderer;

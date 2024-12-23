@@ -6,6 +6,8 @@
 
 #include "lights/scene/scene.h"
 #include "game/scene/main_menu/objects/pepe.h"
+#include "lights/ui/user_interface.h"
+#include "game/ui/debug_window.h"
 
 namespace OZZ {
 
@@ -39,15 +41,21 @@ namespace OZZ {
 
     class MainMenuScene : public Scene {
     public:
-        explicit MainMenuScene(std::shared_ptr<InputSubsystem> inInput);
-        ~MainMenuScene() override = default;
+        explicit MainMenuScene(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI);
+        ~MainMenuScene() override;
 
         void Init() override;
         void Tick(float DeltaTime) override;
+
+        std::vector<std::shared_ptr<SceneLayer>>& GetLayers() override { return Layers; }
     private:
+        std::vector<std::shared_ptr<SceneLayer>> Layers;
         std::shared_ptr<PepeLayer> pepeLayer;
         std::shared_ptr<PepeLayer> pepeLayer2;
         std::shared_ptr<InputSubsystem> input;
+
+        std::shared_ptr<UserInterface> ui;
+        std::shared_ptr<UIComponent> debugWindow;
     };
 
 } // OZZ

@@ -1,8 +1,3 @@
-add_subdirectory(asio)
-add_subdirectory(glad)
-add_subdirectory(clay)
-add_subdirectory(stb)
-
 include(FetchContent)
 
 FetchContent_Declare(
@@ -44,3 +39,10 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(glmlib)
+
+add_subdirectory(asio)
+add_subdirectory(glad)
+add_subdirectory(clay)
+add_subdirectory(stb)
+add_subdirectory(imgui)
+

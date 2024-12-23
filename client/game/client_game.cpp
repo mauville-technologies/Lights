@@ -14,6 +14,9 @@ namespace OZZ {
     ClientGame::~ClientGame() {
         client->Stop();
         networkThread.join();
+        ui->Shutdown();
+        ui.reset();
+        windowScene.reset();
         window.reset();
     }
 
@@ -22,8 +25,9 @@ namespace OZZ {
         initInput();
         initWindow();
         initGL();
-        initScene();
         initRenderer();
+        initUI();
+        initScene();
         initNetwork();
 
         auto lastTickTime = std::chrono::high_resolution_clock::now();
@@ -75,15 +79,19 @@ namespace OZZ {
         updateViewport(size);
     }
 
-
-    void ClientGame::initScene() {
-        windowScene = std::make_unique<MainMenuScene>(input);
-        windowScene->Init();
-        windowScene->RenderTargetResized(window->GetSize());
-    }
-
     void ClientGame::initRenderer() {
         renderer = std::make_unique<Renderer>();
+    }
+
+    void ClientGame::initUI() {
+        ui = std::make_shared<UserInterface>();
+        ui->Init(window->GetWindowHandle());
+    }
+
+    void ClientGame::initScene() {
+        windowScene = std::make_unique<MainMenuScene>(input, ui);
+        windowScene->Init();
+        windowScene->RenderTargetResized(window->GetSize());
     }
 
     void ClientGame::initNetwork() {
@@ -113,7 +121,7 @@ namespace OZZ {
 
     void ClientGame::drawScene(Scene *scene) {
         renderer->RenderScene(scene);
-
+        ui->Render();
         if (scene == windowScene.get()) {
             window->SwapBuffers();
         }
