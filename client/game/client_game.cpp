@@ -13,7 +13,9 @@ namespace OZZ {
 
     ClientGame::~ClientGame() {
         client->Stop();
-        networkThread.join();
+        if (networkThread.joinable()) {
+            networkThread.join();
+        }
         ui->Shutdown();
         ui.reset();
         windowScene.reset();
@@ -96,13 +98,19 @@ namespace OZZ {
         if (auto mainMenuScene = dynamic_cast<MainMenuScene*>(windowScene.get())) {
             mainMenuScene->ConnectToServerRequested = [this]() {
                 if (client) {
+                    client->Stop();
+                    if (networkThread.joinable()) {
+                        networkThread.join();
+                    }
                     initNetwork();
                 }
             };
 
             mainMenuScene->DisconnectFromServerRequested = [this]() {
                 client->Stop();
-                networkThread.join();
+                if (networkThread.joinable()) {
+                    networkThread.join();
+                }
             };
 
             mainMenuScene->LoginRequested = [this](const std::string& username, const std::string& password) {

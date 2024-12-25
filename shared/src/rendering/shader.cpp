@@ -36,8 +36,6 @@ namespace OZZ {
 
     void Shader::Bind() {
         glUseProgram(shaderId);
-
-        // TODO: In the hangouts engine, I attached texturesamplerbindings to the shader and bound them here
     }
 
     void Shader::SetInteger(const std::string &name, int value) {
