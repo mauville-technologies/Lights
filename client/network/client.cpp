@@ -12,6 +12,10 @@ namespace OZZ {
     Client::Client() : socket(context) {}
 
     void Client::Run(const std::string& host, short port) {
+        if (OnConnectingToServer) {
+            OnConnectingToServer();
+        }
+        context.restart();
         connect(host, port);
         write();
         read();
@@ -20,15 +24,24 @@ namespace OZZ {
 
     void Client::Stop() {
         context.stop();
+        close();
     }
 
     void Client::connect(const std::string& host, short port) {
+        socket = tcp::socket(context);
         tcp::resolver resolver(socket.get_executor());
         try {
             auto endpoint = asio::connect(socket, resolver.resolve(host, std::to_string(port)));
             spdlog::info("Connected to server: {}", endpoint.address().to_string());
+            if (OnConnectedToServer) {
+                OnConnectedToServer();
+            }
         } catch (std::exception &e) {
             spdlog::error("Error connecting to server: {}", e.what());
+            if (OnDisconnectedFromServer) {
+                OnDisconnectedFromServer();
+            }
+            close();
         }
     }
 
@@ -39,21 +52,33 @@ namespace OZZ {
     }
 
     void Client::handleRead(const asio::error_code &ec, size_t bytesTransferred) {
+        if (ec == asio::error::eof || ec == asio::error::connection_reset) {
+            spdlog::info("Connection closed by server");
+            close();
+            return;
+        }
+
         if (bytesTransferred == 0) {
             return;
         }
         switch (queuedMessageType) {
             case ServerMessageType::AuthenticationFailed: {
-                OnAuthenticationFailed();
+                if (OnAuthenticationFailed) {
+                    OnAuthenticationFailed();
+                }
                 return;
             }
-            case ServerMessageType::ClientConnected: {
-                auto receivedMessage = ClientConnectedMessage::Deserialize(socket);
-                OnClientConnected(receivedMessage);
+            case ServerMessageType::UserLoggedIn: {
+                auto receivedMessage = UserLoggedInMessage::Deserialize(socket);
+                if (OnUserLoggedIn) {
+                    OnUserLoggedIn(receivedMessage);
+                }
                 break;
             }
             case ServerMessageType::AccountLoggedInElsewhere: {
-                OnAccountLoggedInElsewhere();
+                if (OnAccountLoggedInElsewhere) {
+                    OnAccountLoggedInElsewhere();
+                }
                 return;
             }
             default:
@@ -64,6 +89,8 @@ namespace OZZ {
     }
 
     void Client::write() {
+//        std::lock_guard<std::mutex> lock(socketMutex);
+//        if (!socket.is_open()) return;
         // Connection Request message
         ConnectionRequestMessage message("p.a.mauviel@gmail.com", "password");
         asio::error_code ec;
@@ -76,6 +103,7 @@ namespace OZZ {
     }
 
     void Client::close() {
+//        std::lock_guard<std::mutex> lock(socketMutex);
         asio::error_code ec;
         auto error = socket.close(ec);
         if (!ec && !error) {
@@ -83,6 +111,9 @@ namespace OZZ {
         } else {
             spdlog::error("Error closing connection: {}", ec.message());
         }
-    }
 
+        if (OnDisconnectedFromServer) {
+            OnDisconnectedFromServer();
+        }
+    }
 }

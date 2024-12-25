@@ -12,7 +12,8 @@
 
 namespace OZZ {
 
-    MainMenuScene::MainMenuScene(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) : input(std::move(inInput)), ui(std::move(inUI)) {}
+    MainMenuScene::MainMenuScene(GetApplicationStateFunction inAppStateFunction, std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI)
+        : appStateFunction(std::move(inAppStateFunction)), input(std::move(inInput)), ui(std::move(inUI)) {}
 
     MainMenuScene::~MainMenuScene() {
         input.reset();
@@ -31,7 +32,16 @@ namespace OZZ {
     }
 
     void MainMenuScene::Init() {
-        debugWindow = std::make_shared<DebugWindow>();
+        debugWindow = std::make_shared<DebugWindow>(appStateFunction);
+
+        if (auto typedDebugWindow = std::static_pointer_cast<DebugWindow>(debugWindow)) {
+            // this essentially passes through all the callbacks to the main menu scene
+            typedDebugWindow->ConnectToServerRequested = ConnectToServerRequested;
+            typedDebugWindow->DisconnectFromServerRequested = DisconnectFromServerRequested;
+            typedDebugWindow->LoginRequested = LoginRequested;
+            typedDebugWindow->LogoutRequested = LogoutRequested;
+        }
+
         ui->AddComponent(debugWindow);
 
         pepeLayer = std::make_shared<PepeLayer>();

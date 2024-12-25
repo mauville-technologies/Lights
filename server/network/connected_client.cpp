@@ -79,7 +79,7 @@ namespace OZZ {
             write(AuthenticationFailedMessage());
             return;
         }
-        auto ClientConnected = ClientConnectedMessage("Welcome to the server!");
+        auto ClientConnected = UserLoggedInMessage("Welcome to the server!");
         write(ClientConnected);
     }
 

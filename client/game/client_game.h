@@ -9,8 +9,9 @@
 #include "lights/rendering/renderer.h"
 #include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
-#include "network/client.h"
 #include "lights/ui/user_interface.h"
+#include "network/client.h"
+#include "application_state.h"
 
 namespace OZZ {
 
@@ -37,6 +38,8 @@ namespace OZZ {
         void drawScene(Scene* scene);
     private:
         bool bRunning{false};
+
+        ApplicationState appState;
 
         std::shared_ptr<Window> window;
         std::shared_ptr<InputSubsystem> input;

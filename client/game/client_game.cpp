@@ -7,7 +7,7 @@
 #include "game/scene/main_menu/main_menu_scene.h"
 
 namespace OZZ {
-    ClientGame::ClientGame() {
+    ClientGame::ClientGame() : bRunning(false), appState() {
 
     }
 
@@ -89,19 +89,59 @@ namespace OZZ {
     }
 
     void ClientGame::initScene() {
-        windowScene = std::make_unique<MainMenuScene>(input, ui);
+        windowScene = std::make_unique<MainMenuScene>([this]() {
+            return appState;
+        }, input, ui);
+
+        if (auto mainMenuScene = dynamic_cast<MainMenuScene*>(windowScene.get())) {
+            mainMenuScene->ConnectToServerRequested = [this]() {
+                if (client) {
+                    initNetwork();
+                }
+            };
+
+            mainMenuScene->DisconnectFromServerRequested = [this]() {
+                client->Stop();
+                networkThread.join();
+            };
+
+            mainMenuScene->LoginRequested = [this](const std::string& username, const std::string& password) {
+//                client->Login(username, password);
+            };
+
+            mainMenuScene->LogoutRequested = [this]() {
+//                client->Logout();
+            };
+        }
         windowScene->Init();
         windowScene->RenderTargetResized(window->GetSize());
     }
 
     void ClientGame::initNetwork() {
         client = std::make_unique<Client>();
+        client->OnConnectedToServer = [this]() {
+            spdlog::info("Connected to server!");
+            appState.ConnectionState = ConnectionState::Connected;
+        };
+
+        client->OnConnectingToServer = [this]() {
+            spdlog::info("Connecting to server...");
+            appState.ConnectionState = ConnectionState::Connecting;
+        };
+
+        client->OnDisconnectedFromServer = [this]() {
+            spdlog::info("Disconnected from server!");
+            appState.ConnectionState = ConnectionState::Disconnected;
+            appState.LoginState = LoginState::NotLoggedIn;
+            appState.PlayerState.Clear();
+        };
+
         client->OnAuthenticationFailed = [this]() {
             spdlog::error("Authentication failed, exiting!");
             bRunning = false;
         };
 
-        client->OnClientConnected = [this](const ClientConnectedMessage& message) {
+        client->OnUserLoggedIn = [](const UserLoggedInMessage& message) {
             spdlog::info("Connected to server: {}", message.GetMessage());
         };
 

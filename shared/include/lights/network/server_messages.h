@@ -13,7 +13,7 @@
 enum class ServerMessageType : uint8_t {
     Unknown,
     AuthenticationFailed,
-    ClientConnected,
+    UserLoggedIn,
     AccountLoggedInElsewhere,
 };
 
@@ -49,8 +49,8 @@ struct AuthenticationFailedMessage {
     }
 };
 
-struct ClientConnectedMessage {
-    explicit ClientConnectedMessage(std::string InMessage) {
+struct UserLoggedInMessage {
+    explicit UserLoggedInMessage(std::string InMessage) {
         Message = std::move(InMessage);
         Length = Message.size();
     }
@@ -60,7 +60,7 @@ struct ClientConnectedMessage {
     }
 
     static ServerMessageType GetMessageType() {
-        return ServerMessageType::ClientConnected;
+        return ServerMessageType::UserLoggedIn;
     }
 
     operator std::vector<uint8_t>() {
@@ -78,8 +78,8 @@ struct ClientConnectedMessage {
         return bytes;
     }
 
-    static ClientConnectedMessage Deserialize(asio::ip::tcp::socket& socket) {
-        ClientConnectedMessage message;
+    static UserLoggedInMessage Deserialize(asio::ip::tcp::socket& socket) {
+        UserLoggedInMessage message;
 
         asio::error_code ec;
         // the connection request has a length to determine the rest of the message
@@ -102,7 +102,7 @@ struct ClientConnectedMessage {
 
 private:
     // Default constructor for deserialization
-    ClientConnectedMessage() = default;
+    UserLoggedInMessage() = default;
 
     size_t Length {0};
     std::string Message;

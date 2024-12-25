@@ -5,14 +5,19 @@
 #pragma once
 #include <asio.hpp>
 #include <spdlog/spdlog.h>
+#include <thread>
 #include "lights/network/server_messages.h"
 
 namespace OZZ {
     class Client {
     public:
+        using OnConnectedToServerCallback = std::function<void()>;
+        using OnConnectingToServerCallback = std::function<void()>;
+        using OnDisconnectedFromServerCallback = std::function<void()>;
         using OnAuthenticationFailedCallback = std::function<void()>;
-        using OnClientConnectedCallback = std::function<void(ClientConnectedMessage)>;
-        using OnAccountLoggedInElsewhereCallback = std::function<void()>;
+        using OnUserLoggedInCallback = std::function<void(UserLoggedInMessage)>;
+        using OnLoggedInElsewhereCallback = std::function<void()>;
+        using OnLoggedOutCallback = std::function<void()>;
         using OnUnknownMessageCallback = std::function<void(ServerMessageType)>;
 
         Client();
@@ -20,9 +25,13 @@ namespace OZZ {
         void Run(const std::string& host, short port);
         void Stop();
 
+        OnConnectedToServerCallback OnConnectedToServer;
+        OnConnectingToServerCallback OnConnectingToServer;
+        OnDisconnectedFromServerCallback OnDisconnectedFromServer;
         OnAuthenticationFailedCallback OnAuthenticationFailed;
-        OnClientConnectedCallback OnClientConnected;
-        OnAccountLoggedInElsewhereCallback OnAccountLoggedInElsewhere;
+        OnUserLoggedInCallback OnUserLoggedIn;
+        OnLoggedInElsewhereCallback OnAccountLoggedInElsewhere;
+        OnLoggedOutCallback OnLoggedOut;
         OnUnknownMessageCallback OnUnknownMessage;
 
     private:
@@ -33,6 +42,7 @@ namespace OZZ {
         void close();
 
     private:
+        std::mutex socketMutex;
         asio::io_context context;
         asio::ip::tcp::socket socket;
         ServerMessageType queuedMessageType;
