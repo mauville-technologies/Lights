@@ -1,0 +1,10 @@
+name: "Lights Documentation"
+
+pages:
+  - name: "Home"
+    url: "/"
+  - name: "Brainstorming"
+    url: "brainstorming/"
+    pages:
+      - name: "Networking"
+        url: "brainstorming/network_flow.md"
