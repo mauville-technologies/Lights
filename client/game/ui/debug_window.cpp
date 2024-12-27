@@ -69,7 +69,8 @@ namespace OZZ {
             ImGui::EndDisabled();
         }
 
-        if (ImGui::CollapsingHeader("Login Status"), ImGuiTreeNodeFlags_DefaultOpen) {
+
+        if (ImGui::CollapsingHeader("User Details", ImGuiTreeNodeFlags_DefaultOpen)) {
             bool bIsLoggedIn = ApplicationState.LoginState == LoginState::LoggedIn;
             ImGui::Text("Logged in: ");
             ImGui::SameLine();
@@ -81,7 +82,7 @@ namespace OZZ {
                 LogoutRequested();
             }
             ImGui::EndDisabled();
-
+            ImGui::SameLine();
             ImGui::BeginDisabled(bIsLoggedIn);
             if (ImGui::Button("Login")) {
                 LoginRequested("p.a.mauviel@gmail.com", "password");

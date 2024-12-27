@@ -13,6 +13,7 @@ namespace OZZ {
             OnPlayerLeft(this);
         };
 
+        // TODO: Clients should have a limited amount of time to log in otherwise the server will sever the connection
         connectedClient->OnLoginRequest = [this](const std::string& Email, const std::string& Password) {
             // check to see if user is already connected. If they are, disconnect the currently connected user.
             if (database){
