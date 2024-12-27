@@ -7,4 +7,4 @@ pages:
     url: "brainstorming/"
     pages:
       - name: "Networking"
-        url: "brainstorming/network_flow.md"
+        url: "brainstorming/network_flow.html"
