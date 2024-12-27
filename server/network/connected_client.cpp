@@ -43,7 +43,7 @@ namespace OZZ {
 
         switch (queuedMessageType) {
             case ClientMessageType::ConnectionRequest: {
-                auto receivedMessage = ConnectionRequestMessage::Deserialize(*socket);
+                auto receivedMessage = LoginRequestMessage::Deserialize(*socket);
                 {
                     std::lock_guard<std::mutex> lock(ClientMutex);
                     if (OnLoginRequest) {
@@ -74,12 +74,12 @@ namespace OZZ {
         }
     }
 
-    void ConnectedClient::SendLoginResponse(bool success) {
+    void ConnectedClient::SendLoginResponse(bool success, const std::string& username) {
         if (!success) {
             write(AuthenticationFailedMessage());
             return;
         }
-        auto ClientConnected = UserLoggedInMessage("Welcome to the server!");
+        auto ClientConnected = UserLoggedInMessage(username);
         write(ClientConnected);
     }
 

@@ -18,7 +18,7 @@ namespace OZZ {
             if (database){
                 auto loggedIn = database->LoginUser(Email, Password);
 
-                connectedClient->SendLoginResponse((bool)loggedIn);
+                connectedClient->SendLoginResponse((bool)loggedIn, loggedIn ? loggedIn.value().Email : "");
                 if (!loggedIn) {
                     return;
                 }

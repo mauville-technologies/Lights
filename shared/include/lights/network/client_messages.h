@@ -16,8 +16,8 @@ enum class ClientMessageType : uint8_t {
     ConnectionRequest
 };
 
-struct ConnectionRequestMessage {
-    explicit ConnectionRequestMessage(std::string InEmail, std::string InPassword) {
+struct LoginRequestMessage {
+    explicit LoginRequestMessage(std::string InEmail, std::string InPassword) {
         Email = std::move(InEmail);
         EmailLength = Email.size();
         Password = std::move(InPassword);
@@ -36,7 +36,7 @@ struct ConnectionRequestMessage {
         return ClientMessageType::ConnectionRequest;
     }
 
-    operator std::vector<uint8_t>() {
+    explicit operator std::vector<uint8_t>() {
         std::vector<uint8_t> bytes;
         bytes.push_back(static_cast<uint8_t>(GetMessageType()));
 
@@ -60,8 +60,8 @@ struct ConnectionRequestMessage {
         return bytes;
     }
 
-    static ConnectionRequestMessage Deserialize(asio::ip::tcp::socket& socket) {
-        ConnectionRequestMessage message;
+    static LoginRequestMessage Deserialize(asio::ip::tcp::socket& socket) {
+        LoginRequestMessage message;
 
         asio::error_code ec;
         // the connection request has a length to determine the rest of the message
@@ -92,7 +92,7 @@ struct ConnectionRequestMessage {
 
 private:
     // Default constructor for deserialization
-    ConnectionRequestMessage() = default;
+    LoginRequestMessage() = default;
 
     size_t EmailLength {0};
     std::string Email;

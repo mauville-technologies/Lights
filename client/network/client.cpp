@@ -17,7 +17,6 @@ namespace OZZ {
         }
         context.restart();
         connect(host, port);
-        write();
         read();
         context.run();
     }
@@ -25,6 +24,15 @@ namespace OZZ {
     void Client::Stop() {
         context.stop();
         close();
+    }
+
+    void Client::Login(const std::string &username, const std::string &password) {
+        LoginRequestMessage message(username, password);
+        write(message);
+    }
+
+    void Client::Logout() {
+
     }
 
     void Client::connect(const std::string& host, short port) {
@@ -88,22 +96,7 @@ namespace OZZ {
         read();
     }
 
-    void Client::write() {
-//        std::lock_guard<std::mutex> lock(socketMutex);
-//        if (!socket.is_open()) return;
-        // Connection Request message
-        ConnectionRequestMessage message("p.a.mauviel@gmail.com", "password");
-        asio::error_code ec;
-        auto length = socket.write_some(asio::buffer(std::vector<uint8_t>(message)), ec);
-        if (!ec) {
-            spdlog::info("Sent {} bytes to server: {}", length, std::string(message));
-        } else {
-            spdlog::error("Error writing to server: {}", ec.message());
-        }
-    }
-
     void Client::close() {
-//        std::lock_guard<std::mutex> lock(socketMutex);
         asio::error_code ec;
         auto error = socket.close(ec);
         if (!ec && !error) {
@@ -116,4 +109,5 @@ namespace OZZ {
             OnDisconnectedFromServer();
         }
     }
+
 }

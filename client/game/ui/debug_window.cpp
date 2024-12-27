@@ -69,13 +69,24 @@ namespace OZZ {
             ImGui::EndDisabled();
         }
 
-        if (ImGui::CollapsingHeader("Login Status")) {
-            ImGui::Text("Logged in: %s", ApplicationState.LoginState == LoginState::LoggedIn ? "Yes" : "No");
+        if (ImGui::CollapsingHeader("Login Status"), ImGuiTreeNodeFlags_DefaultOpen) {
+            bool bIsLoggedIn = ApplicationState.LoginState == LoginState::LoggedIn;
+            ImGui::Text("Logged in: ");
+            ImGui::SameLine();
+            ImGui::TextColored(bIsLoggedIn ? ImVec4(0, 1, 0, 1) : ImVec4(1, 0, 0, 1), "%s", bIsLoggedIn ? "Yes" : "No");
             ImGui::Text("Username: %s", ApplicationState.PlayerState.Username.c_str());
 
+            ImGui::BeginDisabled(!bIsLoggedIn);
             if (ImGui::Button("Logout")) {
-                // Logout
+                LogoutRequested();
             }
+            ImGui::EndDisabled();
+
+            ImGui::BeginDisabled(bIsLoggedIn);
+            if (ImGui::Button("Login")) {
+                LoginRequested("p.a.mauviel@gmail.com", "password");
+            }
+            ImGui::EndDisabled();
         }
         ImGui::End();
     }

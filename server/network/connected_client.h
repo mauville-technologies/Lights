@@ -18,7 +18,7 @@ namespace OZZ {
         explicit ConnectedClient(std::shared_ptr<asio::ip::tcp::socket> socket);
         ~ConnectedClient();
 
-        void SendLoginResponse(bool success);
+        void SendLoginResponse(bool success, const std::string& username);
         void LoggedInElsewhere();
 
     private:

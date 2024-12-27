@@ -114,11 +114,14 @@ namespace OZZ {
             };
 
             mainMenuScene->LoginRequested = [this](const std::string& username, const std::string& password) {
-//                client->Login(username, password);
+                client->Login(username, password);
             };
 
             mainMenuScene->LogoutRequested = [this]() {
-//                client->Logout();
+                client->Stop();
+                if (networkThread.joinable()) {
+                    networkThread.join();
+                }
             };
         }
         windowScene->Init();
@@ -149,13 +152,16 @@ namespace OZZ {
             bRunning = false;
         };
 
-        client->OnUserLoggedIn = [](const UserLoggedInMessage& message) {
-            spdlog::info("Connected to server: {}", message.GetMessage());
+        client->OnUserLoggedIn = [this](const UserLoggedInMessage& message) {
+            spdlog::info("User logged in: {}", message.GetUsername());
+            appState.LoginState = LoginState::LoggedIn;
+            appState.PlayerState.Username = message.GetUsername();
         };
 
         client->OnAccountLoggedInElsewhere = [this]() {
             spdlog::error("Account logged in elsewhere, exiting!");
-            bRunning = false;
+            appState.LoginState = LoginState::NotLoggedIn;
+            appState.PlayerState.Clear();
         };
 
         networkThread = std::thread([this]() {

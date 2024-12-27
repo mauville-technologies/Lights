@@ -25,6 +25,9 @@ namespace OZZ {
         void Run(const std::string& host, short port);
         void Stop();
 
+        void Login(const std::string& username, const std::string& password);
+        void Logout();
+
         OnConnectedToServerCallback OnConnectedToServer;
         OnConnectingToServerCallback OnConnectingToServer;
         OnDisconnectedFromServerCallback OnDisconnectedFromServer;
@@ -38,8 +41,18 @@ namespace OZZ {
         void connect(const std::string& host, short port);
         void read();
         void handleRead(const asio::error_code& ec, size_t bytesTransferred);
-        void write();
         void close();
+
+        template<typename PayloadType>
+        void write(PayloadType& Payload) {
+            asio::error_code ec;
+            auto length = socket.write_some(asio::buffer(std::vector<uint8_t>(Payload)), ec);
+            if (!ec) {
+                spdlog::info("Sent {} bytes to server: {}", length, std::string(Payload));
+            } else {
+                spdlog::error("Error writing to server: {}", ec.message());
+            }
+        }
 
     private:
         std::mutex socketMutex;
