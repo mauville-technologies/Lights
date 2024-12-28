@@ -1,21 +1,17 @@
-# Lights Documentation
-
-## Brainstorming
-
-This section is where I put more unstructured thoughts before they get promoted to a real section
-or prior to writing a real draft. Mostly a way to organize my thoughts in a more permanent fashion.
-
-[Networking Part 1](brainstorming/network_flow.md)
+# NOTE: As of now, I didn't put the time in to get these mermaid charts rendering in Jekyll. To view the charts, look at the markdown files in github.
+## Navigation
 
 {% for item in site.data.navigationlist.pages %}
-{% if item.url %}
-<h3> <a href="{{entry.url}}"> {{ item.name }} </a></h3>
-{% else %}
 <h3>{{ item.name }}</h3>
-{% endif %}
 <ul>
 {% for entry in item.pages %}
 <li><a href="{{entry.url}}"> {{entry.name}} </a></li>
 {% endfor %}
 </ul>
 {% endfor %}
+
+## Section Descriptions
+### Brainstorming
+
+This section is where I put more unstructured thoughts before they get promoted to a real section
+or prior to writing a real draft. Mostly a way to organize my thoughts in a more permanent fashion.

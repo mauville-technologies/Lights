@@ -1,10 +1,8 @@
 name: "Lights Documentation"
 
 pages:
-  - name: "Home"
-    url: "/"
   - name: "Brainstorming"
     url: "brainstorming/"
     pages:
-      - name: "Networking"
+      - name: "Networking Part 1 - States, Flows, and Communications"
         url: "brainstorming/network_flow.html"
