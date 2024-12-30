@@ -163,3 +163,62 @@ Laying out the various states for everything was all in preparation for starting
 to enable these systems. So here's my attempt at a sequence diagram attempting to define some of these messages at the highest of levels.
 
 Hopefully, mermaid will let me section off various sections to overlap with different states I described above.
+
+```mermaid
+---
+    title: Messages
+---
+sequenceDiagram
+%%    autonumber
+    participant C as Client
+    participant S as Server
+    
+    %% Client Connect and Authenticate
+    rect rgb(25,25,25)
+        activate C
+        critical Connect to Server
+            C-->S: Connect
+        end
+        note over C, S: The Server will disconnect the client <br/>if authentication isn't performed <br/> quickly
+        C->>S: AuthenticationRequest
+        deactivate C
+        
+        activate S
+        alt success
+        S->>C: AutenticationSuccessful
+        else failure
+        S->>C: AuthenticationFailed
+        S-->C: Disconnect
+        deactivate S
+        end
+    end
+    
+    rect rgb(70,50,50)
+        activate C
+        C->>S: EnterGame
+        deactivate C
+        
+        activate S
+        par Send initial state
+            S->>C: InitialPlayerState
+            S->>C: NearbyPlayerStates
+            and
+            S->>C: WorldState
+        end
+        deactivate S
+    end
+
+    rect rgb(50,70,50)
+        par In Game Loop
+            loop ServerTicking 
+                S->>C: UpdateWorldState
+                S->>C: UpdatePlayerState
+                S->>C: UpdateNearbyPlayerStates
+            end
+        and
+            loop ClientTicking
+                C->>S: PlayerInput
+            end
+        end
+    end
+```
