@@ -1,6 +1,10 @@
 name: "Lights Documentation"
 
 pages:
+  - name: "TODO List"
+    pages:
+      - name: "TODO List"
+        url: "TODO.html"
   - name: "Brainstorming"
     pages:
       - name: "Networking Part 1 - States, Flows, and Communications"

@@ -10,6 +10,9 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
+        src/game/game_object.cpp
+        src/game/world.cpp
+
         src/input/glfw_keys.cpp
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
