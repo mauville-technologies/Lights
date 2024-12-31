@@ -3,12 +3,10 @@
 //
 
 #include "network/client.h"
-#include "lights/network/client_messages.h"
-#include "lights/network/server_messages.h"
 
 using asio::ip::tcp;
 
-namespace OZZ {
+namespace OZZ::network::client {
     Client::Client() : socket(context) {}
 
     void Client::Run(const std::string& host, short port) {
@@ -27,7 +25,7 @@ namespace OZZ {
     }
 
     void Client::Login(const std::string &username, const std::string &password) {
-        LoginRequestMessage message(username, password);
+        network::messages::client::AuthenticationRequest message(username, password);
         write(message);
     }
 
@@ -70,20 +68,20 @@ namespace OZZ {
             return;
         }
         switch (queuedMessageType) {
-            case ServerMessageType::AuthenticationFailed: {
+            case network::messages::ServerMessageType::AuthenticationFailed: {
                 if (OnAuthenticationFailed) {
                     OnAuthenticationFailed();
                 }
                 return;
             }
-            case ServerMessageType::UserLoggedIn: {
-                auto receivedMessage = UserLoggedInMessage::Deserialize(socket);
+            case network::messages::ServerMessageType::AuthenticationSuccessful: {
+                auto receivedMessage = network::messages::server::AuthenticationSuccessful::Deserialize(socket);
                 if (OnUserLoggedIn) {
                     OnUserLoggedIn(receivedMessage);
                 }
                 break;
             }
-            case ServerMessageType::AccountLoggedInElsewhere: {
+            case network::messages::ServerMessageType::AccountLoggedInElsewhere: {
                 if (OnAccountLoggedInElsewhere) {
                     OnAccountLoggedInElsewhere();
                 }

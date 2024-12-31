@@ -208,6 +208,8 @@ sequenceDiagram
         deactivate S
     end
 
+    activate C
+    activate S
     rect rgb(50,70,50)
         par In Game Loop
             loop ServerTicking 
@@ -221,4 +223,6 @@ sequenceDiagram
             end
         end
     end
+    deactivate C
+    deactivate S
 ```

@@ -6,7 +6,7 @@
 
 #include "lights/scene/scene.h"
 
-namespace OZZ {
+namespace OZZ::game::scene {
     class Pepe : public SceneObject {
     public:
         Pepe();

@@ -7,7 +7,7 @@
 #include "network/server.h"
 #include "server_player.h"
 
-namespace OZZ {
+namespace OZZ::game {
     ServerGame::ServerGame(std::shared_ptr<Database> InDatabase) : database(std::move(InDatabase)) {
 
     }
@@ -51,8 +51,8 @@ namespace OZZ {
 
     void ServerGame::startServer() {
         try {
-            server = std::make_shared<Server>(context, 8080);
-            server->OnNewClient = [this](const std::shared_ptr<OZZ::ConnectedClient> &client) {
+            server = std::make_shared<network::server::Server>(context, 8080);
+            server->OnNewClient = [this](const std::shared_ptr<OZZ::network::server::ConnectedClient> &client) {
                 std::lock_guard<std::mutex> lock(playersMutex);
                 spdlog::info("New client connected");
 

@@ -3,11 +3,10 @@
 //
 
 #include "server.h"
-#include "lights/network/client_messages.h"
 
 #include <spdlog/spdlog.h>
 
-namespace OZZ {
+namespace OZZ::network::server {
     Server::Server(asio::io_context &inContext, short inPort)
             : context(inContext),
               workGuard(asio::make_work_guard(context.get_executor())),

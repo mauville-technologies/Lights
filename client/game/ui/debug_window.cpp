@@ -7,7 +7,7 @@
 #include <utility>
 #include "imgui_internal.h"
 
-namespace OZZ {
+namespace OZZ::game::ui {
     DebugWindow::DebugWindow(GetApplicationStateFunction  inAppStateFunction) : appStateFunction(std::move(inAppStateFunction)) {}
 
     void DebugWindow::registerInDockspace() {

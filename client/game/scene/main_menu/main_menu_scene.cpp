@@ -10,7 +10,7 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include "spdlog/spdlog.h"
 
-namespace OZZ {
+namespace OZZ::game::scene {
 
     MainMenuScene::MainMenuScene(GetApplicationStateFunction inAppStateFunction, std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI)
         : appStateFunction(std::move(inAppStateFunction)), input(std::move(inInput)), ui(std::move(inUI)) {}
@@ -32,9 +32,9 @@ namespace OZZ {
     }
 
     void MainMenuScene::Init() {
-        debugWindow = std::make_shared<DebugWindow>(appStateFunction);
+        debugWindow = std::make_shared<ui::DebugWindow>(appStateFunction);
 
-        if (auto typedDebugWindow = std::static_pointer_cast<DebugWindow>(debugWindow)) {
+        if (auto typedDebugWindow = std::static_pointer_cast<ui::DebugWindow>(debugWindow)) {
             // this essentially passes through all the callbacks to the main menu scene
             typedDebugWindow->ConnectToServerRequested = ConnectToServerRequested;
             typedDebugWindow->DisconnectFromServerRequested = DisconnectFromServerRequested;

@@ -6,9 +6,9 @@
 #include <asio.hpp>
 #include <algorithm>
 #include <utility>
-#include "lights/network/client_messages.h"
+#include "lights/network/messages.h"
 
-namespace OZZ {
+namespace OZZ::network::server {
 
     using OnCloseHandler = std::function<void()>;
     using OnLoginRequestSignature = std::function<void(std::string, std::string)>;
@@ -46,7 +46,7 @@ namespace OZZ {
         std::mutex ClientMutex;
     private:
         std::shared_ptr<asio::ip::tcp::socket> socket;
-        ClientMessageType queuedMessageType;
+        OZZ::network::messages::ClientMessageType queuedMessageType;
     };
 
 } // OZZ

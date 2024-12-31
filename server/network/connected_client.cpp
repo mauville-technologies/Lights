@@ -5,11 +5,11 @@
 #include "connected_client.h"
 
 #include <utility>
-#include "lights/network/server_messages.h"
+#include "lights/network/messages.h"
 
-namespace OZZ {
+namespace OZZ::network::server {
     ConnectedClient::ConnectedClient(std::shared_ptr<asio::ip::tcp::socket> Insocket)
-        : socket(std::move(Insocket)), queuedMessageType(ClientMessageType::Unknown) {
+        : socket(std::move(Insocket)), queuedMessageType(messages::ClientMessageType::Unknown) {
         read();
 //        ScheduleWrite();
     }
@@ -42,8 +42,8 @@ namespace OZZ {
         asio::error_code ec;
 
         switch (queuedMessageType) {
-            case ClientMessageType::ConnectionRequest: {
-                auto receivedMessage = LoginRequestMessage::Deserialize(*socket);
+            case messages::ClientMessageType::AuthenticationRequest: {
+                auto receivedMessage = messages::client::AuthenticationRequest::Deserialize(*socket);
                 {
                     std::lock_guard<std::mutex> lock(ClientMutex);
                     if (OnLoginRequest) {
@@ -76,15 +76,15 @@ namespace OZZ {
 
     void ConnectedClient::SendLoginResponse(bool success, const std::string& username) {
         if (!success) {
-            write(AuthenticationFailedMessage());
+            write(messages::server::AuthenticationFailedMessage());
             return;
         }
-        auto ClientConnected = UserLoggedInMessage(username);
+        auto ClientConnected = messages::server::AuthenticationSuccessful(username);
         write(ClientConnected);
     }
 
     void ConnectedClient::LoggedInElsewhere() {
-        write(AccountLoggedInElsewhereMessage());
+        write(messages::server::AccountLoggedInElsewhereMessage());
     }
 
 } // OZZ

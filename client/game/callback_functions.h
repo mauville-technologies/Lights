@@ -7,7 +7,7 @@
 #include <functional>
 #include "game/application_state.h"
 
-namespace OZZ {
+namespace OZZ::game {
     // TODO: Consider other patterns such as an event bus rather than this gaggle of callbacks
     using ConnectToServerRequestedFunction = std::function<void()>;
     using DisconnectFromServerRequestedFunction = std::function<void()>;

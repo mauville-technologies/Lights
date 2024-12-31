@@ -8,7 +8,7 @@
 #include "server_player.h"
 #include "network/server.h"
 
-namespace OZZ {
+namespace OZZ::game {
 
     class ServerGame {
     public:
@@ -25,7 +25,7 @@ namespace OZZ {
         std::queue<ServerPlayer*> playersToRemove;
         std::vector<std::shared_ptr<ServerPlayer>> players;
 
-        std::shared_ptr<Server> server;
+        std::shared_ptr<network::server::Server> server;
         std::shared_ptr<Database> database;
         bool bRunning = false;
         asio::io_context context;

@@ -13,7 +13,7 @@
 #include "network/client.h"
 #include "application_state.h"
 
-namespace OZZ {
+namespace OZZ::game {
 
     class ClientGame {
     public:
@@ -49,7 +49,7 @@ namespace OZZ {
         std::unique_ptr<Renderer> renderer;
 
         std::thread networkThread;
-        std::unique_ptr<Client> client;
+        std::unique_ptr<network::client::Client> client;
     };
 
 } // OZZ

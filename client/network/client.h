@@ -6,19 +6,19 @@
 #include <asio.hpp>
 #include <spdlog/spdlog.h>
 #include <thread>
-#include "lights/network/server_messages.h"
+#include "lights/network/messages.h"
 
-namespace OZZ {
+namespace OZZ::network::client {
     class Client {
     public:
         using OnConnectedToServerCallback = std::function<void()>;
         using OnConnectingToServerCallback = std::function<void()>;
         using OnDisconnectedFromServerCallback = std::function<void()>;
         using OnAuthenticationFailedCallback = std::function<void()>;
-        using OnUserLoggedInCallback = std::function<void(UserLoggedInMessage)>;
+        using OnUserLoggedInCallback = std::function<void(network::messages::server::AuthenticationSuccessful)>;
         using OnLoggedInElsewhereCallback = std::function<void()>;
         using OnLoggedOutCallback = std::function<void()>;
-        using OnUnknownMessageCallback = std::function<void(ServerMessageType)>;
+        using OnUnknownMessageCallback = std::function<void(network::messages::ServerMessageType)>;
 
         Client();
 
@@ -58,6 +58,6 @@ namespace OZZ {
         std::mutex socketMutex;
         asio::io_context context;
         asio::ip::tcp::socket socket;
-        ServerMessageType queuedMessageType;
+        network::messages::ServerMessageType queuedMessageType;
     };
 } // OZZ

@@ -6,7 +6,7 @@
 #include "lights/rendering/shapes.h"
 #include "glm/ext/matrix_transform.hpp"
 
-namespace OZZ {
+namespace OZZ::game::scene {
     Pepe::Pepe() {
         // create shader
         auto shader = std::make_shared<Shader>("assets/shaders/sprite.vert", "assets/shaders/sprite.frag");

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-namespace OZZ {
-    ServerPlayer::ServerPlayer(std::shared_ptr<ConnectedClient> ConnectedClient, std::shared_ptr<Database> InDatabase) : connectedClient(std::move(ConnectedClient)), database(std::move(InDatabase)) {
+namespace OZZ::game {
+    ServerPlayer::ServerPlayer(std::shared_ptr<network::server::ConnectedClient> ConnectedClient, std::shared_ptr<Database> InDatabase) : connectedClient(std::move(ConnectedClient)), database(std::move(InDatabase)) {
         connectedClient->OnClose = [this]() {
             database->LogoutUser(user.Email);
             OnPlayerLeft(this);

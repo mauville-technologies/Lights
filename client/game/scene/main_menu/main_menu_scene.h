@@ -11,7 +11,7 @@
 #include "game/application_state.h"
 #include "game/callback_functions.h"
 
-namespace OZZ {
+namespace OZZ::game::scene {
 
     class UILayer : public SceneLayer {
     public:

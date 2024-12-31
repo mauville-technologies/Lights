@@ -6,10 +6,10 @@
 #include <asio.hpp>
 #include <thread>
 
-#include "lights/network/client_messages.h"
+#include "lights/network/messages.h"
 #include "connected_client.h"
 
-namespace OZZ {
+namespace OZZ::network::server {
     using asio::ip::tcp;
 
     using OnNewClientSignature = std::function<void(std::shared_ptr<ConnectedClient>)>;

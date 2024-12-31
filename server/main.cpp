@@ -18,7 +18,7 @@ int main() {
 
     auto db = std::make_shared<OZZ::Database>();
 
-    OZZ::ServerGame game {db};
+    OZZ::game::ServerGame game {db};
     game.Run();
 
     return 0;

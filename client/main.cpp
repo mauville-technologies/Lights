@@ -24,7 +24,7 @@ int main() {
 //        spdlog::error("Exception: {}", e.what());
 //    }
 
-    OZZ::ClientGame game {};
+    OZZ::game::ClientGame game {};
     game.Run();
 
     return 0;

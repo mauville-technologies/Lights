@@ -6,7 +6,7 @@
 #include "spdlog/spdlog.h"
 #include "game/scene/main_menu/main_menu_scene.h"
 
-namespace OZZ {
+namespace OZZ::game {
     ClientGame::ClientGame() : bRunning(false), appState() {
 
     }
@@ -91,11 +91,11 @@ namespace OZZ {
     }
 
     void ClientGame::initScene() {
-        windowScene = std::make_unique<MainMenuScene>([this]() {
+        windowScene = std::make_unique<scene::MainMenuScene>([this]() {
             return appState;
         }, input, ui);
 
-        if (auto mainMenuScene = dynamic_cast<MainMenuScene*>(windowScene.get())) {
+        if (auto mainMenuScene = dynamic_cast<scene::MainMenuScene*>(windowScene.get())) {
             mainMenuScene->ConnectToServerRequested = [this]() {
                 if (client) {
                     client->Stop();
@@ -129,7 +129,7 @@ namespace OZZ {
     }
 
     void ClientGame::initNetwork() {
-        client = std::make_unique<Client>();
+        client = std::make_unique<network::client::Client>();
         client->OnConnectedToServer = [this]() {
             spdlog::info("Connected to server!");
             appState.ConnectionState = ConnectionState::Connected;
@@ -152,7 +152,7 @@ namespace OZZ {
             bRunning = false;
         };
 
-        client->OnUserLoggedIn = [this](const UserLoggedInMessage& message) {
+        client->OnUserLoggedIn = [this](const network::messages::server::AuthenticationSuccessful& message) {
             spdlog::info("User logged in: {}", message.GetUsername());
             appState.LoginState = LoginState::LoggedIn;
             appState.PlayerState.Username = message.GetUsername();

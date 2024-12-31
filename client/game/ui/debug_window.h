@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <string>
 
-namespace OZZ {
+namespace OZZ::game::ui {
 
     class DebugWindow : public UIComponent {
     public:
