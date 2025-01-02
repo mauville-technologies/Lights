@@ -2,13 +2,31 @@
 // Created by ozzadar on 2024-12-31.
 //
 
+#include <spdlog/spdlog.h>
+
 #include "lights/game/world.h"
 
 namespace OZZ {
-    uint64_t World::AddObject(std::unique_ptr<GameObject> object) {
-        auto id = generateUnusedID();
-        objects[id] = std::move(object);
-        return id;
+    void World::Init(const WorldParams& params) {
+        spdlog::info("Initializing world with gravity: ({}, {})", params.Gravity.x, params.Gravity.y);
+        b2WorldDef worldDef = b2DefaultWorldDef();
+        worldDef.gravity = b2Vec2(params.Gravity.x, params.Gravity.y);
+        worldId = b2CreateWorld(&worldDef);
+    }
+
+    void World::PhysicsTick(float deltaTime) {
+        if (worldId.index1 == 0) {
+            spdlog::error("Cannot tick physics without a valid world");
+            return;
+        }
+
+        static constexpr uint8_t subSteps = 4;
+
+        b2World_Step(worldId, deltaTime, subSteps);
+    }
+
+    void World::Tick(float deltaTime) {
+
     }
 
     GameObject *World::GetObject(uint64_t id) {
@@ -20,5 +38,15 @@ namespace OZZ {
 
     void World::RemoveObject(uint64_t id) {
         objects.erase(id);
+    }
+
+    void World::DeInit() {
+        objects.clear();
+
+        if (worldId.index1 != 0) {
+            spdlog::info("Destroying physics world");
+            b2DestroyWorld(worldId);
+            worldId = {0, 0};
+        }
     }
 } // OZZ

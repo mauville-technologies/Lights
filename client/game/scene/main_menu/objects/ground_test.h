@@ -1,24 +1,24 @@
 //
-// Created by ozzadar on 2024-12-19.
+// Created by ozzadar on 2025-01-01.
 //
 
 #pragma once
-
-#include "lights/scene/scene.h"
 #include "lights/game/game_object.h"
+#include "lights/scene/scene.h"
 
-namespace OZZ::game::scene {
-    class Pepe : public GameObject {
+namespace OZZ {
+
+    class GroundTest : public GameObject {
     public:
-        explicit Pepe(b2WorldId worldId);
-        ~Pepe();
-
+        explicit GroundTest(b2WorldId worldId);
         void Tick(float DeltaTime) override;
 
-        void Jump();
         SceneObject* GetSceneObject() { return &sceneObject; }
     private:
         SceneObject sceneObject;
+
+        // Physics things
         b2BodyId bodyId;
     };
-}
+
+} // OZZ

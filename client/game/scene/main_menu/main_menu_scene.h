@@ -10,6 +10,8 @@
 #include "game/ui/debug_window.h"
 #include "game/application_state.h"
 #include "game/callback_functions.h"
+#include "lights/game/world.h"
+#include "game/scene/main_menu/objects/ground_test.h"
 
 namespace OZZ::game::scene {
 
@@ -22,7 +24,7 @@ namespace OZZ::game::scene {
 
     class PepeLayer : public SceneLayer {
     public:
-        PepeLayer();
+        PepeLayer(World* inWorld);
         void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
         void Init() override;
         void Tick(float DeltaTime) override;
@@ -33,12 +35,15 @@ namespace OZZ::game::scene {
         void unregisterMappings(std::shared_ptr<InputSubsystem> inInput);
         void registerMappings(std::shared_ptr<InputSubsystem> inInput);
     private:
-        std::shared_ptr<Pepe> pepe { nullptr };
+        Pepe* pepe { nullptr };
+        GroundTest* ground { nullptr };
         glm::ivec2 movement { 0 };
 
         bool direction { false };
 
         std::shared_ptr<InputSubsystem> input;
+
+        World* world;
     };
 
     class MainMenuScene : public Scene {
@@ -60,11 +65,11 @@ namespace OZZ::game::scene {
         GetApplicationStateFunction appStateFunction;
         std::vector<std::shared_ptr<SceneLayer>> Layers;
         std::shared_ptr<PepeLayer> pepeLayer;
-        std::shared_ptr<PepeLayer> pepeLayer2;
         std::shared_ptr<InputSubsystem> input;
 
         std::shared_ptr<UserInterface> ui;
         std::shared_ptr<UIComponent> debugWindow;
+        std::shared_ptr<World> world;
     };
 
 } // OZZ

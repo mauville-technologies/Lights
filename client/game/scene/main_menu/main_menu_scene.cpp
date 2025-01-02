@@ -5,6 +5,7 @@
 #include "main_menu_scene.h"
 
 #include <utility>
+#include "game/scene/constants.h"
 #include "game/scene/main_menu/objects/pepe.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -26,12 +27,18 @@ namespace OZZ::game::scene {
         Layers.clear();
 
         pepeLayer.reset();
-        pepeLayer2.reset();
         debugWindow.reset();
         ui.reset();
+        if (world) world->DeInit();
+        world.reset();
     }
 
     void MainMenuScene::Init() {
+        world = std::make_shared<World>();
+        world->Init({
+            .Gravity = {0.f, -20.f * constants::UnitsPerMeter},
+        });
+
         debugWindow = std::make_shared<ui::DebugWindow>(appStateFunction);
 
         if (auto typedDebugWindow = std::static_pointer_cast<ui::DebugWindow>(debugWindow)) {
@@ -44,13 +51,10 @@ namespace OZZ::game::scene {
 
         ui->AddComponent(debugWindow);
 
-        pepeLayer = std::make_shared<PepeLayer>();
-        pepeLayer2 = std::make_shared<PepeLayer>();
-        pepeLayer2->SetInputSubsystem(input);
-        pepeLayer2->ChangeDirection();
+        pepeLayer = std::make_shared<PepeLayer>(world.get());
+        pepeLayer->SetInputSubsystem(input);
 
         Layers.push_back(pepeLayer);
-        Layers.push_back(pepeLayer2);
 
         for (auto &Layer: Layers) {
             Layer->Init();
@@ -59,10 +63,20 @@ namespace OZZ::game::scene {
 
     void MainMenuScene::Tick(float DeltaTime) {
         Scene::Tick(DeltaTime);
+
+        // This will tick the physics world at a fixed rate
+        static constexpr float physicsTickRate = 1.f / 60.f;
+        static float accumulator = 0.f;
+        accumulator += DeltaTime;
+
+        while (accumulator >= physicsTickRate) {
+            world->PhysicsTick(physicsTickRate);
+            accumulator -= physicsTickRate;
+        }
     }
 
 
-    PepeLayer::PepeLayer() {
+    PepeLayer::PepeLayer(World* inWorld) : world(inWorld) {
 
     }
 
@@ -78,17 +92,25 @@ namespace OZZ::game::scene {
                                          glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
         // Create a pepe
-        pepe = std::make_shared<Pepe>();
-        Objects.push_back(pepe);
+        auto goPepe = world->CreateGameObject<Pepe>();
+        pepe = reinterpret_cast<Pepe*>(goPepe.second);
+        Objects.push_back(pepe->GetSceneObject());
 
-        pepe->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
+        pepe->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
+
+        auto goGround = world->CreateGameObject<GroundTest>();
+        ground = reinterpret_cast<GroundTest*>(goGround.second);
+        Objects.push_back(ground->GetSceneObject());
     }
 
     void PepeLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
         auto MoveSpeed = 10.f; // pixels per second
         auto velocity = MoveSpeed * DeltaTime * glm::vec3(movement.x, movement.y, 0.f);
-        pepe->Transform = glm::translate(pepe->Transform, velocity);
+        pepe->GetSceneObject()->Transform = glm::translate(pepe->GetSceneObject()->Transform, velocity);
+
+        pepe->Tick(DeltaTime);
+        ground->Tick(DeltaTime);
     }
 
     void PepeLayer::RenderTargetResized(glm::ivec2 size) {
@@ -124,8 +146,10 @@ namespace OZZ::game::scene {
               .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
                 .Callbacks = {
                         .OnPressed = [this]() {
-                            spdlog::info("Move Up");
-                            movement.y = 1;
+                            if (pepe) {
+                                spdlog::info("Jumping");
+                                pepe->Jump();
+                            }
                         },
                         .OnReleased = [this]() {
                             spdlog::info("Stop Up");
@@ -139,7 +163,7 @@ namespace OZZ::game::scene {
                 .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
                 .Callbacks = {
                         .OnPressed = [this]() {
-                            spdlog::info("Move Up");
+
                             movement.y = -1;
                         },
                         .OnReleased = [this]() {

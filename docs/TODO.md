@@ -7,13 +7,13 @@ to share my work and musings with others.
 ## The List
 <i>Last Updated: 2024-12-31</i>
 
-- [ ] World
-  - [ ] Gameobjects and ECS?
-- [ ] Pick a 2D Physics Engine
-  - [ ] Integrate the engine
+- [x] World
+  - [x] Gameobjects and ECS?
+- [x] Pick a 2D Physics Engine
+  - [x] Integrate the engine
   - [ ] Create a player
   - [ ] Move the character
-  - [ ] Player can jump
+  - [x] Player can jump
 - [ ] Use Tiled to create initial world.
   -  [ ] Read Tiled-generated map
   -  [ ] Build / render the map

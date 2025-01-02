@@ -44,7 +44,7 @@ namespace OZZ {
 
 
         Camera LayerCamera {};
-        std::vector<std::shared_ptr<SceneObject>> Objects;
+        std::vector<SceneObject*> Objects;
         std::vector<std::shared_ptr<LightSource>> Lights;
     };
 

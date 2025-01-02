@@ -39,5 +39,5 @@ if (DEFINED set_base_dir)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui)
+target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui box2d)
 
