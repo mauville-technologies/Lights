@@ -14,9 +14,16 @@ to share my work and musings with others.
   - [ ] Create a player
   - [ ] Move the character
   - [x] Player can jump
+  - [ ] Camera Follows Player
 - [ ] Use Tiled to create initial world.
-  -  [ ] Read Tiled-generated map
+  -  [x] Read Tiled-generated map (https://github.com/SSBMTonberry/tileson)
   -  [ ] Build / render the map
+    - [ ] Build tileset model in memory
+    - [ ] Build tilemap model in memory
+    - [ ] Create the tilemap in World (physics). This might be able to be one large static body
+      - [ ] We'll go naive first. Will likely need to group tiles and make separate bodies. I want to rely on
+            the tile collisions themselves because slopes will make more sense that way.
+    - [ ] Render 
 - [ ] Player spawns into map
   - [ ] Player does not fall through floor
   - [ ] Player can move around on map

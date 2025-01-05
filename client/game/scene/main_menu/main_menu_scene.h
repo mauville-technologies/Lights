@@ -12,6 +12,7 @@
 #include "game/callback_functions.h"
 #include "lights/game/world.h"
 #include "game/scene/main_menu/objects/ground_test.h"
+#include "lights/game/tiled_map.h"
 
 namespace OZZ::game::scene {
 
@@ -70,6 +71,8 @@ namespace OZZ::game::scene {
         std::shared_ptr<UserInterface> ui;
         std::shared_ptr<UIComponent> debugWindow;
         std::shared_ptr<World> world;
+
+        std::unique_ptr<TiledMap> tiledMap;
     };
 
 } // OZZ

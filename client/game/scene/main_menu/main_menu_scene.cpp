@@ -10,6 +10,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "spdlog/spdlog.h"
+#include <tileson/tileson.h>
 
 namespace OZZ::game::scene {
 
@@ -31,6 +32,8 @@ namespace OZZ::game::scene {
         ui.reset();
         if (world) world->DeInit();
         world.reset();
+
+
     }
 
     void MainMenuScene::Init() {
@@ -59,6 +62,9 @@ namespace OZZ::game::scene {
         for (auto &Layer: Layers) {
             Layer->Init();
         }
+
+        tiledMap = std::make_unique<TiledMap>();
+        tiledMap->Load("assets/map/test_map.tmj");
     }
 
     void MainMenuScene::Tick(float DeltaTime) {
