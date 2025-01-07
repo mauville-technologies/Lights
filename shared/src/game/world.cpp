@@ -37,7 +37,11 @@ namespace OZZ {
     }
 
     void World::RemoveObject(uint64_t id) {
-        objects.erase(id);
+        spdlog::info("Objects before delete: {}", objects.size());
+        if (objects.erase(id) == 1) {
+            spdlog::info("erased object");
+        }
+        spdlog::info("Objects after delete: {}", objects.size());
     }
 
     void World::DeInit() {

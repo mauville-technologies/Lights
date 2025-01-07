@@ -11,7 +11,7 @@ namespace OZZ {
     class GameObject {
     public:
         explicit GameObject(b2WorldId worldId);
-
+        virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
     protected:
         b2WorldId worldId;

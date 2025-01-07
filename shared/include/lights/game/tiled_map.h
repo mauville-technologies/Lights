@@ -60,6 +60,17 @@ namespace OZZ {
         void Load(const std::filesystem::path& path);
         void Unload();
 
+        const std::vector<Tileset>& GetTilesets() const {
+            return tilesets;
+        }
+
+        const std::unordered_map<std::string, TileLayer>& GetTileLayers() const {
+            return layers;
+        }
+
+        const std::unordered_map<std::string, ObjectLayer>& GetObjectLayers() const {
+            return objectLayers;
+        }
     private:
         std::vector<Tileset> tilesets;
         std::unordered_map<std::string, TileLayer> layers;

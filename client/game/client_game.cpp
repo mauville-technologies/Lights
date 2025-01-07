@@ -4,7 +4,7 @@
 
 #include "client_game.h"
 #include "spdlog/spdlog.h"
-#include "game/scene/main_menu/main_menu_scene.h"
+#include "game/scene/base_scene//base_scene.h"
 
 namespace OZZ::game {
     ClientGame::ClientGame() : bRunning(false), appState() {
@@ -91,11 +91,11 @@ namespace OZZ::game {
     }
 
     void ClientGame::initScene() {
-        windowScene = std::make_unique<scene::MainMenuScene>([this]() {
+        windowScene = std::make_unique<scene::BaseScene>([this]() {
             return appState;
         }, input, ui);
 
-        if (auto mainMenuScene = dynamic_cast<scene::MainMenuScene*>(windowScene.get())) {
+        if (auto mainMenuScene = dynamic_cast<scene::BaseScene*>(windowScene.get())) {
             mainMenuScene->ConnectToServerRequested = [this]() {
                 if (client) {
                     client->Stop();

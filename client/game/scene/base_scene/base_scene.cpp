@@ -2,22 +2,22 @@
 // Created by ozzadar on 2024-12-18.
 //
 
-#include "main_menu_scene.h"
+#include "base_scene.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <spdlog/spdlog.h>
 #include <utility>
+#include <game/ui/debug_window.h>
+
 #include "game/scene/constants.h"
-#include "game/scene/main_menu/objects/pepe.h"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "spdlog/spdlog.h"
-#include <tileson/tileson.h>
 
 namespace OZZ::game::scene {
 
-    MainMenuScene::MainMenuScene(GetApplicationStateFunction inAppStateFunction, std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI)
+    BaseScene::BaseScene(GetApplicationStateFunction inAppStateFunction, std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI)
         : appStateFunction(std::move(inAppStateFunction)), input(std::move(inInput)), ui(std::move(inUI)) {}
 
-    MainMenuScene::~MainMenuScene() {
+    BaseScene::~BaseScene() {
         input.reset();
 
         for (auto &Layer: Layers) {
@@ -36,7 +36,7 @@ namespace OZZ::game::scene {
 
     }
 
-    void MainMenuScene::Init() {
+    void BaseScene::Init() {
         world = std::make_shared<World>();
         world->Init({
             .Gravity = {0.f, -20.f * constants::UnitsPerMeter},
@@ -54,7 +54,7 @@ namespace OZZ::game::scene {
 
         ui->AddComponent(debugWindow);
 
-        pepeLayer = std::make_shared<PepeLayer>(world.get());
+        pepeLayer = std::make_shared<GameLayer>(world.get());
         pepeLayer->SetInputSubsystem(input);
 
         Layers.push_back(pepeLayer);
@@ -62,12 +62,9 @@ namespace OZZ::game::scene {
         for (auto &Layer: Layers) {
             Layer->Init();
         }
-
-        tiledMap = std::make_unique<TiledMap>();
-        tiledMap->Load("assets/map/test_map.tmj");
     }
 
-    void MainMenuScene::Tick(float DeltaTime) {
+    void BaseScene::Tick(float DeltaTime) {
         Scene::Tick(DeltaTime);
 
         // This will tick the physics world at a fixed rate
@@ -82,44 +79,56 @@ namespace OZZ::game::scene {
     }
 
 
-    PepeLayer::PepeLayer(World* inWorld) : world(inWorld) {
+    GameLayer::GameLayer(World* inWorld) : world(inWorld) {
 
     }
 
-    void PepeLayer::SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput) {
+    GameLayer::~GameLayer() {
+        if (world) {
+            world->RemoveObject(pepe.first);
+            world->RemoveObject(ground.first);
+            world->RemoveObject(tilemap.first);
+        }
+    }
+
+    void GameLayer::SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput) {
         unregisterMappings(inInput);
         registerMappings(inInput);
         input = inInput;
     }
 
-    void PepeLayer::Init() {
+    void GameLayer::Init() {
         LayerCamera.ViewMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 3.f),  // Camera position
                                          glm::vec3(0.f, 0.f, 0.f),  // Target to look at
                                          glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
         // Create a pepe
         auto goPepe = world->CreateGameObject<Pepe>();
-        pepe = reinterpret_cast<Pepe*>(goPepe.second);
-        Objects.push_back(pepe->GetSceneObject());
+        pepe = {goPepe.first, reinterpret_cast<Pepe*>(goPepe.second)};
+        Objects.push_back(pepe.second->GetSceneObject());
 
-        pepe->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
+        pepe.second->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
 
         auto goGround = world->CreateGameObject<GroundTest>();
-        ground = reinterpret_cast<GroundTest*>(goGround.second);
-        Objects.push_back(ground->GetSceneObject());
+        ground = {goGround.first, reinterpret_cast<GroundTest*>(goGround.second)};
+        Objects.push_back(ground.second->GetSceneObject());
+
+        auto goTilemap = world->CreateGameObject<Tilemap>();
+        tilemap = {goTilemap.first, reinterpret_cast<Tilemap*>(goTilemap.second)};
+        tilemap.second->Init("assets/map/test_map.tmj");
     }
 
-    void PepeLayer::Tick(float DeltaTime) {
+    void GameLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
         auto MoveSpeed = 10.f; // pixels per second
         auto velocity = MoveSpeed * DeltaTime * glm::vec3(movement.x, movement.y, 0.f);
-        pepe->GetSceneObject()->Transform = glm::translate(pepe->GetSceneObject()->Transform, velocity);
+        pepe.second->GetSceneObject()->Transform = glm::translate(pepe.second->GetSceneObject()->Transform, velocity);
 
-        pepe->Tick(DeltaTime);
-        ground->Tick(DeltaTime);
+        pepe.second->Tick(DeltaTime);
+        ground.second->Tick(DeltaTime);
     }
 
-    void PepeLayer::RenderTargetResized(glm::ivec2 size) {
+    void GameLayer::RenderTargetResized(glm::ivec2 size) {
         spdlog::info("Main Menu Scene Resized to: {}x{}", size.x, size.y);
         auto width = size.x;
         auto height = size.y;
@@ -127,11 +136,11 @@ namespace OZZ::game::scene {
         LayerCamera.ProjectionMatrix = glm::ortho(-width / 2.f, width / 2.f, -height / 2.f, height / 2.f, 0.1f, 100.f);
     }
 
-    void PepeLayer::ChangeDirection() {
+    void GameLayer::ChangeDirection() {
         direction = !direction;
     }
 
-    void PepeLayer::unregisterMappings(std::shared_ptr<InputSubsystem> inInput) {
+    void GameLayer::unregisterMappings(std::shared_ptr<InputSubsystem> inInput) {
         if (!inInput) {
             return;
         }
@@ -142,7 +151,7 @@ namespace OZZ::game::scene {
         inInput->UnregisterInputMapping("Konami");
     }
 
-    void PepeLayer::registerMappings(std::shared_ptr<InputSubsystem> inInput) {
+    void GameLayer::registerMappings(std::shared_ptr<InputSubsystem> inInput) {
         if (!inInput) {
             return;
         }
@@ -152,9 +161,9 @@ namespace OZZ::game::scene {
               .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
                 .Callbacks = {
                         .OnPressed = [this]() {
-                            if (pepe) {
+                            if (pepe.second) {
                                 spdlog::info("Jumping");
-                                pepe->Jump();
+                                pepe.second->Jump();
                             }
                         },
                         .OnReleased = [this]() {
@@ -208,17 +217,5 @@ namespace OZZ::game::scene {
                         }
                 }
         });
-    }
-
-
-    void UILayer::Init() {
-    }
-
-    void UILayer::RenderTargetResized(glm::ivec2 size) {
-
-    }
-
-    void UILayer::Tick(float DeltaTime) {
-        SceneLayer::Tick(DeltaTime);
     }
 } // OZZ

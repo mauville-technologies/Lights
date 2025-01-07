@@ -3,11 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "test_map.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "SpaceBase.tsx": {
             "scaleInDock": 0.75,
             "scaleInEditor": 1.5
@@ -17,11 +20,11 @@
             "scaleInEditor": 1.5
         },
         "test_map.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 2,
+            "scale": 0.33,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 3501,
-                "y": 2616
+                "x": 3375.7575757575755,
+                "y": 2454.545454545455
             }
         },
         "test_map.tmx#Tileset2": {

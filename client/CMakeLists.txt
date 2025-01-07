@@ -8,9 +8,10 @@ set (SOURCES
 
         game/client_game.cpp
 
-        game/scene/main_menu/main_menu_scene.cpp
-        game/scene/main_menu/objects/ground_test.cpp
-        game/scene/main_menu/objects/pepe.cpp
+        game/scene/base_scene/base_scene.cpp
+        game/scene/base_scene/objects/tilemap/tilemap.cpp
+        game/scene/base_scene/objects/ground_test.cpp
+        game/scene/base_scene/objects/pepe.cpp
 
         game/ui/debug_window.cpp
 )
