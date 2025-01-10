@@ -24,7 +24,7 @@ namespace OZZ::game::scene {
         void Tick(float DeltaTime) override;
         void RenderTargetResized(glm::ivec2 size) override;
 
-        void ChangeDirection();
+        std::vector<SceneObject> GetSceneObjects() override;
     private:
         void unregisterMappings(std::shared_ptr<InputSubsystem> inInput);
         void registerMappings(std::shared_ptr<InputSubsystem> inInput);
@@ -32,10 +32,6 @@ namespace OZZ::game::scene {
         std::pair<uint64_t, Pepe*> pepe {0, nullptr};
         std::pair<uint64_t, GroundTest*> ground {0, nullptr};
         std::pair<uint64_t, Tilemap*> tilemap {0, nullptr};
-
-        glm::ivec2 movement { 0 };
-
-        bool direction { false };
 
         std::shared_ptr<InputSubsystem> input;
 

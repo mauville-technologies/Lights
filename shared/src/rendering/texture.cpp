@@ -16,6 +16,9 @@ namespace OZZ {
     }
 
     void Texture::UploadData(Image *image) {
+        width = image->GetWidth();
+        height = image->GetHeight();
+
         glBindTexture(GL_TEXTURE_2D, textureId);
         int format = GL_RGBA;
 
@@ -31,7 +34,7 @@ namespace OZZ {
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     image->GetWidth(), image->GetHeight(), 0,
+                     width, height, 0,
                      format, GL_UNSIGNED_BYTE, image->GetData().data());
         glGenerateMipmap(GL_TEXTURE_2D);
     }

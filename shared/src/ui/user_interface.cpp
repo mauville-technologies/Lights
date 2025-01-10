@@ -76,7 +76,7 @@ namespace OZZ {
         }
         finishImGuiDockSpace();
 
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
         ImGui::Render();
         RendererRenderDrawDataFunction(ImGui::GetDrawData());
 

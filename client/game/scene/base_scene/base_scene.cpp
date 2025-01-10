@@ -21,7 +21,6 @@ namespace OZZ::game::scene {
         input.reset();
 
         for (auto &Layer: Layers) {
-            Layer->Objects.clear();
             Layer->Lights.clear();
         }
 
@@ -39,7 +38,7 @@ namespace OZZ::game::scene {
     void BaseScene::Init() {
         world = std::make_shared<World>();
         world->Init({
-            .Gravity = {0.f, -20.f * constants::UnitsPerMeter},
+            .Gravity = {0.f, -20.f * constants::PhysicsUnitPerMeter},
         });
 
         debugWindow = std::make_shared<ui::DebugWindow>(appStateFunction);
@@ -86,7 +85,7 @@ namespace OZZ::game::scene {
     GameLayer::~GameLayer() {
         if (world) {
             world->RemoveObject(pepe.first);
-            world->RemoveObject(ground.first);
+            // world->RemoveObject(ground.first);
             world->RemoveObject(tilemap.first);
         }
     }
@@ -105,13 +104,10 @@ namespace OZZ::game::scene {
         // Create a pepe
         auto goPepe = world->CreateGameObject<Pepe>();
         pepe = {goPepe.first, reinterpret_cast<Pepe*>(goPepe.second)};
-        Objects.push_back(pepe.second->GetSceneObject());
-
         pepe.second->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
 
-        auto goGround = world->CreateGameObject<GroundTest>();
-        ground = {goGround.first, reinterpret_cast<GroundTest*>(goGround.second)};
-        Objects.push_back(ground.second->GetSceneObject());
+        // auto goGround = world->CreateGameObject<GroundTest>();
+        // ground = {goGround.first, reinterpret_cast<GroundTest*>(goGround.second)};
 
         auto goTilemap = world->CreateGameObject<Tilemap>();
         tilemap = {goTilemap.first, reinterpret_cast<Tilemap*>(goTilemap.second)};
@@ -120,24 +116,28 @@ namespace OZZ::game::scene {
 
     void GameLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
-        auto MoveSpeed = 10.f; // pixels per second
-        auto velocity = MoveSpeed * DeltaTime * glm::vec3(movement.x, movement.y, 0.f);
-        pepe.second->GetSceneObject()->Transform = glm::translate(pepe.second->GetSceneObject()->Transform, velocity);
 
         pepe.second->Tick(DeltaTime);
-        ground.second->Tick(DeltaTime);
+        // ground.second->Tick(DeltaTime);
     }
 
     void GameLayer::RenderTargetResized(glm::ivec2 size) {
         spdlog::info("Main Menu Scene Resized to: {}x{}", size.x, size.y);
-        auto width = size.x;
-        auto height = size.y;
+        auto width = size.x * 2.f;
+        auto height = size.y * 2.f;
 
         LayerCamera.ProjectionMatrix = glm::ortho(-width / 2.f, width / 2.f, -height / 2.f, height / 2.f, 0.1f, 100.f);
     }
 
-    void GameLayer::ChangeDirection() {
-        direction = !direction;
+    std::vector<SceneObject> GameLayer::GetSceneObjects() {
+        std::vector<SceneObject> objects;
+        auto t = tilemap.second->GetSceneObjects();
+        objects.insert(objects.end(), t.begin(), t.end());
+
+        objects.push_back(*pepe.second->GetSceneObject());
+        // objects.push_back(*ground.second->GetSceneObject());
+
+        return objects;
     }
 
     void GameLayer::unregisterMappings(std::shared_ptr<InputSubsystem> inInput) {
@@ -155,7 +155,34 @@ namespace OZZ::game::scene {
         if (!inInput) {
             return;
         }
-
+        //
+        inInput->RegisterInputMapping({
+            .Action = "Left",
+            .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Left}},
+            .Callbacks = {
+                .OnPressed = [this]() {
+                    spdlog::info("Left Pressed");
+                    pepe.second->MoveLeft();
+                },
+                .OnReleased = [this]() {
+                    spdlog::info("Left Released");
+                    pepe.second->StopMoving();
+                }
+            }
+        });
+        //
+        inInput->RegisterInputMapping({
+            .Action = "Right",
+            .Chord = InputChord{.Keys = std::vector{EKey::Right}},
+            .Callbacks = {
+                .OnPressed = [this]() {
+                    pepe.second->MoveRight();
+                },
+                .OnReleased = [this]() {
+                    pepe.second->StopMoving();
+                }
+            }
+        });
         inInput->RegisterInputMapping({
            .Action = "MoveUp",
               .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
@@ -168,7 +195,6 @@ namespace OZZ::game::scene {
                         },
                         .OnReleased = [this]() {
                             spdlog::info("Stop Up");
-                            movement.y = 0;
                         }
                 }
         });
@@ -178,12 +204,9 @@ namespace OZZ::game::scene {
                 .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
                 .Callbacks = {
                         .OnPressed = [this]() {
-
-                            movement.y = -1;
                         },
                         .OnReleased = [this]() {
                             spdlog::info("Stop Up");
-                            movement.y = 0;
                         }
                 }
         });

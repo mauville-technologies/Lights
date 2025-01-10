@@ -71,6 +71,7 @@ namespace OZZ {
 
     void Window::MakeContextCurrent() {
         glfwMakeContextCurrent(window);
+        glfwSwapInterval(0);
     }
 
     void Window::SwapBuffers() {

@@ -17,6 +17,11 @@ namespace OZZ::game::scene {
 
         void Jump();
         SceneObject* GetSceneObject() { return &sceneObject; }
+
+        void MoveLeft();
+        void MoveRight();
+        void StopMoving();
+
     private:
         SceneObject sceneObject;
         b2BodyId bodyId;

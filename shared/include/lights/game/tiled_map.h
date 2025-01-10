@@ -71,7 +71,17 @@ namespace OZZ {
         const std::unordered_map<std::string, ObjectLayer>& GetObjectLayers() const {
             return objectLayers;
         }
+
+        const glm::ivec2& GetMapSize() const {
+            return mapSize;
+        }
+
+        const glm::vec2& GetTileSize() const {
+            return tileSize;
+        }
     private:
+        glm::ivec2 mapSize;
+        glm::vec2 tileSize;
         std::vector<Tileset> tilesets;
         std::unordered_map<std::string, TileLayer> layers;
         std::unordered_map<std::string, ObjectLayer> objectLayers;

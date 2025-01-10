@@ -41,10 +41,10 @@ namespace OZZ {
         virtual void Init() {};
         virtual void Tick(float DeltaTime) {};
         virtual void RenderTargetResized(glm::ivec2 size) = 0;
+        virtual std::vector<SceneObject>  GetSceneObjects() = 0;
 
 
         Camera LayerCamera {};
-        std::vector<SceneObject*> Objects;
         std::vector<std::shared_ptr<LightSource>> Lights;
     };
 

@@ -8,36 +8,64 @@
 #include "lights/scene/scene.h"
 #include "lights/game/tiled_map.h"
 
+#include <memory>
+
 namespace OZZ {
 
     class Tilemap : public GameObject {
     public:
+        struct TileResources {
+            std::shared_ptr<Texture> TilemapTexture;
+            std::shared_ptr<Shader> Shader;
+        };
+
         class Tile {
         public:
-            explicit Tile(b2WorldId worldId);
+            explicit Tile(b2WorldId worldId, glm::vec2 inTilemapPosition, TileDescription  description, const TileResources& resources);
+            ~Tile() = default;
             void Tick(float DeltaTime);
 
             SceneObject* GetSceneObject() { return &sceneObject; }
 
+            [[nodiscard]] const TileDescription& GetDescription() const { return description; }
+            [[nodiscard]] const glm::vec2& GetTilemapPosition() const { return tilemapPosition; }
         private:
+            TileDescription description;
+            glm::vec2 tilemapPosition;
+            std::shared_ptr<Material> material;
+
             SceneObject sceneObject;
-            b2BodyId bodyId;
+            b2BodyId bodyId {};
         };
 
     public:
         explicit Tilemap(b2WorldId worldId);
-        ~Tilemap();
+        ~Tilemap() override;
+
+
 
         void Init(const std::filesystem::path& mapPath);
         void Tick(float DeltaTime) override;
-        std::vector<SceneObject*> GetSceneObjects() { return {&sceneObject}; }
+        std::vector<SceneObject> GetSceneObjects();
 
     private:
-        SceneObject sceneObject;
+        void buildTiles();
+        void buildCollision();
+
+    private:
+        glm::vec2 middleOfMapTranslation {};
+        glm::vec2 sceneTranslation {0.f};
+        glm::mat4 transform {1.f};
+        std::shared_ptr<Shader> tileShader;
 
         std::unique_ptr<TiledMap> tiledMap;
+        std::unordered_map<std::string, std::shared_ptr<Texture>> tilesetTextures;
+
+
+        std::vector<Tile> tiles;
+
         // Physics things
-        b2BodyId bodyId;
+        b2BodyId mapCollision {};
     };
 
 } // OZZ

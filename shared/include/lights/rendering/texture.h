@@ -14,7 +14,12 @@ namespace OZZ {
         void UploadData(Image* image);
 
         void Bind();
+
+        int GetWidth() const { return width; }
+        int GetHeight() const { return height; }
     private:
         uint32_t textureId;
+        int width { 0 };
+        int height { 0 };
     };
 } // OZZ

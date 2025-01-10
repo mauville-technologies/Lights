@@ -21,17 +21,17 @@ namespace OZZ {
         // TODO: Render the scene
         // Render all scene objects
         for (auto& layer : scene->GetLayers()) {
-            for (auto &object: layer->Objects) {
-                auto &[transform, objMesh, objMat] = *object;
+            for (auto &object: layer->GetSceneObjects()) {
+                auto &[transform, objMesh, objMat] = object;
                 objMat->Bind();
                 objMat->GetShader()->SetMat4("view", layer->LayerCamera.ViewMatrix);
                 objMat->GetShader()->SetMat4("projection", layer->LayerCamera.ProjectionMatrix);
                 objMat->GetShader()->SetMat4("model", transform);
                 objMesh->Bind();
-                glDrawElements(GL_TRIANGLES, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                auto drawMode = ToGLEnum(objMat->GetDrawMode());
+                glDrawElements(drawMode, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
             }
         }
-
 
         // TODO: Unbind the render target
     }

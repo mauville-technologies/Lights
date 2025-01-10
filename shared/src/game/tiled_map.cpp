@@ -17,6 +17,8 @@ namespace OZZ {
         }
 
         spdlog::info("Map {} loaded successfully, building map model now...", path.string());
+        mapSize = {map->getSize().x, map->getSize().y};
+        tileSize = {map->getTileSize().x, map->getTileSize().y};
         // build tilesets
         for (auto& tileset : map->getTilesets()) {
             spdlog::info("Tileset: {}", tileset.getName());

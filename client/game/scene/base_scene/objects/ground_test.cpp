@@ -12,15 +12,15 @@ namespace OZZ {
         // we'll create the shape, we want it to be 5 meters wide, and 1 meter tall
         constexpr uint32_t HeightInMeters = 1;
         constexpr uint32_t WidthInMeters = 5;
-        constexpr auto heightInUnits = HeightInMeters * UnitsPerMeter;
-        constexpr auto widthInUnits = WidthInMeters * UnitsPerMeter;
+        constexpr auto heightInUnits = HeightInMeters * PhysicsUnitPerMeter;
+        constexpr auto widthInUnits = WidthInMeters * PhysicsUnitPerMeter;
 
         // base position
         position = { 0.f, -2.5f, 0.f };
 
         // Let's create physics things
         b2BodyDef groundBodyDef = b2DefaultBodyDef();
-        groundBodyDef.position = b2Vec2(position.x * UnitsPerMeter, position.y * UnitsPerMeter);
+        groundBodyDef.position = b2Vec2(position.x * PhysicsUnitPerMeter, position.y * PhysicsUnitPerMeter);
 
         // create the body
         bodyId = b2CreateBody(worldId, &groundBodyDef);
@@ -63,7 +63,7 @@ namespace OZZ {
 
         // get the rotation and position from the physics body
         auto bodyTransform = b2Body_GetTransform(bodyId);
-        position = { bodyTransform.p.x / UnitsPerMeter, bodyTransform.p.y / UnitsPerMeter, 0.f };
+        position = { bodyTransform.p.x / PhysicsUnitPerMeter, bodyTransform.p.y / PhysicsUnitPerMeter, 0.f };
 
         auto& rot = bodyTransform.q;
         glm::mat4 rotationMatrix(1.0f);

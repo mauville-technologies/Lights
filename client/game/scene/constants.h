@@ -7,5 +7,5 @@
 
 namespace OZZ::game::constants {
     constexpr uint32_t PixelsPerMeter = 64;
-    constexpr uint32_t UnitsPerMeter = 1;
+    constexpr uint32_t PhysicsUnitPerMeter = 1;
 }
