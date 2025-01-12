@@ -5,29 +5,40 @@ Hopefully, this will make it easier to document everything and rarely have to le
 to share my work and musings with others.
 
 ## The List
-<i>Last Updated: 2024-12-31</i>
+<i>Last Updated: 2025-01-11</i>
 
-- [x] World
-  - [x] Gameobjects and ECS?
-- [x] Pick a 2D Physics Engine
-  - [x] Integrate the engine
-  - [ ] Create a player
-  - [ ] Move the character
-  - [x] Player can jump
-  - [ ] Camera Follows Player
-- [ ] Use Tiled to create initial world.
-  -  [x] Read Tiled-generated map (https://github.com/SSBMTonberry/tileson)
-  -  [ ] Build / render the map
-    - [ ] Build tileset model in memory
-    - [ ] Build tilemap model in memory
-    - [ ] Create the tilemap in World (physics). This might be able to be one large static body
-      - [ ] We'll go naive first. Will likely need to group tiles and make separate bodies. I want to rely on
-            the tile collisions themselves because slopes will make more sense that way.
-    - [ ] Render 
-- [ ] Player spawns into map
-  - [ ] Player does not fall through floor
-  - [ ] Player can move around on map
-- [ ] Network the players
-  - [ ] Players can spawn on map
-  - [ ] Players see each other move / jump
+- [ ] Create own collision system
+  - [ ] PhysicsTick
+  - [ ] Static/Dynamic
+  - [ ] Query collision
+  - [ ] Floating data store
+  - [ ] Collider Tags
+  - [ ] Shapes
+    - [ ] Quads
+    - [ ] Circles
+    - [ ] Convex Polygons
+    - [ ] points
+   
+   
+- [ ] Single player core movement
+  - [ ] axis values in the input system
+  - [ ] Move
+  - [ ] Jump
+  - [ ] Walk up and down slopes
+  - [ ] Slide down slopes
+   
+   
+- [ ] Tilemap Objects
+  - [ ] Spawn points / spawn zone
+   
+   
+- [ ] Network MVP
+  - [ ] Player network statemachines 
+  - [ ] Players spawn on server, replicate to clients
+  - [ ] Player movement replicates
   - [ ] Players see each other disconnect
+   
+   
+- [ ] Unit Tests?
+  - I just had the thought that it might be wise to put some unit testing somewhere
+  up in this bitch. Especially with the physics stuff I'm working on.

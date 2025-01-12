@@ -20,11 +20,11 @@
             "scaleInEditor": 1.5
         },
         "test_map.tmx": {
-            "scale": 0.25,
+            "scale": 0.33,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 3004,
-                "y": 2752
+                "x": 3669.69696969697,
+                "y": 3336.3636363636365
             }
         },
         "test_map.tmx#Tileset2": {

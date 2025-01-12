@@ -5,12 +5,16 @@ pages:
     pages:
       - name: "TODO List"
         url: "TODO.html"
+      - name: "CLOSED items"
+        url: "CLOSED.html"
   - name: "Brainstorming"
     pages:
       - name: "Networking Part 1 - States, Flows, and Communications"
         url: "brainstorming/network_flow.html"
       - name: "The Game - What is it?"
         url: "brainstorming/game.html"
+      - name: "Physics"
+        url: "brainstorming/physics.html"
   - name: "Network"
     pages:
       - name: "Messages"
