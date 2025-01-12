@@ -10,15 +10,12 @@ namespace OZZ {
 
     class GroundTest : public GameObject {
     public:
-        explicit GroundTest(b2WorldId worldId);
+        explicit GroundTest();
         void Tick(float DeltaTime) override;
 
         SceneObject* GetSceneObject() { return &sceneObject; }
     private:
         SceneObject sceneObject;
-
-        // Physics things
-        b2BodyId bodyId;
     };
 
 } // OZZ

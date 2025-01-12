@@ -21,7 +21,7 @@ namespace OZZ {
 
         class Tile {
         public:
-            explicit Tile(b2WorldId worldId, glm::vec2 inTilemapPosition, TileDescription  description, const TileResources& resources);
+            explicit Tile(glm::vec2 inTilemapPosition, TileDescription  description, const TileResources& resources);
             ~Tile() = default;
             void Tick(float DeltaTime);
 
@@ -35,11 +35,10 @@ namespace OZZ {
             std::shared_ptr<Material> material;
 
             SceneObject sceneObject;
-            b2BodyId bodyId {};
         };
 
     public:
-        explicit Tilemap(b2WorldId worldId);
+        explicit Tilemap();
         ~Tilemap() override;
 
 
@@ -63,9 +62,6 @@ namespace OZZ {
 
 
         std::vector<Tile> tiles;
-
-        // Physics things
-        b2BodyId mapCollision {};
     };
 
 } // OZZ

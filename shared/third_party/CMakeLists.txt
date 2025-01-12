@@ -40,14 +40,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glmlib)
 
-FetchContent_Declare(
-    Box2D
-    GIT_REPOSITORY https://github.com/erincatto/box2d.git
-    GIT_TAG        v3.0.0
-)
-
-FetchContent_MakeAvailable(Box2D)
-
 add_subdirectory(asio)
 add_subdirectory(glad)
 add_subdirectory(clay)

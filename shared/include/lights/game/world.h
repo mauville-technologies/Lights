@@ -8,7 +8,6 @@
 #include <memory>
 #include <random>
 #include <limits>
-#include <box2d/box2d.h>
 #include <spdlog/spdlog.h>
 
 #include "lights/game/game_object.h"
@@ -40,13 +39,9 @@ namespace OZZ {
 
         template <typename T>
         std::pair<uint64_t, GameObject*> CreateGameObject() {
-            if (worldId.index1 == 0) {
-                spdlog::error("Cannot create object without a valid world");
-                return {0, nullptr};
-            }
 
             auto id = generateUnusedID();
-            auto newObject = std::make_unique<T>(worldId);
+            auto newObject = std::make_unique<T>();
             objects[id] = std::move(newObject);
             return {id, objects[id].get()};
         }
@@ -71,7 +66,6 @@ namespace OZZ {
         }
 
     private:
-        b2WorldId worldId { 0, 0 };
         // TODO: things should be reference by ID, which uint64_t might not be the best choice
         std::unordered_map<uint64_t, std::unique_ptr<GameObject>> objects;
     };

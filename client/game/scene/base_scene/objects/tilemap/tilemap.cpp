@@ -10,7 +10,7 @@
 #include <game/scene/units.h>
 
 namespace OZZ {
-    Tilemap::Tile::Tile(b2WorldId worldId, glm::vec2 inTilemapPosition, TileDescription inDescription,
+    Tilemap::Tile::Tile(glm::vec2 inTilemapPosition, TileDescription inDescription,
                         const TileResources &resources) : description(std::move(inDescription)),
                                                           tilemapPosition(inTilemapPosition) {
         // Set up the material
@@ -60,7 +60,7 @@ namespace OZZ {
 
     }
 
-    Tilemap::Tilemap(b2WorldId worldId) : GameObject(worldId) {
+    Tilemap::Tilemap() : GameObject() {
         transform = glm::scale(glm::mat4{1.f}, glm::vec3(1.f, 1.f, 1.f));
     }
 
@@ -138,7 +138,7 @@ namespace OZZ {
                 const auto &Texture = tilesetTextures.at(Tileset.Name);
 
                 // Create a tile with that texture, position, and collision information
-                tiles.emplace_back(worldId, tilePosition, TileInformation, TileResources{
+                tiles.emplace_back(tilePosition, TileInformation, TileResources{
                                        .TilemapTexture = Texture,
                                        .Shader = tileShader,
                                    });
@@ -161,12 +161,6 @@ namespace OZZ {
         auto tilemapPhysicsMiddle = units::PixelsToPhysics(middleOfMapTranslation);
         tilemapPhysicsMiddle.y = -tilemapPhysicsMiddle.y;
 
-        b2BodyDef bodyDef = b2DefaultBodyDef();
-        bodyDef.type = b2_staticBody;
-        bodyDef.position = b2Vec2(0, 0); // This is the center of the map
-
-        mapCollision = b2CreateBody(worldId, &bodyDef);
-
         /*
          *  TODO: All tiles are being treated as static here. When I start spawning objects or tiles with possible dynamic properties i'll need to something different
          *  I'm making a bunch of boxes here, which is causing the dude to get stuck on corners. I need to build out the "landmasses" in the map so that the player can walk on it properly
@@ -181,11 +175,8 @@ namespace OZZ {
                         physicsSize.y = std::abs(physicsSize.y);
 
                         auto tilePosition = units::PixelsToPhysics((Tile.GetTilemapPosition() - glm::vec2{0.5, -0.5})* tileSize) + tilemapPhysicsMiddle;
-                        b2Polygon box = b2MakeOffsetBox(physicsSize.x/2, physicsSize.y/2, {tilePosition.x, tilePosition.y}, 0.f);
 
-                        // add the shape to the body
-                        b2ShapeDef shapeDef = b2DefaultShapeDef();
-                        b2CreatePolygonShape(mapCollision, &shapeDef, &box);
+                        // TODO: PHYSICS
                     break;
                 case TileDescription::TileCollisionType::Polygon:
                     break;

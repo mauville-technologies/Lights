@@ -10,7 +10,7 @@
 namespace OZZ::game::scene {
     class Pepe : public GameObject {
     public:
-        explicit Pepe(b2WorldId worldId);
+        explicit Pepe();
         ~Pepe();
 
         void Tick(float DeltaTime) override;
@@ -24,6 +24,5 @@ namespace OZZ::game::scene {
 
     private:
         SceneObject sceneObject;
-        b2BodyId bodyId;
     };
 }

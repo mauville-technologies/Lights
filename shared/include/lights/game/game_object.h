@@ -5,16 +5,14 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <box2d/box2d.h>
 
 namespace OZZ {
     class GameObject {
     public:
-        explicit GameObject(b2WorldId worldId);
+        explicit GameObject();
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
     protected:
-        b2WorldId worldId;
         glm::vec3 position;
         glm::vec3 scale;
         glm::quat rotation;
