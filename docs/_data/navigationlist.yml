@@ -19,3 +19,7 @@ pages:
     pages:
       - name: "Messages"
         url: "network/messages.html"
+  - name: "Architecture"
+    pages:
+      - name: "Client"
+        url: "architecture/client.html"

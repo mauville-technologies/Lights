@@ -64,8 +64,6 @@ namespace OZZ::game::scene {
     }
 
     void BaseScene::Tick(float DeltaTime) {
-        Scene::Tick(DeltaTime);
-
         // This will tick the physics world at a fixed rate
         static constexpr float physicsTickRate = 1.f / 60.f;
         static float accumulator = 0.f;
@@ -75,6 +73,8 @@ namespace OZZ::game::scene {
             world->PhysicsTick(physicsTickRate);
             accumulator -= physicsTickRate;
         }
+
+        Scene::Tick(DeltaTime);
     }
 
 

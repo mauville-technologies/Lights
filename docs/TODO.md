@@ -8,6 +8,7 @@ to share my work and musings with others.
 <i>Last Updated: 2025-01-11</i>
 
 - [ ] Create own collision system
+  - [x] Strip Out Box2D
   - [ ] PhysicsTick
   - [ ] Static/Dynamic
   - [ ] Query collision
