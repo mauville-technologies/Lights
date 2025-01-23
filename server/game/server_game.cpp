@@ -51,7 +51,7 @@ namespace OZZ::game {
 
     void ServerGame::startServer() {
         try {
-            server = std::make_shared<network::server::Server>(context, 8080);
+            server = std::make_shared<network::server::Server>(context, 1337);
             server->OnNewClient = [this](const std::shared_ptr<OZZ::network::server::ConnectedClient> &client) {
                 std::lock_guard<std::mutex> lock(playersMutex);
                 spdlog::info("New client connected");

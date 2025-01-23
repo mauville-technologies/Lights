@@ -16,7 +16,7 @@ namespace OZZ {
 
         std::string SlotName;
         int SlotNumber;
-        std::shared_ptr<Texture> Texture;
+        std::shared_ptr<Texture> TextureResource;
     };
 
     enum class DrawMode {

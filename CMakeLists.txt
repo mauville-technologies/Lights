@@ -26,7 +26,10 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     endif()
 endif()
 
+# The shared library is built first as it exposes functionality and third party libs to be used by other things
 add_subdirectory(shared)
+
+add_subdirectory(libs/ozz_collision)
 add_subdirectory(server)
 add_subdirectory(client)
 

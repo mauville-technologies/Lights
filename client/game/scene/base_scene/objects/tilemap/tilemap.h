@@ -16,7 +16,7 @@ namespace OZZ {
     public:
         struct TileResources {
             std::shared_ptr<Texture> TilemapTexture;
-            std::shared_ptr<Shader> Shader;
+            std::shared_ptr<Shader> TileShader;
         };
 
         class Tile {
@@ -38,10 +38,8 @@ namespace OZZ {
         };
 
     public:
-        explicit Tilemap();
+        explicit Tilemap(std::shared_ptr<CollisionSystem> InCollision);
         ~Tilemap() override;
-
-
 
         void Init(const std::filesystem::path& mapPath);
         void Tick(float DeltaTime) override;

@@ -45,7 +45,7 @@ namespace OZZ::game::ui {
         ImGui::Begin("Left", nullptr, windowFlags);
 
         if (ImGui::CollapsingHeader("Connection Status", ImGuiTreeNodeFlags_DefaultOpen)) {
-            bool bIsConnected = ApplicationState.ConnectionState == ConnectionState::Connected;
+            bool bIsConnected = ApplicationState.ConnectionState == ApplicationConnectionState::Connected;
 
             ImGui::Text("Connected: ");
             ImGui::SameLine();
@@ -55,14 +55,14 @@ namespace OZZ::game::ui {
             ImGui::Text("Ping: %dms", 50);
 
             // Connect and disconnect buttons that will be disabled greyed out when the connection state is not Disconnected
-            ImGui::BeginDisabled(ApplicationState.ConnectionState == ConnectionState::Connected);
+            ImGui::BeginDisabled(ApplicationState.ConnectionState == ApplicationConnectionState::Connected);
             if (ImGui::Button("Connect")) {
                 ConnectToServerRequested();
             }
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            ImGui::BeginDisabled(ApplicationState.ConnectionState != ConnectionState::Connected);
+            ImGui::BeginDisabled(ApplicationState.ConnectionState != ApplicationConnectionState::Connected);
             if (ImGui::Button("Disconnect")) {
                 DisconnectFromServerRequested();
             }
@@ -71,11 +71,11 @@ namespace OZZ::game::ui {
 
 
         if (ImGui::CollapsingHeader("User Details", ImGuiTreeNodeFlags_DefaultOpen)) {
-            bool bIsLoggedIn = ApplicationState.LoginState == LoginState::LoggedIn;
+            bool bIsLoggedIn = ApplicationState.LoginState == ApplicationLoginState::LoggedIn;
             ImGui::Text("Logged in: ");
             ImGui::SameLine();
             ImGui::TextColored(bIsLoggedIn ? ImVec4(0, 1, 0, 1) : ImVec4(1, 0, 0, 1), "%s", bIsLoggedIn ? "Yes" : "No");
-            ImGui::Text("Username: %s", ApplicationState.PlayerState.Username.c_str());
+            ImGui::Text("Username: %s", ApplicationState.CurrentPlayerState.Username.c_str());
 
             ImGui::BeginDisabled(!bIsLoggedIn);
             if (ImGui::Button("Logout")) {

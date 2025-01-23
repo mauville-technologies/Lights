@@ -23,6 +23,9 @@ flowchart TD
                 subgraph LayersTick2["LayersTick(deltatime)"]
                     goTick2("GameObject::Tick()")
                 end
+                subgraph WorldPhysicsTick
+                    
+                end
                 WorldPhysicsTick-->LayersTick
                 WorldPhysicsTick-->LayersTick2
             end

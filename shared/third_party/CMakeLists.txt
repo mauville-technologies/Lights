@@ -1,5 +1,7 @@
 include(FetchContent)
 
+set(GLFW_BUILD_WAYLAND FALSE)
+
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git

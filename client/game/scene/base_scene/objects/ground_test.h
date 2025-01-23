@@ -10,7 +10,7 @@ namespace OZZ {
 
     class GroundTest : public GameObject {
     public:
-        explicit GroundTest();
+        explicit GroundTest(std::shared_ptr<CollisionSystem> InCollision);
         void Tick(float DeltaTime) override;
 
         SceneObject* GetSceneObject() { return &sceneObject; }

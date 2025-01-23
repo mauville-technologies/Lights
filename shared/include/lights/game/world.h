@@ -39,9 +39,8 @@ namespace OZZ {
 
         template <typename T>
         std::pair<uint64_t, GameObject*> CreateGameObject() {
-
             auto id = generateUnusedID();
-            auto newObject = std::make_unique<T>();
+            auto newObject = std::make_unique<T>(collisionSystem);
             objects[id] = std::move(newObject);
             return {id, objects[id].get()};
         }
@@ -68,5 +67,7 @@ namespace OZZ {
     private:
         // TODO: things should be reference by ID, which uint64_t might not be the best choice
         std::unordered_map<uint64_t, std::unique_ptr<GameObject>> objects;
+
+        std::shared_ptr<CollisionSystem> collisionSystem;
     };
 }

@@ -7,20 +7,19 @@ to share my work and musings with others.
 ## The List
 <i>Last Updated: 2025-01-11</i>
 
-- [ ] Create own collision system
-  - [x] Strip Out Box2D
-  - [ ] PhysicsTick
-  - [ ] Static/Dynamic
-  - [ ] Query collision
-  - [ ] Floating data store
-  - [ ] Collider Tags
-  - [ ] Shapes
-    - [ ] Quads
-    - [ ] Circles
-    - [ ] Convex Polygons
-    - [ ] points
+- [ ] Collision
+  - [x] Create new cmake project somewhere in the repository, ozzCollisionLib.
+    - [x] It will use glm as its math library
+    - [x] Google tests
+  - [x] Create shape types
+    - [x] Point
+    - [ ] Circle
+    - [ ] Rectangle
+    - [ ] Convex Polygon
+  - [ ] Develop collisions using some form of TDD.
+    - [ ] Fill out the rest of this
    
-   
+
 - [ ] Single player core movement
   - [ ] axis values in the input system
   - [ ] Move

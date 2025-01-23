@@ -9,6 +9,8 @@ pages:
         url: "CLOSED.html"
   - name: "Brainstorming"
     pages:
+      - name: "Dev Logs"
+        url: "brainstorming/logs.html"
       - name: "Networking Part 1 - States, Flows, and Communications"
         url: "brainstorming/network_flow.html"
       - name: "The Game - What is it?"

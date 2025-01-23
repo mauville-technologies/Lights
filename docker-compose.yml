@@ -8,10 +8,9 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ozzadar
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
-      - C:\Users\ozzadar\db_volume:/data/db
+      - db_volume:/data/db
     ports:
       - "27017:27017"
 
 volumes:
   db_volume:
-    driver: local

@@ -7,7 +7,7 @@
 #include "lights/rendering/shapes.h"
 
 namespace OZZ {
-    GroundTest::GroundTest() : GameObject() {
+    GroundTest::GroundTest(std::shared_ptr<CollisionSystem> InCollision) : GameObject(std::move(InCollision)) {
         using namespace game::constants;
         // we'll create the shape, we want it to be 5 meters wide, and 1 meter tall
         constexpr uint32_t HeightInMeters = 1;
@@ -33,7 +33,7 @@ namespace OZZ {
         sceneObject.Mat->AddTextureMapping({
                                                    .SlotName = "inTexture",
                                                    .SlotNumber = GL_TEXTURE0,
-                                                   .Texture = texture
+                                                   .TextureResource = texture
                                            });
 
         // create mesh

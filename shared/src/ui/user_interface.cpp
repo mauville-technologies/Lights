@@ -80,7 +80,7 @@ namespace OZZ {
         ImGui::Render();
         RendererRenderDrawDataFunction(ImGui::GetDrawData());
 
-#ifdef _WIN32
+// #ifdef _WIN32
         auto &io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 #ifdef OZZ_WINDOW_GLFW
@@ -92,7 +92,7 @@ namespace OZZ {
             glfwMakeContextCurrent(backupContext);
 #endif
         }
-#endif
+// #endif
     }
 
     void UserInterface::Shutdown() {

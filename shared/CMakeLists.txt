@@ -10,6 +10,8 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
+        src/collision/collision_system.cpp
+
         src/game/game_object.cpp
         src/game/tiled_map.cpp
         src/game/world.cpp

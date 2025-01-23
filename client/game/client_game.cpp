@@ -132,19 +132,19 @@ namespace OZZ::game {
         client = std::make_unique<network::client::Client>();
         client->OnConnectedToServer = [this]() {
             spdlog::info("Connected to server!");
-            appState.ConnectionState = ConnectionState::Connected;
+            appState.ConnectionState = ApplicationConnectionState::Connected;
         };
 
         client->OnConnectingToServer = [this]() {
             spdlog::info("Connecting to server...");
-            appState.ConnectionState = ConnectionState::Connecting;
+            appState.ConnectionState = ApplicationConnectionState::Connecting;
         };
 
         client->OnDisconnectedFromServer = [this]() {
             spdlog::info("Disconnected from server!");
-            appState.ConnectionState = ConnectionState::Disconnected;
-            appState.LoginState = LoginState::NotLoggedIn;
-            appState.PlayerState.Clear();
+            appState.ConnectionState = ApplicationConnectionState::Disconnected;
+            appState.LoginState = ApplicationLoginState::NotLoggedIn;
+            appState.CurrentPlayerState.Clear();
         };
 
         client->OnAuthenticationFailed = [this]() {
@@ -154,18 +154,18 @@ namespace OZZ::game {
 
         client->OnUserLoggedIn = [this](const network::messages::server::AuthenticationSuccessful& message) {
             spdlog::info("User logged in: {}", message.GetUsername());
-            appState.LoginState = LoginState::LoggedIn;
-            appState.PlayerState.Username = message.GetUsername();
+            appState.LoginState = ApplicationLoginState::LoggedIn;
+            appState.CurrentPlayerState.Username = message.GetUsername();
         };
 
         client->OnAccountLoggedInElsewhere = [this]() {
             spdlog::error("Account logged in elsewhere, exiting!");
-            appState.LoginState = LoginState::NotLoggedIn;
-            appState.PlayerState.Clear();
+            appState.LoginState = ApplicationLoginState::NotLoggedIn;
+            appState.CurrentPlayerState.Clear();
         };
 
         networkThread = std::thread([this]() {
-            client->Run("127.0.0.1", 8080);
+            client->Run("127.0.0.1", 1337);
         });
     }
 

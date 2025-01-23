@@ -11,7 +11,7 @@ namespace OZZ {
         for (const auto &mapping : textureMappings) {
             glActiveTexture(mapping.SlotNumber);
             shader->SetInteger(mapping.SlotName, mapping.SlotNumber - GL_TEXTURE0);
-            mapping.Texture->Bind();
+            mapping.TextureResource->Bind();
         }
     }
     void Material::AddTextureMapping(const TextureMapping &mapping) {

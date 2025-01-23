@@ -16,11 +16,11 @@ namespace OZZ {
         // Set up the material
         // Create the material for the tile.
         sceneObject.Mat = std::make_shared<Material>();
-        sceneObject.Mat->SetShader(resources.Shader);
+        sceneObject.Mat->SetShader(resources.TileShader);
         sceneObject.Mat->AddTextureMapping(TextureMapping{
             .SlotName = "inTexture",
             .SlotNumber = GL_TEXTURE0,
-            .Texture = resources.TilemapTexture,
+            .TextureResource = resources.TilemapTexture,
         });
 
         // Set up the mesh
@@ -60,7 +60,7 @@ namespace OZZ {
 
     }
 
-    Tilemap::Tilemap() : GameObject() {
+    Tilemap::Tilemap(std::shared_ptr<CollisionSystem> InCollision) : GameObject(std::move(InCollision)) {
         transform = glm::scale(glm::mat4{1.f}, glm::vec3(1.f, 1.f, 1.f));
     }
 
@@ -140,7 +140,7 @@ namespace OZZ {
                 // Create a tile with that texture, position, and collision information
                 tiles.emplace_back(tilePosition, TileInformation, TileResources{
                                        .TilemapTexture = Texture,
-                                       .Shader = tileShader,
+                                       .TileShader = tileShader,
                                    });
             }
         }
@@ -167,17 +167,18 @@ namespace OZZ {
          */
         for (const auto& Tile : tiles) {
             switch (Tile.GetDescription().CollisionType) {
-                case TileDescription::TileCollisionType::Rectangle:
+                case TileDescription::TileCollisionType::Rectangle: {
                     // make a box of the correct size and position it correctly
-                        auto tileSize = std::get<glm::vec2>(Tile.GetDescription().CollisionData);
-                        auto physicsSize = units::PixelsToPhysics(tileSize);
-                        physicsSize.x = std::abs(physicsSize.x);
-                        physicsSize.y = std::abs(physicsSize.y);
+                    auto tileSize = std::get<glm::vec2>(Tile.GetDescription().CollisionData);
+                    auto physicsSize = units::PixelsToPhysics(tileSize);
+                    physicsSize.x = std::abs(physicsSize.x);
+                    physicsSize.y = std::abs(physicsSize.y);
 
-                        auto tilePosition = units::PixelsToPhysics((Tile.GetTilemapPosition() - glm::vec2{0.5, -0.5})* tileSize) + tilemapPhysicsMiddle;
+                    auto tilePosition = units::PixelsToPhysics((Tile.GetTilemapPosition() - glm::vec2{0.5, -0.5})* tileSize) + tilemapPhysicsMiddle;
 
-                        // TODO: PHYSICS
+                    // TODO: PHYSICS
                     break;
+                }
                 case TileDescription::TileCollisionType::Polygon:
                     break;
                 case TileDescription::TileCollisionType::None:

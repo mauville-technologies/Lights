@@ -7,14 +7,14 @@
 
 
 namespace OZZ::game {
-    enum class ConnectionState : uint8_t {
+    enum class ApplicationConnectionState : uint8_t {
         Disconnected,
         Connecting,
         Connected,
         Disconnecting
     };
 
-    enum class LoginState : uint8_t {
+    enum class ApplicationLoginState : uint8_t {
         NotLoggedIn,
         LoggingIn,
         LoggedIn,
@@ -33,10 +33,10 @@ namespace OZZ::game {
 
     struct ApplicationState {
         // Network / Connection State
-        ConnectionState ConnectionState{ConnectionState::Disconnected};
-        LoginState LoginState{LoginState::NotLoggedIn};
+        ApplicationConnectionState ConnectionState{ApplicationConnectionState::Disconnected};
+        ApplicationLoginState LoginState{ApplicationLoginState::NotLoggedIn};
 
         // Player State
-        PlayerState PlayerState;
+        PlayerState CurrentPlayerState;
     };
 }
