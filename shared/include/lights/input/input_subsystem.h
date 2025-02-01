@@ -6,7 +6,7 @@
 #include <lights/input/input_keys.h>
 #include <string>
 #include <functional>
-#include <memory>
+#include <vector>
 #include <array>
 #include <chrono>
 

@@ -22,8 +22,8 @@ namespace OZZ {
             return;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,  4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(800, 600, "Ozzadar", nullptr, nullptr);
@@ -75,6 +75,19 @@ namespace OZZ {
     }
 
     void Window::SwapBuffers() {
+#ifdef __APPLE__
+        static bool firstSwap = false;
+        // There's a bug on mac where for some reason the window needs to be moved
+        // or resized in order to properly draw the scene. Doing this here
+        // will fix the issue on first load on mac. It's ugly but it works.
+        if (!firstSwap)
+        {
+            firstSwap = true;
+            auto size = GetSize();
+            glfwSetWindowSize(window, size.x+1, size.y+1);
+            glfwSetWindowSize(window, size.x, size.y);
+        }
+#endif
         glfwSwapBuffers(window);
     }
 

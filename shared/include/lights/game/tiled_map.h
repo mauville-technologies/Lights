@@ -4,6 +4,7 @@
 
 #pragma once
 #include <tileson/tileson.h>
+#include <unordered_map>
 #include <filesystem>
 #include <variant>
 #include <glm/glm.hpp>

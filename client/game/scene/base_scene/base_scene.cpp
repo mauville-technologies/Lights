@@ -123,8 +123,8 @@ namespace OZZ::game::scene {
 
     void GameLayer::RenderTargetResized(glm::ivec2 size) {
         spdlog::info("Main Menu Scene Resized to: {}x{}", size.x, size.y);
-        auto width = size.x * 2.f;
-        auto height = size.y * 2.f;
+        auto width = size.x;
+        auto height = size.y;
 
         LayerCamera.ProjectionMatrix = glm::ortho(-width / 2.f, width / 2.f, -height / 2.f, height / 2.f, 0.1f, 100.f);
     }
