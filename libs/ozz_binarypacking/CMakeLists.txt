@@ -1,4 +1,4 @@
-project(ozz_collision)
+project(ozz_binarypacking)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -6,20 +6,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(BUILD_SHARED_LIBS FALSE)
 
 set (SOURCES
-    src/shapes/ozz_circle.cpp
-    src/shapes/ozz_point.cpp
-    src/shapes/ozz_rectangle.cpp
 )
-add_library(ozz_collision STATIC
-        ${SOURCES})
+add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME}
-        PUBLIC
+        INTERFACE
             include
 )
 
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC
+        INTERFACE
             glm
 )
 

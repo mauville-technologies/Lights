@@ -4,6 +4,7 @@
 
 #include "ozz_collision/shapes/ozz_circle.h"
 #include "ozz_collision/shapes/ozz_point.h"
+#include "ozz_collision/shapes/ozz_rectangle.h"
 
 namespace OZZ::collision::shapes {
     OzzCollisionResult OzzCircle::IsColliding(const OzzPoint &other) const {
@@ -26,7 +27,11 @@ namespace OZZ::collision::shapes {
 
         return OzzCollisionResult{
             .bCollided = distance <= sumRadii,
-            .ContactPoints = {}
+            .ContactPoints = {contactPoint}
         };
+    }
+
+    OzzCollisionResult OzzCircle::IsColliding(const OzzRectangle &other) const {
+        return other.IsColliding(*this);
     }
 }

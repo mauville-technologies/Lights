@@ -5,10 +5,10 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "ozz_collision/ozz_collision_result.h"
-#include "ozz_collision/shapes/ozz_circle.h"
 
 namespace OZZ::collision::shapes {
     struct OzzCircle;
+    struct OzzRectangle;
 
     struct OzzPoint {
         glm::vec2 Position;
@@ -18,5 +18,8 @@ namespace OZZ::collision::shapes {
 
         // Point on Circle
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzCircle &other) const;
+
+        // Point on Rectangle
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzRectangle &other) const;
     };
 }

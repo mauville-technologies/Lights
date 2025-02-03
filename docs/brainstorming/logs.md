@@ -11,7 +11,42 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
-## 14-01-2025 - Collisions
+## 30-01-2025 Status Update, some thoughts I want to write down.
+
+I haven't made a whole lot of progress on the collision system for this. It's been a busy few weeks and I've been a bit behind
+at work and at home. I will be attempting to get back on track -- but FFVII Rebirth has got me in its clutches at the moment. I need to 
+pull back a bit on it now that I'm back at work.
+
+Anyways, the communication between client and server in this project is purely serialized and deserialized binary data.
+It's currently a very adhoc system which is prone to mistakes and is kind of annoying to extend. I have needs to serialize
+some stuff at work as well for a personal project dev environment thing. I usually stick with something like a json serializer for these kinds of
+things but I remembered the pain I had over here. Therefore, I think it could be worth my time to build out a binary format
+that can output a stream of bytes. This stream can then be piped over the network or streamed in and out of files.
+
+I haven't done anything like that before but it seems like an interesting little utility that would be very handy to have
+for things like save systems, streaming data over a network, and other such and things. I've always wanted to try and build something more elegant than these
+gross json and the like parsers. DOMAIN SPECIFIC LANGUAGE BIATCH!
+
+---
+After doing some research and thinking, it's probably not a great idea to write my own binary serializer.
+The research turned up Cereal, which can do binary JSON and XML. I'm going to add "use cereal to parse data" to the TODO list.
+Well... we'll see but I have options.
+
+## 23-01-2025 Collision ctd.
+I had to take some time off on this project for a little bit because I haven't been finding enough other time
+to take care of work things. I'm returning today sitting on the couch with my new wireless setup
+hopefully so the little one can get used to me working while taking care of him..
+
+For some reason though whenever he gets too close the wireless signal on this keyboard starts cutting out and causing
+me to have to wait for him to get distracted so I can get stuff done.
+
+My goal is to continue the collision library today. From what I've gathered in the last few minutes... it seems like I essentially
+finished circles(though I remember now that I was trying to calculate circle x circle intersection points for some reason. Going to abandon that and 
+simply focus on the basic collisions still.)
+
+Rectangles and polygons are next.
+
+## 14-01-2025 - Collision
 
 So as mentioned in the physics brainstorming page, I'm rolling my own collision for this project because it's probably
 simple enough to put together the things I want to do. I'm starting on this endeavour in earnest today.
@@ -29,7 +64,7 @@ So here's the current TODO list:
     - [x] Google tests
 - [x] Create shape types
   - [x] Point
-  - [ ] Circle
+  - [x] Circle
   - [ ] Rectangle
   - [ ] Convex Polygon
 - [ ] Develop collisions using some form of TDD.

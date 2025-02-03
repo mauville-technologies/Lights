@@ -7,6 +7,13 @@ to share my work and musings with others.
 ## The List
 <i>Last Updated: 2025-01-11</i>
 
+- [ ] Binary Packing
+  - [ ] Pack a single integer
+  - [ ] Pack an arbitrary number of integers
+    - The point of these two is to work out a (hopefully) elegant interface for creating serializable types
+    -- This is also more metaprogramming practice
+- [ ] Use Cereal for binary cerealization of my network types
+  - git@github.com:USCiLab/cereal.git
 - [ ] Collision
   - [x] Create new cmake project somewhere in the repository, ozzCollisionLib.
     - [x] It will use glm as its math library
