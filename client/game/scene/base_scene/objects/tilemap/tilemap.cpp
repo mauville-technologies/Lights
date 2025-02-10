@@ -146,17 +146,7 @@ namespace OZZ {
         }
     }
 
-    void Tilemap::buildCollision() {
-        /*
-         *  TODO: Investigate this further.
-         *
-         *  Okay, so for now we're going to just take all the tile information, then build a single body for the entire
-         *  thing. My understanding is that there may be collision problems with this approach, but we'll see. Specifically,
-         *  having a bunch of tiles side-by-side to do collision apparently need to be marked as "chained together" or something.
-         *
-         *  Let's just get *something* working for now and we'll refine later
-         */
-
+    uint64_t Tilemap::buildCollision(const TileDescription& tileInformation) {
         // First let's create the body
         auto tilemapPhysicsMiddle = units::PixelsToPhysics(middleOfMapTranslation);
         tilemapPhysicsMiddle.y = -tilemapPhysicsMiddle.y;

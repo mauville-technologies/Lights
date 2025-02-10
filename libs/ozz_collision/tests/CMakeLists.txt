@@ -17,6 +17,7 @@ enable_testing()
 set (SOURCES
         point_collision.cpp
         circle_collision.cpp
+        rectangle_collision.cpp
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
 

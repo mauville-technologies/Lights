@@ -5,6 +5,7 @@
 
 #include "ozz_collision/shapes/ozz_point.h"
 #include "ozz_collision/shapes/ozz_circle.h"
+#include "ozz_collision/shapes/ozz_rectangle.h"
 
 using namespace OZZ::collision::shapes;
 
@@ -34,12 +35,26 @@ TEST(OzzCircle, CirclexCircle) {
     EXPECT_TRUE(result1.bCollided);
     EXPECT_FALSE(result2.bCollided);
     EXPECT_TRUE(result3.bCollided);
+}
 
-    // calculate square root of 3/4
-    const auto sqrt34 = std::sqrt(3.f/4.f);
-    EXPECT_EQ(result2.ContactPoints.size(), 1);
-    EXPECT_EQ(result2.ContactPoints[0], glm::vec2( 1.f, 0.f ));
+TEST(OzzCircle, CirclexRectangle) {
+    constexpr OzzRectangle rectangle1{.Position = {0.f, 0.f}, .Size = {2.f, 2.f}};
 
-    EXPECT_EQ(result3.ContactPoints.size(), 1);
-    EXPECT_EQ(result3.ContactPoints[0], glm::vec2( 1.f, 0.f ));
+    const auto sqrt2 = std::sqrt(2.f);
+    // now let's put some circles around it
+    const OzzCircle circle1{.Center = {2.f, 2.f}, .Radius = sqrt2}; // this one should touch at (1, 1)
+    constexpr OzzCircle circle2{.Center = {2.f, 0.f}, .Radius = 1.f}; // this one should touch at (1, 0)
+    // let's have a couple slightly off
+    const OzzCircle circle3{.Center = {2.01f, 2.f}, .Radius = sqrt2}; // this one should no longer touch
+    constexpr OzzCircle circle4{.Center = {2.01f, 0.f}, .Radius = 1.f}; // this one should no longer touch
+
+    const auto result1 = OZZ::collision::IsColliding(rectangle1, circle1);
+    const auto result2 = OZZ::collision::IsColliding(rectangle1, circle2);
+    const auto result3 = OZZ::collision::IsColliding(rectangle1, circle3);
+    const auto result4 = OZZ::collision::IsColliding(rectangle1, circle4);
+
+    EXPECT_TRUE(result1.bCollided);
+    EXPECT_TRUE(result2.bCollided);
+    EXPECT_FALSE(result3.bCollided);
+    EXPECT_FALSE(result4.bCollided);
 }

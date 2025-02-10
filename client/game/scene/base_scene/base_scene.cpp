@@ -135,7 +135,6 @@ namespace OZZ::game::scene {
         objects.insert(objects.end(), t.begin(), t.end());
 
         objects.push_back(*pepe.second->GetSceneObject());
-        // objects.push_back(*ground.second->GetSceneObject());
 
         return objects;
     }

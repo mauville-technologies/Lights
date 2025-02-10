@@ -45,9 +45,9 @@ namespace OZZ {
     struct Body {
         uint64_t ID{};
         BodyType Type{BodyType::Static};
+        ShapeKind ShapeType{};
         ShapeDefType Definition{};
 
-        ShapeKind ShapeType{};
         glm::vec2 Position{0.f};
         glm::vec2 Velocity{0.f};
 

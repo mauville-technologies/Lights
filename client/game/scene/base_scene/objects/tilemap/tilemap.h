@@ -47,7 +47,7 @@ namespace OZZ {
 
     private:
         void buildTiles();
-        void buildCollision();
+        uint64_t buildCollision(const TileDescription& tileInformation);
 
     private:
         glm::vec2 middleOfMapTranslation {};

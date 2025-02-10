@@ -10,7 +10,6 @@
 
 #include "game/callback_functions.h"
 #include "game/scene/base_scene/objects/pepe.h"
-#include "game/scene/base_scene/objects/ground_test.h"
 #include "game/scene/base_scene/objects/tilemap/tilemap.h"
 
 namespace OZZ::game::scene {
@@ -30,7 +29,6 @@ namespace OZZ::game::scene {
         void registerMappings(std::shared_ptr<InputSubsystem> inInput);
     private:
         std::pair<uint64_t, Pepe*> pepe {0, nullptr};
-        std::pair<uint64_t, GroundTest*> ground {0, nullptr};
         std::pair<uint64_t, Tilemap*> tilemap {0, nullptr};
 
         std::shared_ptr<InputSubsystem> input;

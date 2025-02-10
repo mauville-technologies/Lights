@@ -21,7 +21,18 @@ namespace OZZ::collision::shapes {
     }
 
     OzzCollisionResult OzzRectangle::IsColliding(const OzzCircle &other) const {
-        return OzzCollisionResult::NoCollision();
+        const auto [Left, Right, Up, Down] = GetExtents();
+
+        glm::vec2 closestPoint = other.Center;
+        closestPoint = glm::clamp(closestPoint, glm::vec2{Left, Down}, glm::vec2{Right, Up});
+
+        const glm::vec2 vecBetween = other.Center - closestPoint;
+        const float distance = glm::length(vecBetween);
+
+        return {
+            .bCollided = distance <= other.Radius,
+            .ContactPoints = {closestPoint}
+        };
     }
 
     OzzCollisionResult OzzRectangle::IsColliding(const OzzRectangle &other) const {
