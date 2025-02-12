@@ -15,9 +15,9 @@ namespace OZZ {
             bodies.emplace_back(Body{
                 .ID = newId,
                 .Type = type,
-                .Position = position,
                 .ShapeType = shapeType,
                 .Definition = shapeDef,
+                .Position = position,
                 .Velocity = velocity,
             });
         }

@@ -8,9 +8,13 @@ set (SOURCES
 
         game/client_game.cpp
 
-        game/scene/base_scene/base_scene.cpp
-        game/scene/base_scene/objects/tilemap/tilemap.cpp
-        game/scene/base_scene/objects/pepe.cpp
+        game/scenes/ingame/base_scene.cpp
+        game/scenes/ingame/layers/game_layer.cpp
+        game/scenes/physics_testing/physics_testing_scene.cpp
+        game/scenes/physics_testing/layers/physics_testing_layer.cpp
+
+        game/objects/tilemap.cpp
+        game/objects/pepe.cpp
 
         game/ui/debug_window.cpp
 )

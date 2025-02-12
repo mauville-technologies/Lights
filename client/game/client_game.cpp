@@ -4,7 +4,8 @@
 
 #include "client_game.h"
 #include "spdlog/spdlog.h"
-#include "game/scene/base_scene//base_scene.h"
+#include "game/scenes/ingame/base_scene.h"
+#include "scenes/physics_testing/physics_testing_scene.h"
 
 namespace OZZ::game {
     ClientGame::ClientGame() : bRunning(false), appState() {
@@ -91,10 +92,10 @@ namespace OZZ::game {
     }
 
     void ClientGame::initScene() {
-        windowScene = std::make_unique<scene::BaseScene>([this]() {
-            return appState;
-        }, input, ui);
-
+        // windowScene = std::make_unique<scene::BaseScene>([this]() {
+        //     return appState;
+        // });
+        windowScene = std::make_unique<scene::PhysicsTestingScene>();
         if (auto mainMenuScene = dynamic_cast<scene::BaseScene*>(windowScene.get())) {
             mainMenuScene->ConnectToServerRequested = [this]() {
                 if (client) {
@@ -124,7 +125,7 @@ namespace OZZ::game {
                 }
             };
         }
-        windowScene->Init();
+        windowScene->Init(input, ui);
         windowScene->RenderTargetResized(window->GetSize());
     }
 

@@ -6,11 +6,14 @@
 
 #include <memory>
 #include <glm/glm.hpp>
-#include <utility>
 #include <vector>
+#include <lights/game/world.h>
+#include <lights/input/input_subsystem.h>
+#include <lights/ui/user_interface.h>
+
 #include "lights/rendering/buffer.h"
 #include "lights/rendering/material.h"
-#include "lights/input/input_subsystem.h"
+#include "lights/scene/constants.h"
 
 
 namespace OZZ {
@@ -27,13 +30,6 @@ namespace OZZ {
         std::shared_ptr<Material> Mat{nullptr}; // Shader/texture parameters
     };
 
-    class LightSource {
-    public:
-        glm::vec3 Position;
-        glm::vec3 Color;
-        float Intensity;
-    };
-
     class SceneLayer {
     public:
         virtual ~SceneLayer() = default;
@@ -45,15 +41,35 @@ namespace OZZ {
 
 
         Camera LayerCamera {};
-        std::vector<std::shared_ptr<LightSource>> Lights;
     };
 
     class Scene {
     public:
-        virtual void Init() {};
+        // Should be called at the end of the derived class Init function
+        virtual void Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) {
+            ui = std::move(inUI);
+            input = std::move(inInput);
+
+            const auto theWorld = GetWorld();
+            theWorld->Init({
+                .Gravity = {0.f, -20.f * game::constants::PhysicsUnitPerMeter},
+            });
+
+            for (const auto &Layer: Layers) {
+                Layer->Init();
+            }
+        }
 
         virtual void Tick(float DeltaTime) {
-            for (auto &Layer: GetLayers()) {
+            static constexpr float physicsTickRate = 1.f / 60.f;
+            static float accumulator = 0.f;
+            accumulator += DeltaTime;
+
+            while (accumulator >= physicsTickRate) {
+                GetWorld()->PhysicsTick(physicsTickRate);
+                accumulator -= physicsTickRate;
+            }
+            for (const auto &Layer: GetLayers()) {
                 Layer->Tick(DeltaTime);
             }
         };
@@ -65,9 +81,23 @@ namespace OZZ {
             }
         }
 
-        virtual ~Scene() = default;
+        virtual ~Scene() {
+            Layers.clear();
 
-        virtual std::vector<std::shared_ptr<SceneLayer>>& GetLayers() = 0;
-    public:
+            if (world) world->DeInit();
+            world.reset();
+        }
+
+        std::vector<std::shared_ptr<SceneLayer>>& GetLayers() { return Layers; }
+        World* GetWorld() {
+            if (!world) world = std::make_shared<World>();
+            return world.get();
+        }
+    protected:
+        std::vector<std::shared_ptr<SceneLayer>> Layers;
+        std::shared_ptr<UserInterface> ui;
+        std::shared_ptr<InputSubsystem> input;
+    private:
+        std::shared_ptr<World> world;
     };
 }

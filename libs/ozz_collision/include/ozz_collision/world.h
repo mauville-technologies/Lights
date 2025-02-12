@@ -8,7 +8,7 @@
 #include <random>
 #include <optional>
 #include <glm/glm.hpp>
-#include <thread>
+#include <mutex>
 
 namespace OZZ {
     enum class ShapeKind {

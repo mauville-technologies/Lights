@@ -10,7 +10,7 @@
 
 #include <memory>
 
-namespace OZZ {
+namespace OZZ::game::scene {
 
     class Tilemap : public GameObject {
     public:
