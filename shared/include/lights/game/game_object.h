@@ -8,12 +8,12 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <lights/collision/collision_system.h>
+#include <ozz_collision/world.h>
 
 namespace OZZ {
     class GameObject {
     public:
-        explicit GameObject(std::shared_ptr<CollisionSystem>);
+        explicit GameObject(std::shared_ptr<OzzWorld2D>);
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
     protected:
@@ -21,6 +21,6 @@ namespace OZZ {
         glm::vec3 scale;
         glm::quat rotation;
 
-        std::shared_ptr<CollisionSystem> collisionSystem;
+        std::shared_ptr<OzzWorld2D> collisionSystem;
     };
 } // OZZ

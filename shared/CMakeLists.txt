@@ -10,7 +10,6 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
-        src/collision/collision_system.cpp
 
         src/game/game_object.cpp
         src/game/tiled_map.cpp
@@ -43,5 +42,5 @@ endif ()
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC include ${Tileson_INCLUDE_DIR})
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui tileson)
+target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui tileson ozz_collision)
 

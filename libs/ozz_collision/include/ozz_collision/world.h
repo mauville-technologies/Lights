@@ -8,6 +8,7 @@
 #include <random>
 #include <optional>
 #include <glm/glm.hpp>
+#include <thread>
 
 namespace OZZ {
     enum class ShapeKind {
@@ -54,15 +55,14 @@ namespace OZZ {
         // TODO: Maybe we want rotation and other junk. For now, let's assume everything stays upright the way the shape is defined
     };
 
-    class CollisionSystem {
+    class OzzWorld2D {
     public:
-        uint64_t CreateBody(BodyType type, const ShapeDefType &shapeDef, const glm::vec2 &position = {0.f, 0.f},
+        uint64_t CreateBody(BodyType type, ShapeKind shapeType, const ShapeDefType &shapeDef, const glm::vec2 &position = {0.f, 0.f},
                             const glm::vec2 &velocity = {0.f, 0.f});
-
         void DestroyBody(uint64_t id);
+        Body* GetBody(uint64_t id);
 
-        std::optional<Body &> GetBody(uint64_t id);
-
+        void PhysicsTick(float DeltaTime);
     private:
         uint64_t generateUnusedID() {
             static std::random_device rd;
@@ -80,6 +80,7 @@ namespace OZZ {
         }
 
     private:
+        std::mutex bodyMutex{};
         std::vector<Body> bodies{};
     };
 } // OZZ

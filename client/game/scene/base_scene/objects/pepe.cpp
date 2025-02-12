@@ -8,7 +8,7 @@
 #include "game/scene/constants.h"
 
 namespace OZZ::game::scene {
-    Pepe::Pepe(std::shared_ptr<CollisionSystem> InCollision) : GameObject(std::move(InCollision)) {
+    Pepe::Pepe(std::shared_ptr<OzzWorld2D> InCollision) : GameObject(std::move(InCollision)) {
         using namespace game::constants;
         // we'll create the shape, we want it to be 5 meters wide, and 1 meter tall
         constexpr uint32_t HeightInMeters = 1;

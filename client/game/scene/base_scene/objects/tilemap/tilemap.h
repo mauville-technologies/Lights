@@ -38,7 +38,7 @@ namespace OZZ {
         };
 
     public:
-        explicit Tilemap(std::shared_ptr<CollisionSystem> InCollision);
+        explicit Tilemap(std::shared_ptr<OzzWorld2D> InCollision);
         ~Tilemap() override;
 
         void Init(const std::filesystem::path& mapPath);

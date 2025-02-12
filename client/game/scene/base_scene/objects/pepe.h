@@ -10,7 +10,7 @@
 namespace OZZ::game::scene {
     class Pepe : public GameObject {
     public:
-        explicit Pepe(std::shared_ptr<CollisionSystem> InCollision);
+        explicit Pepe(std::shared_ptr<OzzWorld2D> InCollision);
         ~Pepe() override;
 
         void Tick(float DeltaTime) override;

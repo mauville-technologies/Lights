@@ -9,6 +9,8 @@ set (SOURCES
     src/shapes/ozz_circle.cpp
     src/shapes/ozz_point.cpp
     src/shapes/ozz_rectangle.cpp
+
+    src/world.cpp
 )
 add_library(ozz_collision STATIC
         ${SOURCES})

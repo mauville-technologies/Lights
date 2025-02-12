@@ -6,7 +6,6 @@
 #include <spdlog/spdlog.h>
 #include "lights/rendering/shapes.h"
 
-#include <utility>
 #include <game/scene/units.h>
 
 namespace OZZ {
@@ -60,7 +59,7 @@ namespace OZZ {
 
     }
 
-    Tilemap::Tilemap(std::shared_ptr<CollisionSystem> InCollision) : GameObject(std::move(InCollision)) {
+    Tilemap::Tilemap(std::shared_ptr<OzzWorld2D> InCollision) : GameObject(std::move(InCollision)) {
         transform = glm::scale(glm::mat4{1.f}, glm::vec3(1.f, 1.f, 1.f));
     }
 
@@ -85,7 +84,7 @@ namespace OZZ {
 
 
         // build the map collision and add it to the world
-        buildCollision();
+        buildCollision({});
     }
 
     void Tilemap::Tick(float DeltaTime) {

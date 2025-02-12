@@ -68,6 +68,6 @@ namespace OZZ {
         // TODO: things should be reference by ID, which uint64_t might not be the best choice
         std::unordered_map<uint64_t, std::unique_ptr<GameObject>> objects;
 
-        std::shared_ptr<CollisionSystem> collisionSystem;
+        std::shared_ptr<OzzWorld2D> collisionSystem;
     };
 }

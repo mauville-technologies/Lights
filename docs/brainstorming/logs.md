@@ -11,6 +11,16 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 10-02-2025 - One week pre-victoria
+
+So I've decided that I need to start getting back on the Lights train. With my "trip" to Victoria coming up next week, I feel that it's the perfect 
+opportunity to spend maybe an unhealthy amount of time programming some stuff. 
+
+I dont want to waste all my dev energy on logging so here's my current priority:
+
+- Basic world system. Essentially physics. It will have a tick with a way to create and remove bodies. A lot of this work lives in CollisionSystem at the moment.
+I'll move that over and use that as a base.
+
 ## 30-01-2025 Status Update, some thoughts I want to write down.
 
 I haven't made a whole lot of progress on the collision system for this. It's been a busy few weeks and I've been a bit behind
