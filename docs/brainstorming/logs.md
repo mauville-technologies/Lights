@@ -11,6 +11,15 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 19-02-2025 - 1 day to Victoria
+
+So I got a good chunk done this afternoon. I now have a sprite class with access to debug shapes it can add to its 
+draw objects at will. With that done, I can start fleshing out the world system so that my sprites can have bodies. When they have
+the bodies, I can then add the debug shapes on top to visualize the system.
+
+With that out of the way, I can then match my scene object transforms to my world object transforms (at the very least, the position)
+to have things move around organically. 
+
 ## 18-02-2025 - 2 days to Victoria
 Well -- my flight to Victoria got cancelled due to snow and my trip has moved the Thursday. This is unfortunate and relevant here as I had plans for the plane
 and my time over there for this project. That being said, it's probably for the best that I didn't get to it yet. I ended up doing something different than

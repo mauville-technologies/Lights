@@ -42,6 +42,10 @@ namespace OZZ {
         glUniform1i(getUniformLocation(name), value);
     }
 
+    void Shader::SetVec3(const std::string &name, const glm::vec3 &value) {
+        glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
+    }
+
     void Shader::SetMat4(const std::string &name, const glm::mat4& value) {
         glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
     }

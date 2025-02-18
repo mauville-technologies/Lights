@@ -22,11 +22,14 @@ namespace OZZ {
     enum class DrawMode {
         Triangles,
         Lines,
-        LineLoop
+        LineLoop,
+        Points
     };
 
     inline GLenum ToGLEnum(const DrawMode& mode) {
         switch (mode) {
+            case DrawMode::Points:
+                return GL_POINTS;
             case DrawMode::Lines:
                 return GL_LINES;
             case DrawMode::LineLoop:

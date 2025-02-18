@@ -4,6 +4,8 @@
 #pragma once
 #include <lights/game/game_object.h>
 #include <lights/scene/scene.h>
+#include <unordered_map>
+#include <string>
 
 namespace OZZ::game::scene {
     class Sprite final : public GameObject {
@@ -15,6 +17,11 @@ namespace OZZ::game::scene {
 
         void SetTexture(const std::filesystem::path& inPath);
     private:
+        bool bDrawDebug = true;
+
         SceneObject sceneObject;
+
+        static std::unordered_map<std::string, SceneObject> debugShapes;
+        static std::shared_ptr<Shader> debugShader;
     };
 }

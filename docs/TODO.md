@@ -28,7 +28,7 @@ to share my work and musings with others.
     - [ ] Proper transform nesting ( Likely implemented as part of GameObject)
     - [ ] Rendering nested sprites ( implemented as part of Sprite)
   - [ ] Add bodies to sprite ( this might be a GameObject thing as well)
-  - [ ] Debug draw bodies on sprite ( these should be a few sceneobjects statically loaded that can be copied and rendered at will)
+  - [x] Debug draw bodies on sprite ( these should be a few sceneobjects statically loaded that can be copied and rendered at will)
 
 - [ ] Single player core movement
   - [ ] axis values in the input system
