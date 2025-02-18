@@ -7,25 +7,28 @@ to share my work and musings with others.
 ## The List
 <i>Last Updated: 2025-01-11</i>
 
-- [ ] Binary Packing
-  - [ ] Pack a single integer
-  - [ ] Pack an arbitrary number of integers
-    - The point of these two is to work out a (hopefully) elegant interface for creating serializable types
-    -- This is also more metaprogramming practice
-- [ ] Use Cereal for binary cerealization of my network types
-  - git@github.com:USCiLab/cereal.git
 - [ ] Collision
   - [x] Create new cmake project somewhere in the repository, ozzCollisionLib.
     - [x] It will use glm as its math library
     - [x] Google tests
   - [x] Create shape types
     - [x] Point
-    - [ ] Circle
-    - [ ] Rectangle
+    - [x] Circle
+    - [x] Rectangle
     - [ ] Convex Polygon
-  - [ ] Develop collisions using some form of TDD.
-    - [ ] Fill out the rest of this
+  - [x] Develop collisions using some form of TDD.
+    - [x] Fill out the rest of this
+  - [ ] OzzWorld2D
+    - [ ] Gravity
+    - [ ] Ground collision
+    - [ ] Wall Collision
    
+- [ ] Sprite class (core game object)
+  - [ ] Nested sprites
+    - [ ] Proper transform nesting ( Likely implemented as part of GameObject)
+    - [ ] Rendering nested sprites ( implemented as part of Sprite)
+  - [ ] Add bodies to sprite ( this might be a GameObject thing as well)
+  - [ ] Debug draw bodies on sprite ( these should be a few sceneobjects statically loaded that can be copied and rendered at will)
 
 - [ ] Single player core movement
   - [ ] axis values in the input system
