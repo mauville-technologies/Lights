@@ -8,8 +8,8 @@
 namespace OZZ {
     void Material::Bind() {
         shader->Bind();
-        glLineWidth(2.f);
-        glPointSize(5.f);
+        glLineWidth(settings.LineWidth);
+        glPointSize(settings.PointSize);
 
         for (const auto &mapping : textureMappings) {
             glActiveTexture(mapping.SlotNumber);

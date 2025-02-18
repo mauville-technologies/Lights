@@ -51,6 +51,8 @@ namespace OZZ::game::scene {
         transform = glm::scale(transform, renderScale);
         sceneObject.Transform = transform;
 
+        objects.emplace_back(sceneObject);
+
         // let's add the needed debug shapes here
         if (bDrawDebug) {
             // The static lazy initialization of this is a bit ugly. Likely there should be a resource manager available somehow that
@@ -74,7 +76,7 @@ namespace OZZ::game::scene {
                 SceneObject circleObject;
                 circleObject.Mat = std::make_unique<Material>();
                 circleObject.Mat->SetShader(debugShader);
-                circleObject.Mat->SetDrawMode(DrawMode::Lines);
+                circleObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
                 circleObject.Mesh = circleMesh;
 
                 debugShapes["circle"] = circleObject;
@@ -90,7 +92,7 @@ namespace OZZ::game::scene {
                 SceneObject quadObject;
                 quadObject.Mat = std::make_unique<Material>();
                 quadObject.Mat->SetShader(debugShader);
-                quadObject.Mat->SetDrawMode(DrawMode::Lines);
+                quadObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
                 quadObject.Mesh = quadMesh;
 
                 debugShapes["quad"] = quadObject;
@@ -113,28 +115,24 @@ namespace OZZ::game::scene {
                 SceneObject pointObject;
                 pointObject.Mat = std::make_unique<Material>();
                 pointObject.Mat->SetShader(debugShader);
-                pointObject.Mat->SetDrawMode(DrawMode::Points);
+                pointObject.Mat->GetSettings().DrawMode = DrawMode::Points;
+                pointObject.Mat->GetSettings().PointSize = 5.f;
                 pointObject.Mesh = pointMesh;
 
                 debugShapes["point"] = pointObject;
             }
 
             // TODO: This is the canonical way of accessing the debug shapes (for when I transition to bodies soon ish)
-            auto circleObject = debugShapes["circle"];
+            auto& circleObject = objects.emplace_back(debugShapes["circle"]);
             circleObject.Transform = transform;
-            objects.push_back(circleObject);
 
-            auto quadObject = debugShapes["quad"];
+            auto& quadObject = objects.emplace_back(debugShapes["quad"]);
             quadObject.Transform = transform;
-            objects.push_back(quadObject);
 
-            auto pointObject = debugShapes["point"];
+            auto& pointObject = objects.emplace_back(debugShapes["point"]);
             pointObject.Transform = transform;
-            objects.push_back(pointObject);
         }
 
-
-        objects.insert(objects.begin(), sceneObject);
         return objects;
     }
 

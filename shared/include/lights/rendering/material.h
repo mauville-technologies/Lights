@@ -42,6 +42,12 @@ namespace OZZ {
 
     class Material {
     public:
+        struct MaterialSettings {
+            DrawMode DrawMode { DrawMode::Triangles };
+            float LineWidth { 1.f };
+            float PointSize { 1.f };
+        };
+
         Material() = default;
         ~Material() = default;
 
@@ -62,19 +68,19 @@ namespace OZZ {
             return textureMappings;
         }
 
-        DrawMode GetDrawMode() const {
-            return drawMode;
+        MaterialSettings& GetSettings() {
+            return settings;
         }
 
-        void SetDrawMode(const DrawMode mode) {
-            drawMode = mode;
+        [[nodiscard]] const MaterialSettings& GetSettings() const {
+            return settings;
         }
 
     private:
         std::shared_ptr<Shader> shader;
         std::vector<TextureMapping> textureMappings;
 
-        DrawMode drawMode { DrawMode::Triangles };
+        MaterialSettings settings;
     };
 
 } // OZZ
