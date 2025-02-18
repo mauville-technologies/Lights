@@ -43,7 +43,7 @@ namespace OZZ::game::scene {
 
         void Init(const std::filesystem::path& mapPath);
         void Tick(float DeltaTime) override;
-        std::vector<SceneObject> GetSceneObjects();
+        std::vector<SceneObject> GetSceneObjects() override;
 
     private:
         void buildTiles();

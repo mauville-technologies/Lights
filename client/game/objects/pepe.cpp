@@ -38,7 +38,7 @@ namespace OZZ::game::scene {
         auto indices = std::vector<uint32_t>(quadIndices.begin(), quadIndices.end());
         sceneObject.Mesh->UploadData(vertices, indices);
 
-        scale = {WidthInMeters, HeightInMeters, 1.f };
+        Scale = {WidthInMeters, HeightInMeters, 1.f };
     }
 
     Pepe::~Pepe() {

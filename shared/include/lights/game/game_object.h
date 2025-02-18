@@ -11,16 +11,20 @@
 #include <ozz_collision/world.h>
 
 namespace OZZ {
+    class SceneObject;
+
     class GameObject {
     public:
         explicit GameObject(std::shared_ptr<OzzWorld2D>);
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
-    protected:
-        glm::vec3 position;
-        glm::vec3 scale;
-        glm::quat rotation;
+        virtual std::vector<SceneObject> GetSceneObjects() = 0;
 
-        std::shared_ptr<OzzWorld2D> collisionSystem;
+        glm::vec3 Position;
+        glm::vec3 Scale;
+        glm::quat Rotation;
+
+    protected:
+        std::shared_ptr<OzzWorld2D> world;
     };
 } // OZZ

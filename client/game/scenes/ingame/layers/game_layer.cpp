@@ -33,7 +33,7 @@ namespace OZZ::game::scene {
         // Create a pepe
         auto goPepe = world->CreateGameObject<Pepe>();
         pepe = {goPepe.first, reinterpret_cast<Pepe*>(goPepe.second)};
-        pepe.second->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
+        pepe.second->GetSceneObjects()[0].Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
 
         // auto goGround = world->CreateGameObject<GroundTest>();
         // ground = {goGround.first, reinterpret_cast<GroundTest*>(goGround.second)};
@@ -63,7 +63,8 @@ namespace OZZ::game::scene {
         auto t = tilemap.second->GetSceneObjects();
         objects.insert(objects.end(), t.begin(), t.end());
 
-        objects.push_back(*pepe.second->GetSceneObject());
+        auto pepeObjects = pepe.second->GetSceneObjects();
+        objects.insert(objects.end(), pepeObjects.begin(), pepeObjects.end());
 
         return objects;
     }

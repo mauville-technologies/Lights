@@ -5,7 +5,7 @@
 #include "lights/game/game_object.h"
 
 namespace OZZ {
-    GameObject::GameObject(std::shared_ptr<OzzWorld2D> InCollision) : position(0.f), scale(1.f), rotation(),
-                                                                           collisionSystem(std::move(InCollision)) {
+    GameObject::GameObject(std::shared_ptr<OzzWorld2D> InWorld) : Position(0.f), Scale(1.f), Rotation(),
+                                                                           world(std::move(InWorld)) {
     }
 } // OZZ

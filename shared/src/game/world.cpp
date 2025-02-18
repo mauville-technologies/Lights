@@ -11,7 +11,7 @@ namespace OZZ {
         spdlog::info("Initializing world with gravity: ({}, {})", params.Gravity.x, params.Gravity.y);
 
         // Create collision system
-        collisionSystem = std::make_shared<OzzWorld2D>();
+        world = std::make_shared<OzzWorld2D>();
     }
 
     void World::PhysicsTick(float deltaTime) {

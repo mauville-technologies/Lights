@@ -4,6 +4,7 @@
 
 #pragma once
 #include <game/objects/pepe.h>
+#include <game/objects/sprite.h>
 #include <lights/scene/scene.h>
 
 namespace OZZ::game::scene {
@@ -19,7 +20,8 @@ namespace OZZ::game::scene {
     private:
         World* world;
 
-        Pepe* pepe;
+        Sprite* pepe;
+        Sprite* pepe2;
         uint64_t pepeid;
     };
 

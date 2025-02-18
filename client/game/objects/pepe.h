@@ -16,11 +16,13 @@ namespace OZZ::game::scene {
         void Tick(float DeltaTime) override;
 
         void Jump();
-        SceneObject* GetSceneObject() { return &sceneObject; }
+        std::vector<SceneObject> GetSceneObjects() override { return {sceneObject}; }
 
         void MoveLeft();
         void MoveRight();
         void StopMoving();
+
+        SceneObject& GetSceneObjectRef() { return sceneObject; };
 
     private:
         SceneObject sceneObject;

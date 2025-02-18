@@ -11,6 +11,19 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 18-02-2025 - 2 days to Victoria
+Well -- my flight to Victoria got cancelled due to snow and my trip has moved the Thursday. This is unfortunate and relevant here as I had plans for the plane
+and my time over there for this project. That being said, it's probably for the best that I didn't get to it yet. I ended up doing something different than
+I had in mind because I didn't like some of the structure I had going on. Most of that is fixed now and I've made a few interfaces much better and less annoying to 
+work with.
+
+The next thing I want to work on is:
+- Adding bodies to my sprites, specifically Rectangles and circles
+- Drawing those debug shapes correctly overtop the new Sprite class.
+- Getting basic gravity and ground collision working. 
+
+These three things will probably take up enough of my time to be getting on with for now. I can decide where I want to go from there after that.
+
 ## 10-02-2025 - One week pre-victoria
 
 So I've decided that I need to start getting back on the Lights train. With my "trip" to Victoria coming up next week, I feel that it's the perfect 

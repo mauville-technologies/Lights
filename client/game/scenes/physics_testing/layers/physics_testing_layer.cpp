@@ -19,11 +19,16 @@ namespace OZZ::game::scene {
                                          glm::vec3(0.f, 0.f, 0.f),  // Target to look at
                                          glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-        auto [id, inpepe] = world->CreateGameObject<Pepe>();
+        auto [id, inpepe] = world->CreateGameObject<Sprite>("assets/textures/pepe.png");
         // scale pepe
         pepeid = id;
-        pepe = static_cast<Pepe *>(inpepe);
-        pepe->GetSceneObject()->Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
+        pepe = static_cast<Sprite *>(inpepe);
+        pepe->Scale *= 1.f;
+
+        auto [id2, inpepe2] = world->CreateGameObject<Sprite>("assets/textures/pepe.png");
+        pepe2 = static_cast<Sprite *>(inpepe2);
+        pepe2->Scale *= 1.f;
+        pepe2->Position = {0.f, 1.f, 0.f};
     }
 
     void PhysicsTestingLayer::Tick(float DeltaTime) {
@@ -39,6 +44,13 @@ namespace OZZ::game::scene {
     }
 
     std::vector<SceneObject> PhysicsTestingLayer::GetSceneObjects() {
-        return {*pepe->GetSceneObject()};
+        auto pepeSceneObject = pepe->GetSceneObjects();
+        auto pepe2SceneObject = pepe2->GetSceneObjects();
+
+        std::vector<SceneObject> sceneObjects;
+        sceneObjects.reserve(pepeSceneObject.size() + pepe2SceneObject.size());
+        sceneObjects.insert(sceneObjects.end(), pepeSceneObject.begin(), pepeSceneObject.end());
+        sceneObjects.insert(sceneObjects.end(), pepe2SceneObject.begin(), pepe2SceneObject.end());
+        return sceneObjects;
     }
 }
