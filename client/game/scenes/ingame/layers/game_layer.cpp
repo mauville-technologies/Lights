@@ -3,7 +3,6 @@
 //
 
 #include "game_layer.h"
-#include "game/objects/pepe.h"
 #include "game/objects/tilemap.h"
 
 namespace OZZ::game::scene {
@@ -13,8 +12,6 @@ namespace OZZ::game::scene {
 
     GameLayer::~GameLayer() {
         if (world) {
-            world->RemoveObject(pepe.first);
-            // world->RemoveObject(ground.first);
             world->RemoveObject(tilemap.first);
         }
     }
@@ -30,14 +27,6 @@ namespace OZZ::game::scene {
                                          glm::vec3(0.f, 0.f, 0.f),  // Target to look at
                                          glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-        // Create a pepe
-        auto goPepe = world->CreateGameObject<Pepe>();
-        pepe = {goPepe.first, reinterpret_cast<Pepe*>(goPepe.second)};
-        pepe.second->GetSceneObjects()[0].Transform = glm::scale(glm::mat4{1.f}, glm::vec3(64.f, 64.f, 1.0f));
-
-        // auto goGround = world->CreateGameObject<GroundTest>();
-        // ground = {goGround.first, reinterpret_cast<GroundTest*>(goGround.second)};
-
         auto goTilemap = world->CreateGameObject<Tilemap>();
         tilemap = {goTilemap.first, reinterpret_cast<Tilemap*>(goTilemap.second)};
         tilemap.second->Init("assets/map/test_map.tmj");
@@ -46,7 +35,6 @@ namespace OZZ::game::scene {
     void GameLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
 
-        pepe.second->Tick(DeltaTime);
         // ground.second->Tick(DeltaTime);
     }
 
@@ -62,9 +50,6 @@ namespace OZZ::game::scene {
         std::vector<SceneObject> objects;
         auto t = tilemap.second->GetSceneObjects();
         objects.insert(objects.end(), t.begin(), t.end());
-
-        auto pepeObjects = pepe.second->GetSceneObjects();
-        objects.insert(objects.end(), pepeObjects.begin(), pepeObjects.end());
 
         return objects;
     }
@@ -91,11 +76,9 @@ namespace OZZ::game::scene {
             .Callbacks = {
                 .OnPressed = [this]() {
                     spdlog::info("Left Pressed");
-                    pepe.second->MoveLeft();
                 },
                 .OnReleased = [this]() {
                     spdlog::info("Left Released");
-                    pepe.second->StopMoving();
                 }
             }
         });
@@ -105,10 +88,8 @@ namespace OZZ::game::scene {
             .Chord = InputChord{.Keys = std::vector{EKey::Right}},
             .Callbacks = {
                 .OnPressed = [this]() {
-                    pepe.second->MoveRight();
                 },
                 .OnReleased = [this]() {
-                    pepe.second->StopMoving();
                 }
             }
         });
@@ -117,10 +98,7 @@ namespace OZZ::game::scene {
               .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
                 .Callbacks = {
                         .OnPressed = [this]() {
-                            if (pepe.second) {
-                                spdlog::info("Jumping");
-                                pepe.second->Jump();
-                            }
+
                         },
                         .OnReleased = [this]() {
                             spdlog::info("Stop Up");

@@ -2,10 +2,8 @@
 // Created by ozzadar on 2025-02-17.
 //
 
-#include "sprite.h"
-
+#include <lights/game/2D/sprite.h>
 #include <lights/rendering/shapes.h>
-#include "lights/rendering/shapes.h"
 
 namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;

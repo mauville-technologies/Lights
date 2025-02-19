@@ -6,7 +6,6 @@
 #include <lights/scene/scene.h>
 #include <lights/game/world.h>
 #include <lights/input/input_subsystem.h>
-#include "game/objects/pepe.h"
 #include "game/objects/tilemap.h"
 
 namespace OZZ::game::scene {
@@ -24,7 +23,6 @@ namespace OZZ::game::scene {
         void unregisterMappings(std::shared_ptr<InputSubsystem> inInput);
         void registerMappings(std::shared_ptr<InputSubsystem> inInput);
     private:
-        std::pair<uint64_t, Pepe*> pepe {0, nullptr};
         std::pair<uint64_t, Tilemap*> tilemap {0, nullptr};
 
         std::shared_ptr<InputSubsystem> input;

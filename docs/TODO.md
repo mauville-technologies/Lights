@@ -38,7 +38,8 @@ to share my work and musings with others.
   - [ ] Slide down slopes
    
    
-- [ ] Tilemap Objects
+- [ ] Tilemap
+  - [ ] Probably a full re-write utitlizing Sprite class
   - [ ] Spawn points / spawn zone
    
    

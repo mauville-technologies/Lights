@@ -3,8 +3,7 @@
 //
 
 #pragma once
-#include <game/objects/pepe.h>
-#include <game/objects/sprite.h>
+#include <lights/game/2D/sprite.h>
 #include <lights/scene/scene.h>
 
 namespace OZZ::game::scene {

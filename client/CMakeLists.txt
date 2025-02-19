@@ -14,8 +14,6 @@ set (SOURCES
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
 
         game/objects/tilemap.cpp
-        game/objects/sprite.cpp
-        game/objects/pepe.cpp
 
         game/ui/debug_window.cpp
 )
