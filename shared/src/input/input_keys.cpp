@@ -13,6 +13,9 @@ std::ostream &operator<<(std::ostream &out, const OZZ::EKeyState &state) {
         case EKeyState::KeyReleased:
             out << "Released";
             break;
+        default:
+            out << "Unknown";
+            break;
     }
     return out;
 }

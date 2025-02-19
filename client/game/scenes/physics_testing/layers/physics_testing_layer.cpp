@@ -11,6 +11,7 @@ namespace OZZ::game::scene {
     PhysicsTestingLayer::~PhysicsTestingLayer() {
         if (world) {
             world->RemoveObject(pepeid);
+            world->RemoveObject(pepe2id);
         }
     }
 
@@ -27,6 +28,7 @@ namespace OZZ::game::scene {
 
         auto [id2, inpepe2] = world->CreateGameObject<Sprite>("assets/textures/pepe.png");
         pepe2 = static_cast<Sprite *>(inpepe2);
+        pepe2id = id2;
         pepe2->Scale *= 1.f;
         pepe2->Position = {0.f, 1.f, 0.f};
     }

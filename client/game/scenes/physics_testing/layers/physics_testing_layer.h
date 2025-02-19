@@ -23,6 +23,7 @@ namespace OZZ::game::scene {
         Sprite* pepe;
         Sprite* pepe2;
         uint64_t pepeid;
+        uint64_t pepe2id;
     };
 
 } // OZZ

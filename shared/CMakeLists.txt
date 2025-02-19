@@ -42,5 +42,5 @@ endif ()
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC include ${Tileson_INCLUDE_DIR})
-target_link_libraries(Lights_Shared_Lib PUBLIC asio spdlog mongocxx_static cryptopp glfw ${OPENGL_LIBRARIES} glad glm stb clay imgui tileson ozz_collision)
+target_link_libraries(Lights_Shared_Lib PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
 
