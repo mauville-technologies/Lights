@@ -21,10 +21,10 @@ namespace OZZ {
         glm::vec2 Gravity = {0.f, -9.8f};
     };
 
-    class World {
+    class GameWorld {
     public:
-        World() = default;
-        ~World() = default;
+        GameWorld() = default;
+        ~GameWorld() = default;
 
         void Init(const WorldParams& params = {});
 

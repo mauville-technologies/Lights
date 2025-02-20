@@ -7,7 +7,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <vector>
-#include <lights/game/world.h>
+#include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
 #include <lights/ui/user_interface.h>
 
@@ -89,8 +89,8 @@ namespace OZZ {
         }
 
         std::vector<std::shared_ptr<SceneLayer>>& GetLayers() { return Layers; }
-        World* GetWorld() {
-            if (!world) world = std::make_shared<World>();
+        GameWorld* GetWorld() {
+            if (!world) world = std::make_shared<GameWorld>();
             return world.get();
         }
     protected:
@@ -98,6 +98,6 @@ namespace OZZ {
         std::shared_ptr<UserInterface> ui;
         std::shared_ptr<InputSubsystem> input;
     private:
-        std::shared_ptr<World> world;
+        std::shared_ptr<GameWorld> world;
     };
 }

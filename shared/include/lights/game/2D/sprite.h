@@ -16,8 +16,12 @@ namespace OZZ::game::scene {
         std::vector<SceneObject> GetSceneObjects() override;
 
         void SetTexture(const std::filesystem::path& inPath);
+
+        std::vector<BodyID> Bodies {};
+
     private:
         bool bDrawDebug = true;
+        float debugDrawSize = 5;
 
         SceneObject sceneObject;
 

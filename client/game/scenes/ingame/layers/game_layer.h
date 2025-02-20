@@ -4,14 +4,14 @@
 
 #pragma once
 #include <lights/scene/scene.h>
-#include <lights/game/world.h>
+#include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
 #include "game/objects/tilemap.h"
 
 namespace OZZ::game::scene {
     class GameLayer : public SceneLayer {
     public:
-        explicit GameLayer(World* inWorld);
+        explicit GameLayer(GameWorld* inWorld);
         ~GameLayer() override;
         void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
         void Init() override;
@@ -27,6 +27,6 @@ namespace OZZ::game::scene {
 
         std::shared_ptr<InputSubsystem> input;
 
-        World* world;
+        GameWorld* world;
     };
 } // OZZ

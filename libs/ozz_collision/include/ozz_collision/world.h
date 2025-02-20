@@ -6,34 +6,14 @@
 #include <variant>
 #include <vector>
 #include <random>
-#include <optional>
 #include <glm/glm.hpp>
 #include <mutex>
+#include <ozz_collision/ozz_collision_shapes.h>
 
 namespace OZZ {
-    enum class ShapeKind {
-        Unknown,
-        Circle,
-        Rectangle,
-        Polygon,
-        Point
-    };
+    using namespace OZZ::collision::shapes;
 
-    struct CircleDef {
-        float Radius{0.f};
-    };
-
-    struct RectangleDef {
-        glm::vec2 Size{0.f};
-    };
-
-    struct PolygonDef {
-        std::vector<glm::vec2> Vertices{};
-    };
-
-    struct PointDef {
-        glm::vec2 Point{0.f};
-    };
+    using BodyID = uint64_t;
 
     enum class BodyType {
         Static,
@@ -41,14 +21,14 @@ namespace OZZ {
         Kinematic
     };
 
-    using ShapeDefType = std::variant<CircleDef, RectangleDef, PolygonDef, PointDef>;
-
     struct Body {
-        uint64_t ID{};
+        BodyID ID{};
         BodyType Type{BodyType::Static};
-        ShapeKind ShapeType{};
-        ShapeDefType Definition{};
+        OzzShapeKind Kind{};
+        OzzShapeData Data{};
 
+        // TODO: I feel like this position variable is conflicting with the shape definitions.
+        // at the very least I'll probably need a way to pass in a translation when I'm doing the actual collision detection
         glm::vec2 Position{0.f};
         glm::vec2 Velocity{0.f};
 
@@ -57,19 +37,19 @@ namespace OZZ {
 
     class OzzWorld2D {
     public:
-        uint64_t CreateBody(BodyType type, ShapeKind shapeType, const ShapeDefType &shapeDef, const glm::vec2 &position = {0.f, 0.f},
+        BodyID CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData &shapeDef, const glm::vec2 &position = {0.f, 0.f},
                             const glm::vec2 &velocity = {0.f, 0.f});
-        void DestroyBody(uint64_t id);
-        Body* GetBody(uint64_t id);
+        void DestroyBody(BodyID id);
+        Body* GetBody(BodyID id);
 
         void PhysicsTick(float DeltaTime);
     private:
-        uint64_t generateUnusedID() {
+        BodyID generateUnusedID() {
             static std::random_device rd;
             static std::mt19937_64 gen(rd());
             static std::uniform_int_distribution<uint64_t> dis(0, std::numeric_limits<uint64_t>::max());
 
-            uint64_t id = dis(gen);
+            BodyID id = dis(gen);
 
             // We should make sure that the ID is unique
             while (id == 0 || std::any_of(bodies.begin(), bodies.end(), [id](const auto &body) { return body.ID == id; })) {

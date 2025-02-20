@@ -6,7 +6,7 @@
 #include "game/objects/tilemap.h"
 
 namespace OZZ::game::scene {
-    GameLayer::GameLayer(World* inWorld) : world(inWorld) {
+    GameLayer::GameLayer(GameWorld* inWorld) : world(inWorld) {
 
     }
 

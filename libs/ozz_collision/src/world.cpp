@@ -4,8 +4,11 @@
 
 #include "ozz_collision/world.h"
 
+#include "ozz_collision/ozz_collision_shapes.h"
+#include <iostream>
+
 namespace OZZ {
-    uint64_t OzzWorld2D::CreateBody(BodyType type, ShapeKind shapeType, const ShapeDefType& shapeDef,
+    uint64_t OzzWorld2D::CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData& shapeDef,
                                     const glm::vec2& position,
                                     const glm::vec2& velocity) {
         const auto newId = generateUnusedID();
@@ -15,8 +18,8 @@ namespace OZZ {
             bodies.emplace_back(Body{
                 .ID = newId,
                 .Type = type,
-                .ShapeType = shapeType,
-                .Definition = shapeDef,
+                .Kind = shapeType,
+                .Data = shapeDef,
                 .Position = position,
                 .Velocity = velocity,
             });
@@ -50,14 +53,17 @@ namespace OZZ {
         // Ticking world
         for (auto& body : bodies) {
             // Apply forces
-
             switch (body.Type) {
-            case BodyType::Dynamic:
+            case BodyType::Dynamic: {
                 // Apply gravity
-                body.Velocity.y -= 9.81f * DeltaTime;
+                body.Velocity.y -= 20.f * DeltaTime;
                 // Apply velocity
-                body.Position += body.Velocity * DeltaTime;
+
+                auto position = GetOzzShapePosition(body.Kind, body.Data);
+                position += glm::vec3{ body.Velocity, 1.f};
+                SetOzzShapePosition(body.Kind, body.Data, position);
                 break;
+            }
             case BodyType::Kinematic:
                 break;
             case BodyType::Static:

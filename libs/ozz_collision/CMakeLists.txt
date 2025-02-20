@@ -11,6 +11,7 @@ set (SOURCES
     src/shapes/ozz_rectangle.cpp
 
     src/world.cpp
+        include/ozz_collision/ozz_collision_shapes.h
 )
 add_library(ozz_collision STATIC
         ${SOURCES})

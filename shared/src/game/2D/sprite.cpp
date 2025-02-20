@@ -7,9 +7,10 @@
 
 namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;
-    std::unordered_map<std::string, SceneObject> Sprite::debugShapes {};
+    std::unordered_map<std::string, SceneObject> Sprite::debugShapes{};
 
-    Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path& texture) : GameObject(std::move(inWorld)) {
+    Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path& texture) : GameObject(
+        std::move(inWorld)) {
         const auto shader = std::make_shared<Shader>("assets/shaders/sprite.vert", "assets/shaders/sprite.frag");
         sceneObject.Mat = std::make_unique<Material>();
         sceneObject.Mat->SetShader(shader);
@@ -33,8 +34,8 @@ namespace OZZ::game::scene {
 
         glm::mat4 transform(1.f);
         glm::vec3 renderPosition = {
-            Position.x * constants::PixelsPerMeter,
-            Position.y * constants::PixelsPerMeter,
+            Position.x,
+            Position.y,
             0.f
         };
 
@@ -75,6 +76,8 @@ namespace OZZ::game::scene {
                 circleObject.Mat = std::make_unique<Material>();
                 circleObject.Mat->SetShader(debugShader);
                 circleObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
+                circleObject.Mat->GetSettings().LineWidth = debugDrawSize;
+                circleObject.Mat->GetSettings().PointSize = debugDrawSize;
                 circleObject.Mesh = circleMesh;
 
                 debugShapes["circle"] = circleObject;
@@ -90,6 +93,8 @@ namespace OZZ::game::scene {
                 SceneObject quadObject;
                 quadObject.Mat = std::make_unique<Material>();
                 quadObject.Mat->SetShader(debugShader);
+                quadObject.Mat->GetSettings().LineWidth = debugDrawSize;
+                quadObject.Mat->GetSettings().PointSize = debugDrawSize;
                 quadObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
                 quadObject.Mesh = quadMesh;
 
@@ -97,16 +102,16 @@ namespace OZZ::game::scene {
             }
 
             if (!debugShapes.contains("point")) {
-                auto vertices = std::vector<Vertex> {
+                auto vertices = std::vector<Vertex>{
                     Vertex{
-                        .position = { 0.f, 0.f, 0.f },
-                        .color = { 1.f, 0.f, 0.f, 0.f },
-                        .normal = { 0.f, 0.f, 1.f },
-                        .uv = { 0.f, 0.f },
+                        .position = {0.f, 0.f, 0.f},
+                        .color = {1.f, 0.f, 0.f, 0.f},
+                        .normal = {0.f, 0.f, 1.f},
+                        .uv = {0.f, 0.f},
                     }
                 };
 
-                auto indices = std::vector<uint32_t> { 0 };
+                auto indices = std::vector<uint32_t>{0};
                 const auto pointMesh = std::make_shared<IndexVertexBuffer>();
                 pointMesh->UploadData(vertices, indices);
 
@@ -114,27 +119,75 @@ namespace OZZ::game::scene {
                 pointObject.Mat = std::make_unique<Material>();
                 pointObject.Mat->SetShader(debugShader);
                 pointObject.Mat->GetSettings().DrawMode = DrawMode::Points;
-                pointObject.Mat->GetSettings().PointSize = 5.f;
+                pointObject.Mat->GetSettings().PointSize = debugDrawSize;
                 pointObject.Mesh = pointMesh;
 
                 debugShapes["point"] = pointObject;
             }
 
-            // TODO: This is the canonical way of accessing the debug shapes (for when I transition to bodies soon ish)
-            auto& circleObject = objects.emplace_back(debugShapes["circle"]);
-            circleObject.Transform = transform;
+            // For each body in the Bodies array, let's draw its debug shape
+            for (auto bodyid : Bodies) {
+                if (auto* body = world->GetBody(bodyid)) {
+                    switch (body->Kind) {
+                    case OzzShapeKind::Circle: {
+                        // build transform from shape
+                        auto& circleShape = std::get<OzzCircle>(body->Data);
+                        glm::mat4 circleTransform{1.f};
+                        glm::vec3 circleRenderPosition{
+                            circleShape.Position.x,
+                            circleShape.Position.y,
+                            1.f
+                        };
+                        glm::vec3 circleRenderScale{
+                            circleShape.Radius * constants::PixelsPerMeter,
+                            circleShape.Radius * constants::PixelsPerMeter,
+                            1.f
+                        };
 
-            auto& quadObject = objects.emplace_back(debugShapes["quad"]);
-            quadObject.Transform = transform;
+                        circleTransform = glm::translate(circleTransform, circleRenderPosition);
+                        circleTransform = glm::scale(circleTransform, circleRenderScale);
 
-            auto& pointObject = objects.emplace_back(debugShapes["point"]);
-            pointObject.Transform = transform;
+                        // create a copy
+                        auto& circleObject = objects.emplace_back(debugShapes["circle"]);
+                        circleObject.Transform = circleTransform;
+                        break;
+                    }
+                    case OzzShapeKind::Rectangle: {
+                        // build transform from shape
+                        auto& rectangleShape = std::get<OzzRectangle>(body->Data);
+                        glm::mat4 rectangleTransform{1.f};
+                        glm::vec3 rectangleRenderPosition{
+                            rectangleShape.Position.x,
+                            rectangleShape.Position.y,
+                            1.f
+                        };
+                        glm::vec3 rectangleRenderScale{
+                            rectangleShape.Size.x * constants::PixelsPerMeter,
+                            rectangleShape.Size.y * constants::PixelsPerMeter,
+                            1.f
+                        };
+
+                        rectangleTransform = glm::translate(rectangleTransform, rectangleRenderPosition);
+                        rectangleTransform = glm::scale(rectangleTransform, rectangleRenderScale);
+
+                        // create a copy
+                        auto& rectangleObject = objects.emplace_back(debugShapes["quad"]);
+                        rectangleObject.Transform = rectangleTransform;
+                        break;
+                    }
+                    case OzzShapeKind::Point:
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
         }
 
         return objects;
     }
 
-    void Sprite::SetTexture(const std::filesystem::path &inPath) {
+    void Sprite::SetTexture(const std::filesystem::path& inPath) {
         const auto image = std::make_unique<Image>(inPath);
         const auto texture = std::make_shared<Texture>();
         texture->UploadData(image.get());

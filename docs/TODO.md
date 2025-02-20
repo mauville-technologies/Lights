@@ -19,7 +19,7 @@ to share my work and musings with others.
   - [x] Develop collisions using some form of TDD.
     - [x] Fill out the rest of this
   - [ ] OzzWorld2D
-    - [ ] Gravity
+    - [x] Gravity
     - [ ] Ground collision
     - [ ] Wall Collision
    
@@ -27,7 +27,7 @@ to share my work and musings with others.
   - [ ] Nested sprites
     - [ ] Proper transform nesting ( Likely implemented as part of GameObject)
     - [ ] Rendering nested sprites ( implemented as part of Sprite)
-  - [ ] Add bodies to sprite ( this might be a GameObject thing as well)
+  - [x] Add bodies to sprite ( this might be a GameObject thing as well)
   - [x] Debug draw bodies on sprite ( these should be a few sceneobjects statically loaded that can be copied and rendered at will)
 
 - [ ] Single player core movement

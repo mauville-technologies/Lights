@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "lights/game/world.h"
+#include "lights/game/game_world.h"
 #include "lights/scene/scene.h"
 #include "lights/ui/user_interface.h"
 

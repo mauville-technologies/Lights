@@ -4,32 +4,32 @@
 
 #include <spdlog/spdlog.h>
 
-#include "lights/game/world.h"
+#include "lights/game/game_world.h"
 
 namespace OZZ {
-    void World::Init(const WorldParams& params) {
+    void GameWorld::Init(const WorldParams& params) {
         spdlog::info("Initializing world with gravity: ({}, {})", params.Gravity.x, params.Gravity.y);
 
         // Create collision system
         world = std::make_shared<OzzWorld2D>();
     }
 
-    void World::PhysicsTick(float deltaTime) {
+    void GameWorld::PhysicsTick(float deltaTime) {
+        world->PhysicsTick(deltaTime);
+    }
+
+    void GameWorld::Tick(float deltaTime) {
 
     }
 
-    void World::Tick(float deltaTime) {
-
-    }
-
-    GameObject *World::GetObject(uint64_t id) {
+    GameObject *GameWorld::GetObject(uint64_t id) {
         if (objects.contains(id)) {
             return objects[id].get();
         }
         return nullptr;
     }
 
-    void World::RemoveObject(uint64_t id) {
+    void GameWorld::RemoveObject(uint64_t id) {
         spdlog::info("Objects before delete: {}", objects.size());
         if (objects.erase(id) == 1) {
             spdlog::info("erased object");
@@ -37,7 +37,7 @@ namespace OZZ {
         spdlog::info("Objects after delete: {}", objects.size());
     }
 
-    void World::DeInit() {
+    void GameWorld::DeInit() {
         objects.clear();
 
     }

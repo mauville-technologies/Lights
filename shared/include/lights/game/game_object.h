@@ -24,6 +24,7 @@ namespace OZZ {
         glm::vec3 Scale;
         glm::quat Rotation;
 
+        OzzWorld2D* GetWorld() const { return world.get(); }
     protected:
         std::shared_ptr<OzzWorld2D> world;
     };

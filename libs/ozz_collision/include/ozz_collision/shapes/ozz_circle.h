@@ -12,7 +12,7 @@ namespace OZZ::collision::shapes {
     struct OzzRectangle;
 
     struct OzzCircle {
-        glm::vec2 Center;
+        glm::vec2 Position;
         float Radius;
 
         // Circle on Point collision

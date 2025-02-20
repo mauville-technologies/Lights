@@ -43,17 +43,17 @@ TEST(OzzRectangle, RectanglexCircleCollision) {
     };
 
     constexpr OzzCircle circle1 = {
-        .Center = {1.f, 3.f},
+        .Position = {1.f, 3.f},
         .Radius = 1.f
     };
 
     constexpr OzzCircle circle2 = {
-        .Center = {3.f, 1.f},
+        .Position = {3.f, 1.f},
         .Radius = 1.f
     };
 
     constexpr OzzCircle circle3 = {
-        .Center = {3.01f, 1.f},
+        .Position = {3.01f, 1.f},
         .Radius = 1.f
     };
 

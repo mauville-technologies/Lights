@@ -11,6 +11,21 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 20-02-2025 - On the plane to Victoria
+
+I got a decent amount done in the first couple of hours on the plane here. Namely, I've added the ability to add bodies
+to my sprite object and lock the render position of the sprite with the body. It supports rectangles, circles, and squares.
+
+The next step is to set up a ground object into the scene, and then start handling collisions. I don't know how I'll integrate kinematic yet
+but I have a solid idea of how I want to handle dynamic and static.
+
+The basic steps:
+1. Cache sets of body ids corresponding to the various types.
+2. Make sure to update the cache on creation and deletion
+2. After the applying gravity, check all the dynamic objects vs everything else
+
+Going to take a small break now. Been at this nonstop I think for a solid couple of hours. Going to commit and push this now.
+
 ## 19-02-2025 - 1 day to Victoria
 
 So I got a good chunk done this afternoon. I now have a sprite class with access to debug shapes it can add to its 

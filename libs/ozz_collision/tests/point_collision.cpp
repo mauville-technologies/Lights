@@ -26,7 +26,7 @@ TEST(OzzPoint, PointxPointCollision) {
 TEST(OzzPoint, PointxCircleCollision) {
     constexpr OzzPoint point1{.Position = {0.f, 0.f}};
     constexpr OzzPoint point2{.Position = {0.f, 1.f}};
-    constexpr OzzCircle circle1{.Center = {0.f, 0.f}, .Radius = 0.5f};
+    constexpr OzzCircle circle1{.Position = {0.f, 0.f}, .Radius = 0.5f};
 
     const auto result1 = OZZ::collision::IsColliding(point1, circle1);
     const auto result2 = OZZ::collision::IsColliding(point2, circle1);

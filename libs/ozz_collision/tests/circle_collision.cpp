@@ -11,8 +11,8 @@ using namespace OZZ::collision::shapes;
 
 TEST(OzzCircle, CirclexPointCollision) {
     constexpr OzzPoint point1{.Position = {0.f, 0.f}};
-    constexpr OzzCircle circle1{.Center = {0.f, 0.f}, .Radius = 1.f};
-    constexpr OzzCircle circle2{.Center = {2.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle1{.Position = {0.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle2{.Position = {2.f, 0.f}, .Radius = 1.f};
 
     const auto result1 = OZZ::collision::IsColliding(point1, circle1);
     const auto result2 = OZZ::collision::IsColliding(point1, circle2);
@@ -23,10 +23,10 @@ TEST(OzzCircle, CirclexPointCollision) {
 }
 
 TEST(OzzCircle, CirclexCircle) {
-    constexpr OzzCircle circle1{.Center = {0.f, 0.f}, .Radius = 1.f};
-    constexpr OzzCircle circle2{.Center = {1.f, 0.f}, .Radius = 1.f};
-    constexpr OzzCircle circle3{.Center = {3.f, 0.f}, .Radius = 1.f};
-    constexpr OzzCircle circle4{.Center = {2.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle1{.Position = {0.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle2{.Position = {1.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle3{.Position = {3.f, 0.f}, .Radius = 1.f};
+    constexpr OzzCircle circle4{.Position = {2.f, 0.f}, .Radius = 1.f};
 
     const auto result1 = OZZ::collision::IsColliding(circle1, circle2);
     const auto result2 = OZZ::collision::IsColliding(circle1, circle3);
@@ -42,11 +42,11 @@ TEST(OzzCircle, CirclexRectangle) {
 
     const auto sqrt2 = std::sqrt(2.f);
     // now let's put some circles around it
-    const OzzCircle circle1{.Center = {2.f, 2.f}, .Radius = sqrt2}; // this one should touch at (1, 1)
-    constexpr OzzCircle circle2{.Center = {2.f, 0.f}, .Radius = 1.f}; // this one should touch at (1, 0)
+    const OzzCircle circle1{.Position = {2.f, 2.f}, .Radius = sqrt2}; // this one should touch at (1, 1)
+    constexpr OzzCircle circle2{.Position = {2.f, 0.f}, .Radius = 1.f}; // this one should touch at (1, 0)
     // let's have a couple slightly off
-    const OzzCircle circle3{.Center = {2.01f, 2.f}, .Radius = sqrt2}; // this one should no longer touch
-    constexpr OzzCircle circle4{.Center = {2.01f, 0.f}, .Radius = 1.f}; // this one should no longer touch
+    const OzzCircle circle3{.Position = {2.01f, 2.f}, .Radius = sqrt2}; // this one should no longer touch
+    constexpr OzzCircle circle4{.Position = {2.01f, 0.f}, .Radius = 1.f}; // this one should no longer touch
 
     const auto result1 = OZZ::collision::IsColliding(rectangle1, circle1);
     const auto result2 = OZZ::collision::IsColliding(rectangle1, circle2);
