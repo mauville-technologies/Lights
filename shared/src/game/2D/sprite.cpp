@@ -31,7 +31,6 @@ namespace OZZ::game::scene {
         /* TODO: This is going to be a terrible implementation
          * Later I will want to cache the transform but for now we'll rebuild it every frame
          */
-
         glm::mat4 transform(1.f);
         glm::vec3 renderPosition = {
             Position.x,
@@ -39,11 +38,20 @@ namespace OZZ::game::scene {
             0.f
         };
 
+        auto mainBodyId = std::find(Bodies.begin(), Bodies.end(), MainBody);
+        if (mainBodyId != Bodies.end()) {
+            if (const auto mainBody = world->GetBody(*mainBodyId)) {
+                auto ShapePosition = GetOzzShapePosition(mainBody->Kind, mainBody->Data);
+                renderPosition.x = ShapePosition.x;
+                renderPosition.y = ShapePosition.y;
+            }
+        }
+
         transform = glm::translate(transform, renderPosition);
 
         glm::vec3 renderScale = {
-            Scale.x * constants::PixelsPerMeter,
-            Scale.y * constants::PixelsPerMeter,
+            Scale.x,
+            Scale.y,
             1.f
         };
 
@@ -128,6 +136,11 @@ namespace OZZ::game::scene {
             // For each body in the Bodies array, let's draw its debug shape
             for (auto bodyid : Bodies) {
                 if (auto* body = world->GetBody(bodyid)) {
+                    if (body->bCollidedThisFrame) {
+                        debugShader->SetVec3("lineColor", {0.f, 1.f, 0.f});
+                    } else {
+                        debugShader->SetVec3("lineColor", {1.f, 0.f, 0.f});
+                    }
                     switch (body->Kind) {
                     case OzzShapeKind::Circle: {
                         // build transform from shape
@@ -139,8 +152,8 @@ namespace OZZ::game::scene {
                             1.f
                         };
                         glm::vec3 circleRenderScale{
-                            circleShape.Radius * constants::PixelsPerMeter,
-                            circleShape.Radius * constants::PixelsPerMeter,
+                            circleShape.Radius * 2,
+                            circleShape.Radius * 2,
                             1.f
                         };
 
@@ -162,8 +175,8 @@ namespace OZZ::game::scene {
                             1.f
                         };
                         glm::vec3 rectangleRenderScale{
-                            rectangleShape.Size.x * constants::PixelsPerMeter,
-                            rectangleShape.Size.y * constants::PixelsPerMeter,
+                            rectangleShape.Size.x,
+                            rectangleShape.Size.y,
                             1.f
                         };
 

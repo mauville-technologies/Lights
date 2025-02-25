@@ -18,6 +18,7 @@ namespace OZZ::game::scene {
         void SetTexture(const std::filesystem::path& inPath);
 
         std::vector<BodyID> Bodies {};
+        BodyID MainBody { InvalidBodyID };
 
     private:
         bool bDrawDebug = true;

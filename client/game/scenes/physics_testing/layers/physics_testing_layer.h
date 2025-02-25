@@ -20,9 +20,10 @@ namespace OZZ::game::scene {
         GameWorld* world;
 
         Sprite* pepe;
-        Sprite* pepe2;
         uint64_t pepeid;
-        uint64_t pepe2id;
+
+        Sprite* ground;
+        uint64_t groundId;
     };
 
 } // OZZ

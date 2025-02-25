@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 #include <random>
+#include <limits>
 #include <glm/glm.hpp>
 #include <mutex>
 #include <ozz_collision/ozz_collision_shapes.h>
@@ -14,6 +15,7 @@ namespace OZZ {
     using namespace OZZ::collision::shapes;
 
     using BodyID = uint64_t;
+    constexpr auto InvalidBodyID = std::numeric_limits<BodyID>::max();
 
     enum class BodyType {
         Static,
@@ -33,16 +35,34 @@ namespace OZZ {
         glm::vec2 Velocity{0.f};
 
         // TODO: Maybe we want rotation and other junk. For now, let's assume everything stays upright the way the shape is defined
+        bool bCollidedThisFrame{false};
     };
+
+
+    namespace collision {
+        struct CollisionVisitor {
+            template <typename A, typename B>
+            collision::OzzCollisionResult operator()(const A& a, const B& b) const {
+                return IsColliding(a, b);
+            }
+        };
+
+        static collision::OzzCollisionResult IsColliding(const Body& a, const Body& b) {
+            return std::visit(CollisionVisitor{}, a.Data, b.Data);
+        }
+    }
+
 
     class OzzWorld2D {
     public:
-        BodyID CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData &shapeDef, const glm::vec2 &position = {0.f, 0.f},
-                            const glm::vec2 &velocity = {0.f, 0.f});
+        BodyID CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData& shapeDef,
+                          const glm::vec2& position = {0.f, 0.f},
+                          const glm::vec2& velocity = {0.f, 0.f});
         void DestroyBody(BodyID id);
         Body* GetBody(BodyID id);
 
         void PhysicsTick(float DeltaTime);
+
     private:
         BodyID generateUnusedID() {
             static std::random_device rd;
@@ -52,7 +72,9 @@ namespace OZZ {
             BodyID id = dis(gen);
 
             // We should make sure that the ID is unique
-            while (id == 0 || std::any_of(bodies.begin(), bodies.end(), [id](const auto &body) { return body.ID == id; })) {
+            while (id == 0 || std::any_of(bodies.begin(), bodies.end(), [id](const auto& body) {
+                return body.ID == id;
+            })) {
                 id = dis(gen);
             }
 

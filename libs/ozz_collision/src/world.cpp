@@ -48,6 +48,9 @@ namespace OZZ {
     }
 
     void OzzWorld2D::PhysicsTick(float DeltaTime) {
+        std::vector<Body*> dynamicBodies{};
+        std::vector<Body*> staticBodies{};
+        std::vector<Body*> kinematicBodies{};
         // we should probably add a mutex around accessing the bodies vector
         // that way we can ensure that physicstick is always called after all the bodies have been added/removed
         // Ticking world
@@ -60,16 +63,29 @@ namespace OZZ {
                 // Apply velocity
 
                 auto position = GetOzzShapePosition(body.Kind, body.Data);
-                position += glm::vec3{ body.Velocity, 1.f};
+                position += glm::vec3{body.Velocity, 1.f};
                 SetOzzShapePosition(body.Kind, body.Data, position);
+                dynamicBodies.emplace_back(&body);
                 break;
             }
             case BodyType::Kinematic:
+                kinematicBodies.emplace_back(&body);
                 break;
             case BodyType::Static:
+                staticBodies.emplace_back(&body);
                 break;
             default:
                 break;
+            }
+        }
+
+        // Collision detection
+        for (auto* dynamicBody : dynamicBodies) {
+            for (auto* staticBody : staticBodies) {
+                // check if they collide
+                auto bColliding = collision::IsColliding(*dynamicBody, *staticBody);
+                dynamicBody->bCollidedThisFrame = bColliding.bCollided;
+                staticBody->bCollidedThisFrame = bColliding.bCollided;
             }
         }
     }

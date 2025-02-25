@@ -11,6 +11,21 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 24-02-2025 On the plane back from Victoria
+
+So I didn't get anything done in the few days I was in Victoria. While I planned on getting a lot of programming done
+throughout my absence -- the duties that brought me out in the first place took up too much time and energy to get anything done.
+
+That being said, I managed to get a little more done during my return trip. Namely, I've started the process of detecting collisions
+between all the objects that exist in the world. It ended up flushing out a few bugs / misconceptions that I had baked into my codebase.
+
+Specifically, I was mixing some rendering code within the physics logic which caused it not to properly detect the collisions in proper world space.
+
+For now, I've placed the onus of properly scaling and positioning the objects within rendering space on the scene layers that are creating the objects.
+I wanted to be able to work with smaller numbers. Now, all of it now operates in pixel space. I want to return to it at some point to hopefully be able to rectify this
+but I am either too tired or not properly thinking to be able to that. It might have something to do with defining my projection matrix using pixels -- but that's just a theory.
+
+Anyways, with that done hopefully I can start blocking movement for dynamic objects against static objects. 
 ## 20-02-2025 - On the plane to Victoria
 
 I got a decent amount done in the first couple of hours on the plane here. Namely, I've added the ability to add bodies
