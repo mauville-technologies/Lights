@@ -34,7 +34,7 @@ namespace OZZ::collision::shapes {
             return {typedData.Position, 1.f};
         }
         default:
-
+            break;
         }
         return {};
     }
@@ -57,7 +57,7 @@ namespace OZZ::collision::shapes {
             return;
         }
         default:
-
+            break;
         }
     }
 }

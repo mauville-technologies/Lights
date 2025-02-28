@@ -28,7 +28,7 @@ namespace OZZ {
                 objMat->GetShader()->SetMat4("projection", layer->LayerCamera.ProjectionMatrix);
                 objMat->GetShader()->SetMat4("model", transform);
                 objMesh->Bind();
-                const auto drawMode = ToGLEnum(objMat->GetSettings().DrawMode);
+                const auto drawMode = ToGLEnum(objMat->GetSettings().Mode);
                 glDrawElements(drawMode, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
             }
         }

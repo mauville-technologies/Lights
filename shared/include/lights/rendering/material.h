@@ -43,7 +43,7 @@ namespace OZZ {
     class Material {
     public:
         struct MaterialSettings {
-            DrawMode DrawMode { DrawMode::Triangles };
+            DrawMode Mode { DrawMode::Triangles };
             float LineWidth { 1.f };
             float PointSize { 1.f };
         };

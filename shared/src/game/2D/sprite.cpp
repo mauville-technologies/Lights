@@ -83,7 +83,7 @@ namespace OZZ::game::scene {
                 SceneObject circleObject;
                 circleObject.Mat = std::make_unique<Material>();
                 circleObject.Mat->SetShader(debugShader);
-                circleObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
+                circleObject.Mat->GetSettings().Mode = DrawMode::Lines;
                 circleObject.Mat->GetSettings().LineWidth = debugDrawSize;
                 circleObject.Mat->GetSettings().PointSize = debugDrawSize;
                 circleObject.Mesh = circleMesh;
@@ -103,7 +103,7 @@ namespace OZZ::game::scene {
                 quadObject.Mat->SetShader(debugShader);
                 quadObject.Mat->GetSettings().LineWidth = debugDrawSize;
                 quadObject.Mat->GetSettings().PointSize = debugDrawSize;
-                quadObject.Mat->GetSettings().DrawMode = DrawMode::Lines;
+                quadObject.Mat->GetSettings().Mode = DrawMode::Lines;
                 quadObject.Mesh = quadMesh;
 
                 debugShapes["quad"] = quadObject;
@@ -126,7 +126,7 @@ namespace OZZ::game::scene {
                 SceneObject pointObject;
                 pointObject.Mat = std::make_unique<Material>();
                 pointObject.Mat->SetShader(debugShader);
-                pointObject.Mat->GetSettings().DrawMode = DrawMode::Points;
+                pointObject.Mat->GetSettings().Mode = DrawMode::Points;
                 pointObject.Mat->GetSettings().PointSize = debugDrawSize;
                 pointObject.Mesh = pointMesh;
 
