@@ -55,6 +55,7 @@ namespace OZZ {
         // that way we can ensure that physicstick is always called after all the bodies have been added/removed
         // Ticking world
         for (auto& body : bodies) {
+            body.bCollidedThisFrame = false;
             // Apply forces
             switch (body.Type) {
             case BodyType::Dynamic: {
@@ -80,12 +81,59 @@ namespace OZZ {
         }
 
         // Collision detection
+        std::vector<std::tuple<Body*, Body*, collision::OzzCollisionResult>> collisions{};
         for (auto* dynamicBody : dynamicBodies) {
             for (auto* staticBody : staticBodies) {
                 // check if they collide
-                auto bColliding = collision::IsColliding(*dynamicBody, *staticBody);
-                dynamicBody->bCollidedThisFrame = bColliding.bCollided;
-                staticBody->bCollidedThisFrame = bColliding.bCollided;
+                auto collisionResult = collision::IsColliding(*dynamicBody, *staticBody);
+                dynamicBody->bCollidedThisFrame = dynamicBody->bCollidedThisFrame || collisionResult.bCollided;
+                staticBody->bCollidedThisFrame = staticBody->bCollidedThisFrame || collisionResult.bCollided;
+                if (collisionResult.bCollided) {
+                    collisions.emplace_back(dynamicBody, staticBody, collisionResult);
+                }
+            }
+
+            for (auto* kinematicBody : kinematicBodies) {
+                // check if they collide
+                auto collisionResult = collision::IsColliding(*dynamicBody, *kinematicBody);
+                dynamicBody->bCollidedThisFrame = dynamicBody->bCollidedThisFrame || collisionResult.bCollided;
+                kinematicBody->bCollidedThisFrame = kinematicBody->bCollidedThisFrame || collisionResult.bCollided;
+                if (collisionResult.bCollided) {
+                    collisions.emplace_back(dynamicBody, kinematicBody, collisionResult);
+                }
+            }
+
+            for (auto* otherDynamicBody : dynamicBodies) {
+                if (dynamicBody == otherDynamicBody) {
+                    continue;
+                }
+                // check if they collide
+                auto collisionResult = collision::IsColliding(*dynamicBody, *otherDynamicBody);
+                dynamicBody->bCollidedThisFrame = dynamicBody->bCollidedThisFrame || collisionResult.bCollided;
+                otherDynamicBody->bCollidedThisFrame = otherDynamicBody->bCollidedThisFrame || collisionResult.bCollided;
+                if (collisionResult.bCollided) {
+                    collisions.emplace_back(dynamicBody, otherDynamicBody, collisionResult);
+                }
+            }
+        }
+
+        // resolve collisions
+        for (auto& [my, other, collisionResult] : collisions) {
+            if (my->Type == BodyType::Dynamic) {
+                // push away by normal
+                auto position = GetOzzShapePosition(my->Kind, my->Data);
+                position += glm::vec3{collisionResult.CollisionNormal * 2.f, 0.f} * 0.1f;
+                SetOzzShapePosition(my->Kind, my->Data, position);
+
+                // if normal is pointig up or down, cancel out y
+                if (collisionResult.CollisionNormal.y != 0) {
+                    my->Velocity.y = 0;
+                }
+
+                // if the normal is pointing left or right, cancel out x
+                if (collisionResult.CollisionNormal.x != 0) {
+                    my->Velocity.x = 0;
+                }
             }
         }
     }

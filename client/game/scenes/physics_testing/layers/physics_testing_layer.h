@@ -14,6 +14,7 @@ namespace OZZ::game::scene {
 
         void Init() override;
         void Tick(float DeltaTime) override;
+        void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
         void RenderTargetResized(glm::ivec2 size) override;
         std::vector<SceneObject> GetSceneObjects() override;
     private:
@@ -24,6 +25,17 @@ namespace OZZ::game::scene {
 
         Sprite* ground;
         uint64_t groundId;
+
+        Sprite* rightWall;
+        uint64_t rightWallId;
+
+        Sprite* leftWall;
+        uint64_t leftWallId;
+
+        Sprite* topWall;
+        uint64_t topWallId;
+
+        std::shared_ptr<InputSubsystem> input;
     };
 
 } // OZZ

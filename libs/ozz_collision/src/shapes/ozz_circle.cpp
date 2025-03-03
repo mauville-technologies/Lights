@@ -32,6 +32,20 @@ namespace OZZ::collision::shapes {
     }
 
     OzzCollisionResult OzzCircle::IsColliding(const OzzRectangle &other) const {
-        return other.IsColliding(*this);
+        glm::vec2 closestPoint = Position;
+        const auto [OtherLeft, OtherRight, OtherUp, OtherDown] = other.GetExtents();
+        closestPoint = glm::clamp(closestPoint, glm::vec2{OtherLeft, OtherDown}, glm::vec2{OtherRight, OtherUp});
+
+        const glm::vec2 vecBetween = Position - closestPoint;
+        const float distance = glm::length(vecBetween);
+        glm::vec2 penetrationDepth = glm::normalize(vecBetween) * (Radius - distance);
+        if (distance <= Radius) {
+            return {
+                .bCollided = true,
+                .CollisionNormal = penetrationDepth,
+                .ContactPoints = {closestPoint}
+            };
+        }
+        return OzzCollisionResult::NoCollision();
     }
 }

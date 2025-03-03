@@ -11,6 +11,22 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 02-03-2025 Blocking collisions
+
+I got the core of the collision system complete today. Objects will now block against ground, walls, and ceilings. This will cover 90% of all collisions that I'm going to need
+in the game -- at least at first. There are a few things left outstanding to get the feel I want (namely, it'd be fun to get slopes working) but I can punt that off for the time being.
+I've been enamored by slopes for years simply because of Super Mario World but I recently consumed a game development video that gave a convincing argument on why slopes
+might be more trouble than they're worth. That being said, I plan on punting them off for the time being.
+
+Now that basic collisions are in place, I'm going to work on a few core systems:
+
+1. The input system needs to be able to do axis values. For example, A/D should be bindable using one binding with different weights (-1/1); as well as using a thumbstick.
+2. When that upgrade to the input system is done, I want to work on some core movement logic to make it feel okay to control.
+3. When I can control the guy, I want to work on trying to finally get networked movement in there.
+
+These are the main things I want to grind away at whenever I have time. By the end of that process, I'll have the core of the nugget in the center of the project that I can
+build stuff around.
+
 ## 24-02-2025 On the plane back from Victoria
 
 So I didn't get anything done in the few days I was in Victoria. While I planned on getting a lot of programming done

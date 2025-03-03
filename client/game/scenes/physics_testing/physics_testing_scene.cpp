@@ -9,6 +9,7 @@
 namespace OZZ::game::scene {
     void PhysicsTestingScene::Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) {
         mainLayer = std::make_shared<PhysicsTestingLayer>(GetWorld());
+        mainLayer->SetInputSubsystem(inInput);
         Layers.emplace_back(mainLayer);
 
         // Should be done at the bottom

@@ -20,8 +20,8 @@ to share my work and musings with others.
     - [x] Fill out the rest of this
   - [ ] OzzWorld2D
     - [x] Gravity
-    - [ ] Ground collision
-    - [ ] Wall Collision
+    - [x] Ground collision
+    - [x] Wall Collision
    
 - [ ] Sprite class (core game object)
   - [ ] Nested sprites
@@ -36,7 +36,6 @@ to share my work and musings with others.
   - [ ] Jump
   - [ ] Walk up and down slopes
   - [ ] Slide down slopes
-   
    
 - [ ] Tilemap
   - [ ] Probably a full re-write utitlizing Sprite class

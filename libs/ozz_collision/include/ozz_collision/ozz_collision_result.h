@@ -11,6 +11,7 @@ namespace OZZ::collision {
     struct OzzCollisionResult {
         bool bCollided;
         std::vector<glm::vec2> ContactPoints;
+        glm::vec2 CollisionNormal;
         static OzzCollisionResult NoCollision() {
             return {.bCollided = false, .ContactPoints = {}};
         }
