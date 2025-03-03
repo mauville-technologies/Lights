@@ -60,7 +60,7 @@ namespace OZZ {
             switch (body.Type) {
             case BodyType::Dynamic: {
                 // Apply gravity
-                body.Velocity.y -= 20.f * DeltaTime;
+                body.Velocity.y -= 50.f * DeltaTime;
                 // Apply velocity
 
                 auto position = GetOzzShapePosition(body.Kind, body.Data);
@@ -127,12 +127,18 @@ namespace OZZ {
 
                 // if normal is pointig up or down, cancel out y
                 if (collisionResult.CollisionNormal.y != 0) {
-                    my->Velocity.y = 0;
+                    // if velocity is different signedness as normal, cancel out y
+                    if (std::signbit(my->Velocity.y) != std::signbit(collisionResult.CollisionNormal.y)) {
+                        my->Velocity.y = 0;
+                    }
                 }
 
                 // if the normal is pointing left or right, cancel out x
                 if (collisionResult.CollisionNormal.x != 0) {
-                    my->Velocity.x = 0;
+                    // if velocity is different signedness as normal, cancel out x
+                    if (std::signbit(my->Velocity.x) != std::signbit(collisionResult.CollisionNormal.x)) {
+                        my->Velocity.x = 0;
+                    }
                 }
             }
         }

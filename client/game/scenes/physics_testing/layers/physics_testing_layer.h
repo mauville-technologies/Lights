@@ -18,7 +18,7 @@ namespace OZZ::game::scene {
         void RenderTargetResized(glm::ivec2 size) override;
         std::vector<SceneObject> GetSceneObjects() override;
     private:
-        GameWorld* world;
+        GameWorld* gameWorld;
 
         Sprite* pepe;
         uint64_t pepeid;

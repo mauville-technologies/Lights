@@ -6,11 +6,11 @@
 #include "lights/game/game_object.h"
 
 namespace OZZ::game::scene {
-    PhysicsTestingLayer::PhysicsTestingLayer(GameWorld* inWorld) : world(inWorld) {}
+    PhysicsTestingLayer::PhysicsTestingLayer(GameWorld* inWorld) : gameWorld(inWorld) {}
 
     PhysicsTestingLayer::~PhysicsTestingLayer() {
-        if (world) {
-            world->RemoveObject(pepeid);
+        if (gameWorld) {
+            gameWorld->RemoveObject(pepeid);
         }
     }
 
@@ -19,31 +19,31 @@ namespace OZZ::game::scene {
                                              glm::vec3(0.f, 0.f, 0.f), // Target to look at
                                              glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-        auto [ gId, inGround ] = world->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        auto [ gId, inGround ] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
         groundId = gId;
         ground = dynamic_cast<Sprite*>(inGround);
         ground->Scale = {12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f};
         ground->Position = { 0.f, -2.f * constants::PixelsPerMeter, 1.f};
 
-        auto [ rId, inRightWall ] = world->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        auto [ rId, inRightWall ] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
         rightWallId = rId;
         rightWall = dynamic_cast<Sprite*>(inRightWall);
         rightWall->Scale = {1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f};
         rightWall->Position = { 6.f * constants::PixelsPerMeter, 0.f, 1.f};
 
-        auto [ lId, inLeftWall ] = world->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        auto [ lId, inLeftWall ] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
         leftWallId = lId;
         leftWall = dynamic_cast<Sprite*>(inLeftWall);
         leftWall->Scale = {1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f};
         leftWall->Position = { -6.f * constants::PixelsPerMeter, 0.f, 1.f};
 
-        auto [ tId, inTopWall ] = world->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        auto [ tId, inTopWall ] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
         topWallId = tId;
         topWall = dynamic_cast<Sprite*>(inTopWall);
         topWall->Scale = {12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f};
         topWall->Position = { 0.f, 10.f * constants::PixelsPerMeter, 1.f};
 
-        auto [id, inpepe] = world->CreateGameObject<Sprite>("assets/textures/pepe.png");
+        auto [id, inpepe] = gameWorld->CreateGameObject<Sprite>("assets/textures/pepe.png");
         // scale pepe
         pepeid = id;
         pepe = dynamic_cast<Sprite*>(inpepe);
@@ -111,7 +111,7 @@ namespace OZZ::game::scene {
                                    .Size = pepe->Scale
                                },
                                {0, 0},
-                               {0, 2}
+                               {0, 0}
             ));
         }
 
@@ -123,7 +123,7 @@ namespace OZZ::game::scene {
                         .OnPressed = [this]() {
                             if (auto* pWorld = pepe->GetWorld()) {
                                 if (auto* body = pWorld->GetBody(pepe->MainBody)) {
-                                    body->Velocity.y = 10;
+                                    body->Velocity.y = 20;
                                 }
                             }
                         },
@@ -140,7 +140,7 @@ namespace OZZ::game::scene {
                 .OnPressed = [this]() {
                     if (auto* pWorld = pepe->GetWorld()) {
                         if (auto* body = pWorld->GetBody(pepe->MainBody)) {
-                            body->Velocity.x = -5;
+                            body->Velocity.x = -10;
                         }
                     }
                 },
@@ -162,7 +162,7 @@ namespace OZZ::game::scene {
                 .OnPressed = [this]() {
                     if (auto* pWorld = pepe->GetWorld()) {
                         if (auto* body = pWorld->GetBody(pepe->MainBody)) {
-                            body->Velocity.x = 5;
+                            body->Velocity.x = 10;
                         }
                     }
                 },
