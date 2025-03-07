@@ -3,7 +3,7 @@
 //
 
 #include <spdlog/spdlog.h>
-
+#include <ranges>
 #include "lights/game/game_world.h"
 
 namespace OZZ {
@@ -19,7 +19,10 @@ namespace OZZ {
     }
 
     void GameWorld::Tick(float deltaTime) {
-
+        // Tick all game objects
+        for (const auto& object : objects | std::views::values) {
+            object->Tick(deltaTime);
+        }
     }
 
     GameObject *GameWorld::GetObject(uint64_t id) {
@@ -30,15 +33,12 @@ namespace OZZ {
     }
 
     void GameWorld::RemoveObject(uint64_t id) {
-        spdlog::info("Objects before delete: {}", objects.size());
-        if (objects.erase(id) == 1) {
-            spdlog::info("erased object");
+        if (objects.erase(id) != 1) {
+            spdlog::info("Failed to remove object with id: {}", id);
         }
-        spdlog::info("Objects after delete: {}", objects.size());
     }
 
     void GameWorld::DeInit() {
         objects.clear();
-
     }
 } // OZZ

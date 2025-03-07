@@ -11,6 +11,7 @@ namespace OZZ::game::scene {
     class Sprite final : public GameObject {
     public:
         explicit Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path& texture);
+    	~Sprite() override;
         void Tick(float DeltaTime) override;
 
         std::vector<SceneObject> GetSceneObjects() override;

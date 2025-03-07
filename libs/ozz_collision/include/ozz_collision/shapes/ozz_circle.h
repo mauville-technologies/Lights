@@ -15,6 +15,9 @@ namespace OZZ::collision::shapes {
         glm::vec2 Position;
         float Radius;
 
+        glm::vec2 Scale() const {
+            return glm::vec2{Radius*2, Radius*2};
+        }
         // Circle on Point collision
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzPoint &other) const;
 

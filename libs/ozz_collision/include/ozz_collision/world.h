@@ -40,6 +40,11 @@ namespace OZZ {
             }, Data);
         }
 
+        glm::vec2 GetScale() const {
+            return std::visit([](auto& shape) {
+                return shape.Scale();
+            }, Data);
+        }
         glm::vec2 Velocity{0.f};
 
         [[nodiscard]] OzzShapeKind Kind() const {

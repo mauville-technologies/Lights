@@ -21,6 +21,10 @@ namespace OZZ::collision::shapes {
         glm::vec2 Position;
         glm::vec2 Size;
 
+        glm::vec2 Scale() const {
+            return Size;
+        }
+
         // Point on Point
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzPoint &other) const;
 

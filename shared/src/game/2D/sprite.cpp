@@ -23,7 +23,21 @@ namespace OZZ::game::scene {
         Scale = {1.f, 1.f, 1.f};
     }
 
+    Sprite::~Sprite() {
+        if (MainBody != InvalidBodyID) {
+            world->DestroyBody(MainBody);
+            MainBody = InvalidBodyID;
+        }
+    }
+
     void Sprite::Tick(float DeltaTime) {
+        // Update gameobject position to match main body position
+        if (const auto mainBody = world->GetBody(MainBody)) {
+            // TODO: The rendering position and scale might need to be separate from the physics position and scale
+            // this will work for now but I'll have to think about it more later
+            Position = mainBody->GetPosition();
+            Scale = {mainBody->GetScale(), 1.f};
+        }
     }
 
     std::vector<SceneObject> Sprite::GetSceneObjects() {

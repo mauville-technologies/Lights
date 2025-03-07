@@ -12,6 +12,10 @@ namespace OZZ::game::scene {
     PhysicsTestingLayer::~PhysicsTestingLayer() {
         if (gameWorld) {
             gameWorld->RemoveObject(pepeid);
+            gameWorld->RemoveObject(groundId);
+            gameWorld->RemoveObject(rightWallId);
+            gameWorld->RemoveObject(leftWallId);
+            gameWorld->RemoveObject(topWallId);
         }
     }
 
@@ -20,74 +24,64 @@ namespace OZZ::game::scene {
                                              glm::vec3(0.f, 0.f, 0.f), // Target to look at
                                              glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-        auto [gId, inGround] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
-        groundId = gId;
-        ground = dynamic_cast<Sprite *>(inGround);
-        ground->Scale = {12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f};
-        ground->Position = {0.f, -2.f * constants::PixelsPerMeter, 1.f};
 
-        auto [rId, inRightWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
-        rightWallId = rId;
-        rightWall = dynamic_cast<Sprite *>(inRightWall);
-        rightWall->Scale = {1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f};
-        rightWall->Position = {6.f * constants::PixelsPerMeter, 0.f, 1.f};
-
-        auto [lId, inLeftWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
-        leftWallId = lId;
-        leftWall = dynamic_cast<Sprite *>(inLeftWall);
-        leftWall->Scale = {1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f};
-        leftWall->Position = {-6.f * constants::PixelsPerMeter, 0.f, 1.f};
-
-        auto [tId, inTopWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
-        topWallId = tId;
-        topWall = dynamic_cast<Sprite *>(inTopWall);
-        topWall->Scale = {12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f};
-        topWall->Position = {0.f, 10.f * constants::PixelsPerMeter, 1.f};
 
         auto [id, inpepe] = gameWorld->CreateGameObject<Sprite>("assets/textures/pepe.png");
         // scale pepe
         pepeid = id;
-        pepe = dynamic_cast<Sprite *>(inpepe);
-        pepe->Position = {0, 2.f * constants::PixelsPerMeter, 0.f};
-        pepe->Scale = {2.f * constants::PixelsPerMeter, 2.f * constants::PixelsPerMeter, 1.f};
-
+        pepe = inpepe;
         pepe->AddBody(
-            BodyType::Static,
+            BodyType::Dynamic,
             OzzRectangle{
-                .Position = ground->Position,
-                .Size = ground->Scale
+                .Position = glm::vec3{0, 2.f * constants::PixelsPerMeter, 0.f},
+                .Size = glm::vec3{2.f * constants::PixelsPerMeter, 2.f * constants::PixelsPerMeter, 1.f}
             },
             glm::vec2{0, 0});
+
+
+        auto [rId, inRightWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        rightWall = inRightWall;
+        rightWallId = rId;
         rightWall->AddBody(
             BodyType::Static,
             OZZ::collision::shapes::OzzRectangle{
-                .Position = rightWall->Position,
-                .Size = rightWall->Scale
+                .Position = glm::vec3{6.f * constants::PixelsPerMeter, 0.f, 1.f},
+                .Size = glm::vec3{1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f},
             },
             glm::vec2{0, 0});
 
+
+        auto [lId, inLeftWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        leftWallId = lId;
+        leftWall = inLeftWall;
         leftWall->AddBody(
             BodyType::Static,
             OZZ::collision::shapes::OzzRectangle{
-                .Position = leftWall->Position,
-                .Size = leftWall->Scale
+                .Position = glm::vec3{-6.f * constants::PixelsPerMeter, 0.f, 1.f},
+                .Size = glm::vec3{1.f * constants::PixelsPerMeter, 12.f * constants::PixelsPerMeter, 1.f}
             },
             glm::vec2{0, 0});
+
+        auto [tId, inTopWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        topWallId = tId;
+        topWall = inTopWall;
         topWall->AddBody(
             BodyType::Static,
             OZZ::collision::shapes::OzzRectangle{
-                .Position = topWall->Position,
-                .Size = topWall->Scale
+                .Position = glm::vec3{0.f, 10.f * constants::PixelsPerMeter, 1.f},
+                .Size = glm::vec3{12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f}
             },
             glm::vec2{0, 0});
 
-
-        pepe->AddBody(
-            BodyType::Dynamic,
+        auto [gId, inGround] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        groundId = gId;
+        ground = inGround;
+        ground->AddBody(
+            BodyType::Static,
             OZZ::collision::shapes::OzzRectangle
             {
-                .Position = pepe->Position,
-                .Size = pepe->Scale
+                .Position = glm::vec3{0.f, -2.f * constants::PixelsPerMeter, 1.f},
+                .Size = glm::vec3{12.f * constants::PixelsPerMeter, 1.f * constants::PixelsPerMeter, 1.f}
             },
             glm::vec2{0, 0});
 
@@ -110,20 +104,14 @@ namespace OZZ::game::scene {
         input->RegisterAxisMapping({
             .Action = "MoveLeftRight",
             .Keys = {
-                {EKey::Left, -1},
-                {EKey::Right, 1},
-                {EKey::A, -1},
-                {EKey::D, 1},
+                {EKey::Left, -1.f},
+                {EKey::Right, 1.f},
+                {EKey::A, -1.f},
+                {EKey::D, 1.f},
             },
         });
 
-        auto pepePosition = glm::vec2{};
-        if (const auto *pepeBody = pepe->GetBody()) {
-            pepePosition = pepeBody->GetPosition();
-        }
-
-        LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 1.f},
-                                             {pepePosition.x, pepePosition.y, 0.f}, {0.f, 1.f, 0.f});
+        updateViewMatrix();
     }
 
     void PhysicsTestingLayer::PhysicsTick(float DeltaTime) {
@@ -133,19 +121,17 @@ namespace OZZ::game::scene {
     void PhysicsTestingLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
 
-        // translate to keep track of pepe
-        auto pepePosition = glm::vec2{};
-        if (const auto *pepeBody = pepe->GetBody()) {
-            pepePosition = pepeBody->GetPosition();
-        }
-
-        LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 1},
-                                             {pepePosition.x, pepePosition.y, 0.f}, {0.f, 1.f, 0.f});
+        // TODO: I feel like the gameworld doesn't need to be owned by the layer -- though I'm not entirely sure of the alternative.
+        // I'll leave it here for now and see if it makes sense to move it somewhere else (like the scene) further down the line
+        // Doing it here makes it easy to forget in the future if
+        gameWorld->Tick(DeltaTime);
 
         const auto moveValue = input->GetAxisValue("MoveLeftRight");
         if (auto *body = pepe->GetBody()) {
             body->Velocity.x = moveValue * 10;
         }
+
+        updateViewMatrix();
     }
 
     void PhysicsTestingLayer::SetInputSubsystem(const std::shared_ptr<InputSubsystem> &inInput) {
@@ -166,7 +152,6 @@ namespace OZZ::game::scene {
         auto rightWallSceneObjects = rightWall->GetSceneObjects();
         auto leftWallSceneObjects = leftWall->GetSceneObjects();
         auto topWallSceneObjects = topWall->GetSceneObjects();
-        // auto pepe2SceneObject = pepe2->GetSceneObjects();
 
         std::vector<SceneObject> sceneObjects;
 
@@ -177,5 +162,12 @@ namespace OZZ::game::scene {
         sceneObjects.insert(sceneObjects.end(), topWallSceneObjects.begin(), topWallSceneObjects.end());
 
         return sceneObjects;
+    }
+
+    void PhysicsTestingLayer::updateViewMatrix() {
+        const auto pepePosition = pepe->GetPosition();
+        LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 3.f}, // Camera position
+                                             glm::vec3{pepePosition.x, pepePosition.y, 0.f}, // Target to look at
+                                             glm::vec3{0.f, 1.f, 0.f}); // Up vector
     }
 }

@@ -34,6 +34,7 @@ namespace OZZ::game::scene {
 
     void GameLayer::Tick(float DeltaTime) {
         SceneLayer::Tick(DeltaTime);
+        world->Tick(DeltaTime);
 
         // ground.second->Tick(DeltaTime);
     }
