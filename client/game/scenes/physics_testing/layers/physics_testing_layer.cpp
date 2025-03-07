@@ -51,58 +51,45 @@ namespace OZZ::game::scene {
         pepe->Position = {0, 2.f * constants::PixelsPerMeter, 0.f};
         pepe->Scale = {2.f * constants::PixelsPerMeter, 2.f * constants::PixelsPerMeter, 1.f};
 
-        // add a physics body
-        if (auto *pWorld = pepe->GetWorld()) {
-            ground->MainBody =
-                pWorld->CreateBody(
-                    BodyType::Static,
-                    OZZ::collision::shapes::OzzRectangle{
-                        .Position = ground->Position,
-                        .Size = ground->Scale
-                    },
-                    {0, 0}
-                );
+        pepe->AddBody(
+            BodyType::Static,
+            OzzRectangle{
+                .Position = ground->Position,
+                .Size = ground->Scale
+            },
+            glm::vec2{0, 0});
+        rightWall->AddBody(
+            BodyType::Static,
+            OZZ::collision::shapes::OzzRectangle{
+                .Position = rightWall->Position,
+                .Size = rightWall->Scale
+            },
+            glm::vec2{0, 0});
 
-            rightWall->MainBody =
-                pWorld->CreateBody(
-                    BodyType::Static,
-                    OZZ::collision::shapes::OzzRectangle{
-                        .Position = rightWall->Position,
-                        .Size = rightWall->Scale
-                    },
-                    {0, 0}
-                );
+        leftWall->AddBody(
+            BodyType::Static,
+            OZZ::collision::shapes::OzzRectangle{
+                .Position = leftWall->Position,
+                .Size = leftWall->Scale
+            },
+            glm::vec2{0, 0});
+        topWall->AddBody(
+            BodyType::Static,
+            OZZ::collision::shapes::OzzRectangle{
+                .Position = topWall->Position,
+                .Size = topWall->Scale
+            },
+            glm::vec2{0, 0});
 
-            leftWall->MainBody =
-                pWorld->CreateBody(
-                    BodyType::Static,
-                    OZZ::collision::shapes::OzzRectangle{
-                        .Position = leftWall->Position,
-                        .Size = leftWall->Scale
-                    },
-                    {0, 0}
-                );
 
-            topWall->MainBody =
-                    pWorld->CreateBody(
-                        BodyType::Static,
-                        OZZ::collision::shapes::OzzRectangle{
-                            .Position = topWall->Position,
-                            .Size = topWall->Scale
-                        },
-                        {0, 0}
-                    );
-
-            pepe->MainBody =
-                    pWorld->CreateBody(BodyType::Dynamic,
-                                       OZZ::collision::shapes::OzzRectangle
-                                       {
-                                           .Position = pepe->Position,
-                                           .Size = pepe->Scale
-                                       },
-                                       {0, 0}
-                    );
-        }
+        pepe->AddBody(
+            BodyType::Dynamic,
+            OZZ::collision::shapes::OzzRectangle
+            {
+                .Position = pepe->Position,
+                .Size = pepe->Scale
+            },
+            glm::vec2{0, 0});
 
         // Set up jump button
         input->RegisterInputMapping({
@@ -110,10 +97,8 @@ namespace OZZ::game::scene {
             .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Space}},
             .Callbacks = {
                 .OnPressed = [this]() {
-                    if (auto *pWorld = pepe->GetWorld()) {
-                        if (auto *body = pWorld->GetBody(pepe->MainBody)) {
-                            body->Velocity.y = 20;
-                        }
+                    if (auto *body = pepe->GetBody()) {
+                        body->Velocity.y = 20;
                     }
                 },
                 .OnReleased = [this]() {
@@ -132,8 +117,10 @@ namespace OZZ::game::scene {
             },
         });
 
-        const auto pepebody = pepe->GetWorld()->GetBody(pepe->MainBody);
-        auto pepePosition = pepebody->GetPosition();
+        auto pepePosition = glm::vec2{};
+        if (const auto *pepeBody = pepe->GetBody()) {
+            pepePosition = pepeBody->GetPosition();
+        }
 
         LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 1.f},
                                              {pepePosition.x, pepePosition.y, 0.f}, {0.f, 1.f, 0.f});
@@ -147,17 +134,17 @@ namespace OZZ::game::scene {
         SceneLayer::Tick(DeltaTime);
 
         // translate to keep track of pepe
-        const auto pepebody = pepe->GetWorld()->GetBody(pepe->MainBody);
-        auto pepePosition = pepebody->GetPosition();
+        auto pepePosition = glm::vec2{};
+        if (const auto *pepeBody = pepe->GetBody()) {
+            pepePosition = pepeBody->GetPosition();
+        }
 
         LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 1},
                                              {pepePosition.x, pepePosition.y, 0.f}, {0.f, 1.f, 0.f});
 
-        if (auto *pWorld = pepe->GetWorld()) {
-            const auto moveValue = input->GetAxisValue("MoveLeftRight");
-            if (auto *body = pWorld->GetBody(pepe->MainBody)) {
-                body->Velocity.x = moveValue * 10;
-            }
+        const auto moveValue = input->GetAxisValue("MoveLeftRight");
+        if (auto *body = pepe->GetBody()) {
+            body->Velocity.x = moveValue * 10;
         }
     }
 

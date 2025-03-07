@@ -17,9 +17,26 @@ namespace OZZ::game::scene {
 
         void SetTexture(const std::filesystem::path& inPath);
 
-        BodyID MainBody { InvalidBodyID };
+        /**
+         * Creates a new body for the sprite, replaces the old one if it exists
+         * @tparam Args Same arguments as OzzWorld2D::CreateBody
+         * @param args  Same arguments as OzzWorld2D::CreateBody
+         */
+        template <typename... Args>
+    	void AddBody(Args&&... args) {
+        	if (MainBody == InvalidBodyID) {
+        		world->DestroyBody(MainBody);
+        		MainBody = InvalidBodyID;
+        	}
+			MainBody = world->CreateBody(std::forward<Args>(args)...);
+		}
+
+    	[[nodiscard]] Body* GetBody() const {
+		    return world->GetBody(MainBody);
+    	}
 
     private:
+        BodyID MainBody { InvalidBodyID };
 
 #ifdef OZZ_DEBUG
         bool bDrawDebug = true;
