@@ -26,13 +26,25 @@ namespace OZZ {
     struct Body {
         BodyID ID{};
         BodyType Type{BodyType::Static};
-        OzzShapeKind Kind{};
         OzzShapeData Data{};
 
-        // TODO: I feel like this position variable is conflicting with the shape definitions.
-        // at the very least I'll probably need a way to pass in a translation when I'm doing the actual collision detection
-        glm::vec2 Position{0.f};
+        [[nodiscard]] glm::vec3 GetPosition() const {
+            return std::visit([](const auto& shape) {
+                return glm::vec3{shape.Position, 1.f};
+            }, Data);
+        }
+
+        void SetPosition(const glm::vec2& position) {
+            std::visit([position](auto& shape) {
+                shape.Position = position;
+            }, Data);
+        }
+
         glm::vec2 Velocity{0.f};
+
+        [[nodiscard]] OzzShapeKind Kind() const {
+            return static_cast<OzzShapeKind>(Data.index());
+        }
 
         // TODO: Maybe we want rotation and other junk. For now, let's assume everything stays upright the way the shape is defined
         bool bCollidedThisFrame{false};
@@ -55,8 +67,7 @@ namespace OZZ {
 
     class OzzWorld2D {
     public:
-        BodyID CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData& shapeDef,
-                          const glm::vec2& position = {0.f, 0.f},
+        BodyID CreateBody(BodyType type, const OzzShapeData& shapeDef,
                           const glm::vec2& velocity = {0.f, 0.f});
         void DestroyBody(BodyID id);
         Body* GetBody(BodyID id);

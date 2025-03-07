@@ -9,7 +9,7 @@ namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;
     std::unordered_map<std::string, SceneObject> Sprite::debugShapes{};
 
-    Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path& texture) : GameObject(
+    Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path &texture) : GameObject(
         std::move(inWorld)) {
         const auto shader = std::make_shared<Shader>("assets/shaders/sprite.vert", "assets/shaders/sprite.frag");
         sceneObject.Mat = std::make_unique<Material>();
@@ -23,7 +23,8 @@ namespace OZZ::game::scene {
         Scale = {1.f, 1.f, 1.f};
     }
 
-    void Sprite::Tick(float DeltaTime) {}
+    void Sprite::Tick(float DeltaTime) {
+    }
 
     std::vector<SceneObject> Sprite::GetSceneObjects() {
         std::vector<SceneObject> objects;
@@ -38,13 +39,10 @@ namespace OZZ::game::scene {
             0.f
         };
 
-        auto mainBodyId = std::find(Bodies.begin(), Bodies.end(), MainBody);
-        if (mainBodyId != Bodies.end()) {
-            if (const auto mainBody = world->GetBody(*mainBodyId)) {
-                auto ShapePosition = GetOzzShapePosition(mainBody->Kind, mainBody->Data);
-                renderPosition.x = ShapePosition.x;
-                renderPosition.y = ShapePosition.y;
-            }
+        if (const auto mainBody = world->GetBody(MainBody)) {
+            auto ShapePosition = mainBody->GetPosition();
+            renderPosition.x = ShapePosition.x;
+            renderPosition.y = ShapePosition.y;
         }
 
         transform = glm::translate(transform, renderPosition);
@@ -134,45 +132,45 @@ namespace OZZ::game::scene {
             }
 
             // For each body in the Bodies array, let's draw its debug shape
-            for (auto bodyid : Bodies) {
-                if (auto* body = world->GetBody(bodyid)) {
-                    if (body->bCollidedThisFrame) {
-                        debugShader->SetVec3("lineColor", {0.f, 1.f, 0.f});
-                    } else {
-                        debugShader->SetVec3("lineColor", {1.f, 0.f, 0.f});
-                    }
-                    switch (body->Kind) {
+            if (auto *body = world->GetBody(MainBody)) {
+                if (body->bCollidedThisFrame) {
+                    debugShader->SetVec3("lineColor", {0.f, 1.f, 0.f});
+                } else {
+                    debugShader->SetVec3("lineColor", {1.f, 0.f, 0.f});
+                }
+                const auto shapeKind = static_cast<OzzShapeKind>(body->Data.index());
+                switch (shapeKind) {
                     case OzzShapeKind::Circle: {
                         // build transform from shape
-                        auto& circleShape = std::get<OzzCircle>(body->Data);
+                        auto &circleShape = std::get<OzzCircle>(body->Data);
                         glm::mat4 circleTransform{1.f};
                         glm::vec3 circleRenderPosition{
                             circleShape.Position.x,
                             circleShape.Position.y,
-                            1.f
+                            0.f
                         };
                         glm::vec3 circleRenderScale{
                             circleShape.Radius * 2,
                             circleShape.Radius * 2,
-                            1.f
+                            0.f
                         };
 
                         circleTransform = glm::translate(circleTransform, circleRenderPosition);
                         circleTransform = glm::scale(circleTransform, circleRenderScale);
 
                         // create a copy
-                        auto& circleObject = objects.emplace_back(debugShapes["circle"]);
+                        auto &circleObject = objects.emplace_back(debugShapes["circle"]);
                         circleObject.Transform = circleTransform;
                         break;
                     }
                     case OzzShapeKind::Rectangle: {
                         // build transform from shape
-                        auto& rectangleShape = std::get<OzzRectangle>(body->Data);
+                        auto &rectangleShape = std::get<OzzRectangle>(body->Data);
                         glm::mat4 rectangleTransform{1.f};
                         glm::vec3 rectangleRenderPosition{
                             rectangleShape.Position.x,
                             rectangleShape.Position.y,
-                            1.f
+                            0.f
                         };
                         glm::vec3 rectangleRenderScale{
                             rectangleShape.Size.x,
@@ -184,7 +182,7 @@ namespace OZZ::game::scene {
                         rectangleTransform = glm::scale(rectangleTransform, rectangleRenderScale);
 
                         // create a copy
-                        auto& rectangleObject = objects.emplace_back(debugShapes["quad"]);
+                        auto &rectangleObject = objects.emplace_back(debugShapes["quad"]);
                         rectangleObject.Transform = rectangleTransform;
                         break;
                     }
@@ -192,7 +190,6 @@ namespace OZZ::game::scene {
                         break;
                     default:
                         break;
-                    }
                 }
             }
         }
@@ -200,7 +197,7 @@ namespace OZZ::game::scene {
         return objects;
     }
 
-    void Sprite::SetTexture(const std::filesystem::path& inPath) {
+    void Sprite::SetTexture(const std::filesystem::path &inPath) {
         const auto image = std::make_unique<Image>(inPath);
         const auto texture = std::make_shared<Texture>();
         texture->UploadData(image.get());

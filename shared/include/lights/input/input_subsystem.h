@@ -9,6 +9,7 @@
 #include <vector>
 #include <array>
 #include <chrono>
+#include <unordered_map>
 
 namespace OZZ {
 
@@ -55,17 +56,30 @@ namespace OZZ {
         ActionCallbacks Callbacks;
     };
 
+    struct AxisMapping {
+        std::string Action;
+        std::vector<std::pair<EKey, float>> Keys;
+        float Value;
+    };
+
     class InputSubsystem {
     public:
         InputSubsystem();
         void RegisterInputMapping(InputMapping&& Mapping);
         void UnregisterInputMapping(const std::string& Action);
 
+        void RegisterAxisMapping(AxisMapping&& Mapping);
+        void UnregisterAxisMapping(const std::string& Action);
+
         void NotifyKeyboardEvent(const KeyboardEvent& Event);
+        void Tick(const std::unordered_map<EKey, EKeyState> & pairs);;
 
         [[nodiscard]] EKeyState GetKeyState(EKey Key) const {
             return KeyStates[static_cast<size_t>(Key)];
-        };
+        }
+
+        float GetAxisValue(const std::string& Action) const;
+
 
         ~InputSubsystem() = default;
     private:
@@ -75,6 +89,7 @@ namespace OZZ {
 
     private:
         std::array<EKeyState, static_cast<size_t>(EKey::KeyCount)> KeyStates {};
+        std::vector<AxisMapping> AxisMappings {};
         std::vector<InputMapping> Mappings {};
     };
 } // OZZ

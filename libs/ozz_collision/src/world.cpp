@@ -8,8 +8,7 @@
 #include <iostream>
 
 namespace OZZ {
-    uint64_t OzzWorld2D::CreateBody(BodyType type, OzzShapeKind shapeType, const OzzShapeData& shapeDef,
-                                    const glm::vec2& position,
+    uint64_t OzzWorld2D::CreateBody(BodyType type, const OzzShapeData& shapeDef,
                                     const glm::vec2& velocity) {
         const auto newId = generateUnusedID();
 
@@ -18,9 +17,7 @@ namespace OZZ {
             bodies.emplace_back(Body{
                 .ID = newId,
                 .Type = type,
-                .Kind = shapeType,
                 .Data = shapeDef,
-                .Position = position,
                 .Velocity = velocity,
             });
         }
@@ -63,9 +60,9 @@ namespace OZZ {
                 body.Velocity.y -= 50.f * DeltaTime;
                 // Apply velocity
 
-                auto position = GetOzzShapePosition(body.Kind, body.Data);
+                auto position = body.GetPosition();
                 position += glm::vec3{body.Velocity, 1.f};
-                SetOzzShapePosition(body.Kind, body.Data, position);
+                body.SetPosition(position);
                 dynamicBodies.emplace_back(&body);
                 break;
             }
@@ -121,9 +118,9 @@ namespace OZZ {
         for (auto& [my, other, collisionResult] : collisions) {
             if (my->Type == BodyType::Dynamic) {
                 // push away by normal
-                auto position = GetOzzShapePosition(my->Kind, my->Data);
+                auto position = my->GetPosition();
                 position += glm::vec3{collisionResult.CollisionNormal * 2.f, 0.f} * 0.1f;
-                SetOzzShapePosition(my->Kind, my->Data, position);
+                my->SetPosition(position);
 
                 // if normal is pointig up or down, cancel out y
                 if (collisionResult.CollisionNormal.y != 0) {

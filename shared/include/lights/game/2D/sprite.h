@@ -17,12 +17,17 @@ namespace OZZ::game::scene {
 
         void SetTexture(const std::filesystem::path& inPath);
 
-        std::vector<BodyID> Bodies {};
         BodyID MainBody { InvalidBodyID };
 
     private:
+
+#ifdef OZZ_DEBUG
         bool bDrawDebug = true;
-        float debugDrawSize = 5;
+#else
+        bool bDrawDebug = false;
+#endif
+
+        float debugDrawSize = 2;
 
         SceneObject sceneObject;
 

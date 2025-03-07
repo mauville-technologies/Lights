@@ -51,6 +51,11 @@ namespace OZZ::game {
                 lastTickTime = currentTime;
             }
             window->PollEvents();
+
+            // Tick on all polled events
+            if (input) {
+                input->Tick(window->GetKeyStates());
+            }
         }
     }
 

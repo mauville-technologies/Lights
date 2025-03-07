@@ -42,8 +42,8 @@ namespace OZZ::collision::shapes {
         if (distance <= Radius) {
             return {
                 .bCollided = true,
+                .ContactPoints = {closestPoint},
                 .CollisionNormal = penetrationDepth,
-                .ContactPoints = {closestPoint}
             };
         }
         return OzzCollisionResult::NoCollision();

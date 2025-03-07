@@ -67,6 +67,13 @@ namespace OZZ {
             }
         }
         glfwPollEvents();
+
+        // Get all key states from glfw
+        for (int i = 0; i < GLFW_KEY_LAST; ++i) {
+            keyStates[GLFWKey(i)] = GLFWKeyState(glfwGetKey(window, i));
+        }
+
+        //TODO: Add mouse and joystick input
     }
 
     void Window::MakeContextCurrent() {

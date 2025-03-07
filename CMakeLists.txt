@@ -26,6 +26,12 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     endif()
 endif()
 
+# if debug build define OZZ_DEBUG, it needs to affect ifdefs in the code
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-DOZZ_DEBUG)
+endif()
+
+
 # The shared library is built first as it exposes functionality and third party libs to be used by other things
 add_subdirectory(shared)
 

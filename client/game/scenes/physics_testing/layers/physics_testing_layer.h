@@ -13,6 +13,7 @@ namespace OZZ::game::scene {
         ~PhysicsTestingLayer() override;
 
         void Init() override;
+        void PhysicsTick(float DeltaTime) override;
         void Tick(float DeltaTime) override;
         void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
         void RenderTargetResized(glm::ivec2 size) override;

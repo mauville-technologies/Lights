@@ -31,8 +31,8 @@ namespace OZZ::collision::shapes {
 
             return OzzCollisionResult{
                 .bCollided = true,
+                .ContactPoints = {other.Position},
                 .CollisionNormal = normal,
-                .ContactPoints = {other.Position}
             };
         }
         return OzzCollisionResult::NoCollision();
@@ -50,8 +50,8 @@ namespace OZZ::collision::shapes {
         if (distance <= other.Radius) {
             return {
                 .bCollided = true,
+                .ContactPoints = {closestPoint},
                 .CollisionNormal = vecBetween,
-                .ContactPoints = {closestPoint}
             };
         }
         return OzzCollisionResult::NoCollision();
@@ -84,8 +84,8 @@ namespace OZZ::collision::shapes {
 
             return OzzCollisionResult{
                 .bCollided = true,
+                .ContactPoints = {},
                 .CollisionNormal = normal,
-                .ContactPoints = {}
             };
         }
 

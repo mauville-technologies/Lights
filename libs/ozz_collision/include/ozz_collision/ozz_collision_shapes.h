@@ -10,54 +10,15 @@
 
 
 namespace OZZ::collision::shapes {
+    // The order of the enums here need to match the index order of the variant in OzzShapeData
+    // this is to do a quick lookup of the shape type using .index()
     enum class OzzShapeKind {
-        Unknown,
-        Circle,
+        Unknown = -1,
+        Point,
         Rectangle,
-        Point
+        Circle,
     };
 
     using OzzShapeData = std::variant<OzzPoint, OzzRectangle, OzzCircle>;
 
-    static glm::vec3 GetOzzShapePosition(OzzShapeKind kind, OzzShapeData data) {
-        switch (kind) {
-        case OzzShapeKind::Circle: {
-            auto& typedData = std::get<OzzCircle>(data);
-            return {typedData.Position, 1.f};
-        }
-        case OzzShapeKind::Rectangle: {
-            auto& typedData = std::get<OzzRectangle>(data);
-            return {typedData.Position, 1.f};
-        }
-        case OzzShapeKind::Point: {
-            auto& typedData = std::get<OzzPoint>(data);
-            return {typedData.Position, 1.f};
-        }
-        default:
-            break;
-        }
-        return {};
-    }
-
-    static void SetOzzShapePosition(OzzShapeKind kind, OzzShapeData& data, glm::vec3 position) {
-        switch (kind) {
-        case OzzShapeKind::Circle: {
-            auto& typedData = std::get<OzzCircle>(data);
-            typedData.Position = position;
-            return;
-        }
-        case OzzShapeKind::Rectangle: {
-            auto& typedData = std::get<OzzRectangle>(data);
-            typedData.Position = position;
-            return;
-        }
-        case OzzShapeKind::Point: {
-            auto& typedData = std::get<OzzPoint>(data);
-            typedData.Position = position;
-            return;
-        }
-        default:
-            break;
-        }
-    }
 }

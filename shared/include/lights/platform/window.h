@@ -10,6 +10,8 @@
 #include "glm/glm.hpp"
 
 namespace OZZ {
+    class GLFWKey;
+
     class Window {
     public:
         using OnWindowCloseCallback = std::function<void()>;
@@ -25,10 +27,12 @@ namespace OZZ {
 
         [[nodiscard]] glm::ivec2 GetSize() const;
         void* GetWindowHandle() const;
+        const auto& GetKeyStates() const { return keyStates; }
     public:
         OnWindowCloseCallback OnWindowClose;
         OnWindowResizedCallback OnWindowResized;
         OnKeyPressedCallback OnKeyPressed;
+
     private:
         void initWindow();
 
@@ -36,5 +40,6 @@ namespace OZZ {
         GLFWwindow* window { nullptr };
 
         inline static bool bGLADInitialized {false};
+        std::unordered_map<EKey, EKeyState> keyStates;
     };
 } // OZZ
