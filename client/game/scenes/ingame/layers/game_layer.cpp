@@ -71,82 +71,82 @@ namespace OZZ::game::scene {
             return;
         }
         //
-        inInput->RegisterInputMapping({
-            .Action = "Left",
-            .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Left}},
-            .Callbacks = {
-                .OnPressed = [this]() {
-                    spdlog::info("Left Pressed");
-                },
-                .OnReleased = [this]() {
-                    spdlog::info("Left Released");
-                }
-            }
-        });
+        // inInput->RegisterInputMapping({
+        //     .Action = "Left",
+        //     .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Left}},
+        //     .Callbacks = {
+        //         .OnPressed = [this]() {
+        //             spdlog::info("Left Pressed");
+        //         },
+        //         .OnReleased = [this]() {
+        //             spdlog::info("Left Released");
+        //         }
+        //     }
+        // });
         //
-        inInput->RegisterInputMapping({
-            .Action = "Right",
-            .Chord = InputChord{.Keys = std::vector{EKey::Right}},
-            .Callbacks = {
-                .OnPressed = [this]() {
-                },
-                .OnReleased = [this]() {
-                }
-            }
-        });
-        inInput->RegisterInputMapping({
-           .Action = "MoveUp",
-              .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
+        // inInput->RegisterInputMapping({
+        //     .Action = "Right",
+        //     .Chord = InputChord{.Keys = std::vector{EKey::Right}},
+        //     .Callbacks = {
+        //         .OnPressed = [this]() {
+        //         },
+        //         .OnReleased = [this]() {
+        //         }
+        //     }
+        // });
+        // inInput->RegisterInputMapping({
+        //    .Action = "MoveUp",
+        //       .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Up}},
+        //         .Callbacks = {
+        //                 .OnPressed = [this]() {
+        //
+        //                 },
+        //                 .OnReleased = [this]() {
+        //                     spdlog::info("Stop Up");
+        //                 }
+        //         }
+        // });
 
-                        },
-                        .OnReleased = [this]() {
-                            spdlog::info("Stop Up");
-                        }
-                }
-        });
+        // inInput->RegisterInputMapping({
+        //         .Action = "MoveDown",
+        //         .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
+        //         .Callbacks = {
+        //                 .OnPressed = [this]() {
+        //                 },
+        //                 .OnReleased = [this]() {
+        //                     spdlog::info("Stop Up");
+        //                 }
+        //         }
+        // });
 
-        inInput->RegisterInputMapping({
-                .Action = "MoveDown",
-                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Down}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
-                        },
-                        .OnReleased = [this]() {
-                            spdlog::info("Stop Up");
-                        }
-                }
-        });
-
-        inInput->RegisterInputMapping({
-                .Action = "Quit",
-                .Chord = InputChord{.Keys = std::vector<EKey>{EKey::LControl, EKey::LAlt, EKey::X}},
-                .Callbacks = {
-                        .OnPressed = [this]() {
-                            spdlog::info("Quit hotkey pressed");
-                        },
-                        .OnReleased = []() {
-                            spdlog::info("Quit hotkey released");
-                        }
-                }
-        });
-
-        inInput->RegisterInputMapping({
-                .Action = "Konami",
-                .Chord = {
-                        .Keys = std::vector<EKey>{EKey::Up, EKey::Up, EKey::Down, EKey::Down,
-                                                  EKey::Left, EKey::Right, EKey::Left, EKey::Right,
-                                                  EKey::B, EKey::A},
-                        .bIsSequence = true,
-                        .TimeBetweenKeys = 1000ms
-
-                },
-                .Callbacks = {
-                        .OnPressed = []() {
-                            spdlog::info("Konami Code Entered");
-                        }
-                }
-        });
+        // inInput->RegisterInputMapping({
+        //         .Action = "Quit",
+        //         .Chord = InputChord{.Keys = std::vector<EKey>{EKey::LControl, EKey::LAlt, EKey::X}},
+        //         .Callbacks = {
+        //                 .OnPressed = [this]() {
+        //                     spdlog::info("Quit hotkey pressed");
+        //                 },
+        //                 .OnReleased = []() {
+        //                     spdlog::info("Quit hotkey released");
+        //                 }
+        //         }
+        // });
+        //
+        // inInput->RegisterInputMapping({
+        //         .Action = "Konami",
+        //         .Chord = {
+        //                 .Keys = std::vector<EKey>{EKey::Up, EKey::Up, EKey::Down, EKey::Down,
+        //                                           EKey::Left, EKey::Right, EKey::Left, EKey::Right,
+        //                                           EKey::B, EKey::A},
+        //                 .bIsSequence = true,
+        //                 .TimeBetweenKeys = 1000ms
+        //
+        //         },
+        //         .Callbacks = {
+        //                 .OnPressed = []() {
+        //                     spdlog::info("Konami Code Entered");
+        //                 }
+        //         }
+        // });
     }
 } // OZZ

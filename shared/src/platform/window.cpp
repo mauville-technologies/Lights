@@ -9,6 +9,7 @@
 namespace OZZ {
     Window::Window() {
         initWindow();
+        initControllers();
     }
 
     Window::~Window() {
@@ -55,9 +56,45 @@ namespace OZZ {
             if (win->OnKeyPressed) {
                 if (action == GLFW_REPEAT) return; // Repeat is not needed.
                 GLFWKeyState glfwKeyState(action);
-                win->OnKeyPressed(GLFWKey(key), glfwKeyState);
+                win->OnKeyPressed({-1, GLFWKey(key)}, glfwKeyState);
             }
         });
+
+        glfwSetJoystickCallback([](int jid, int event) {
+            auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
+                win->addController(jid);
+            } else if (event == GLFW_DISCONNECTED) {
+                win->removeController(jid);
+            }
+        });
+    }
+
+    void Window::initControllers() {
+        // On startup, we need to detect connected controllers
+        for (int i = 0; i < GLFW_JOYSTICK_LAST; ++i) {
+            if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
+                addController(i);
+            }
+        }
+    }
+
+    void Window::addController(int index) {
+        spdlog::info("Controller {} connected", index);
+        controllerState[index] = {};
+        if (OnControllerConnected) {
+            OnControllerConnected(index);
+        }
+    }
+
+    void Window::removeController(int index) {
+        const auto controllerRemoved = controllerState.erase(index);
+        if (controllerRemoved) {
+            spdlog::info("Controller {} disconnected", index);
+            if (OnControllerDisconnected) {
+                OnControllerDisconnected(index);
+            }
+        }
     }
 
     void Window::PollEvents() {
@@ -70,7 +107,33 @@ namespace OZZ {
 
         // Get all key states from glfw
         for (int i = 0; i < GLFW_KEY_LAST; ++i) {
-            keyStates[GLFWKey(i)] = GLFWKeyState(glfwGetKey(window, i));
+            const auto keyIndex = static_cast<int>(GLFWKey(i));
+            if (keyIndex == +EKey::KeyCount) continue;
+            keyStates[keyIndex] = GLFWKeyState(glfwGetKey(window, i));
+        }
+
+        // get all controller states
+        for (auto &[index, controller]: controllerState) {
+            if (glfwJoystickIsGamepad(index)) {
+                GLFWgamepadstate gamepadState;
+                if (glfwGetGamepadState(index, &gamepadState)) {
+                    // update all buttons
+                    for (int i = 0; i < GLFW_GAMEPAD_BUTTON_LAST; ++i) {
+                        const auto newState = gamepadState.buttons[i];
+                        if (newState != controller[i]) {
+                            controller[i] = newState;
+                            if (OnKeyPressed) {
+                                OnKeyPressed({index, static_cast<EControllerButton>(i)}, GLFWKeyState(newState));
+                            }
+                        }
+                    }
+
+                    // update all axes
+                    for (int i = 0; i < GLFW_GAMEPAD_AXIS_LAST; ++i) {
+                        controller[i + +EControllerButton::LeftStickX] = gamepadState.axes[i];
+                    }
+                }
+            }
         }
 
         //TODO: Add mouse and joystick input

@@ -24,8 +24,6 @@ namespace OZZ::game::scene {
                                              glm::vec3(0.f, 0.f, 0.f), // Target to look at
                                              glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-
-
         auto [id, inpepe] = gameWorld->CreateGameObject<Sprite>("assets/textures/pepe.png");
         // scale pepe
         pepeid = id;
@@ -86,9 +84,11 @@ namespace OZZ::game::scene {
             glm::vec2{0, 0});
 
         // Set up jump button
+        // TODO: expand input mappings to support multiple chords
         input->RegisterInputMapping({
             .Action = "Jump",
-            .Chord = InputChord{.Keys = std::vector<EKey>{EKey::Space}},
+            .Chord = InputChord{.Keys = std::vector<InputKey>{{0,EControllerButton::A}}},
+            // .Chord = InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
             .Callbacks = {
                 .OnPressed = [this]() {
                     if (auto *body = pepe->GetBody()) {
@@ -100,14 +100,14 @@ namespace OZZ::game::scene {
             }
         });
 
-
         input->RegisterAxisMapping({
             .Action = "MoveLeftRight",
             .Keys = {
-                {EKey::Left, -1.f},
-                {EKey::Right, 1.f},
-                {EKey::A, -1.f},
-                {EKey::D, 1.f},
+                {{-1, EKey::Left}, -1.f},
+                {{-1, EKey::Right}, 1.f},
+                {{-1, EKey::A}, -1.f},
+                {{-1, EKey::D}, 1.f},
+                {{0, EControllerButton::LeftStickX}, 1.f},
             },
         });
 

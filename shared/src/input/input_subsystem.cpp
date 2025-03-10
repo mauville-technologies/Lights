@@ -5,7 +5,8 @@
 #include <cassert>
 #include "lights/input/input_subsystem.h"
 
-#include <ranges>
+#include <algorithm>
+#include <spdlog/spdlog.h>
 
 namespace OZZ {
     InputSubsystem::InputSubsystem() {
@@ -17,9 +18,7 @@ namespace OZZ {
     void InputSubsystem::Shutdown() {
     }
 
-    void InputSubsystem::NotifyKeyboardEvent(const KeyboardEvent &Event) {
-        KeyStates[static_cast<size_t>(Event.Key)] = Event.State;
-
+    void InputSubsystem::NotifyInputEvent(const InputEvent &Event) {
         // Notify all mappings
         for (auto &Mapping: Mappings) {
             if (Mapping.Chord.ReceiveEvent(Event.Key, Event.State)) {
@@ -39,23 +38,23 @@ namespace OZZ {
         }
     }
 
-    void InputSubsystem::Tick(const std::unordered_map<EKey, EKeyState> &pairs) {
+    void InputSubsystem::Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates) {
         // Update all the axis mappings
         for (auto &Mapping: AxisMappings) {
             Mapping.Value = 0.f;
 
             for (auto &[eKey, Weight] : Mapping.Keys) {
-                // TODO: We probably don't even need keystate here, we can probably just accept a float value, and multiply it by the weight.
-                bool bPressed {false};
-                switch (pairs.at(eKey)) {
-                    case EKeyState::KeyPressed: {
-                        const auto value = 1 * Weight;
-                        Mapping.Value = value;
-                        break;
+                if (Mapping.Value != 0.f) {
+                    break;
+                }
+
+                if (eKey.DeviceID == -1) {
+                    Mapping.Value = std::clamp(keyStates[+std::get<EKey>(eKey.Key)] * Weight, -1.f, 1.f);
+                } else {
+                    // this is a controller mapping
+                    if (controllerStates.contains(eKey.DeviceID)) {
+                        Mapping.Value = std::clamp(controllerStates.at(eKey.DeviceID)[+std::get<EControllerButton>(eKey.Key)]* Weight, -1.f, 1.f);
                     }
-                    // The default case does nothing, so that only keys that are pressed are considered
-                    default:
-                        break;
                 }
             }
         }
@@ -116,7 +115,7 @@ namespace OZZ {
         });
     }
 
-    bool InputChord::ReceiveEvent(EKey Key, EKeyState State) {
+    bool InputChord::ReceiveEvent(InputKey Key, EKeyState State) {
         EnsureInitialized();
 
         bool bChangedState = false;

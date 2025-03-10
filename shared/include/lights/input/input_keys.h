@@ -5,6 +5,9 @@
 #pragma once
 
 #include <iostream>
+#include <array>
+#include <unordered_map>
+#include <variant>
 
 namespace OZZ {
     enum class EKeyState : uint8_t {
@@ -118,6 +121,55 @@ namespace OZZ {
         KeyCount
     };
 
+    enum class EControllerButton : uint8_t {
+        A = 0,
+        B,
+        X,
+        Y,
+        LeftShoulder,
+        RightShoulder,
+        Back,
+        Start,
+        Guide,
+        LeftStick,
+        RightStick,
+        DPadUp,
+        DPadRight,
+        DPadDown,
+        DPadLeft,
+        LeftStickX,
+        LeftStickY,
+        RightStickX,
+        RightStickY,
+        LeftTrigger,
+        RightTrigger,
+        ButtonCount
+    };
+
+    constexpr int operator+(const EKey &key) {
+        return static_cast<int>(key);
+    }
+
+    constexpr int operator+(const EControllerButton &button) {
+        return static_cast<int>(button);
+    }
+    constexpr int operator+(const EKeyState &state) {
+        return static_cast<int>(state);
+    }
+
+    using KeyStateArrayType = std::array<float, +EKey::KeyCount>;
+    using ControllerStateArrayType = std::array<float, +EControllerButton::ButtonCount>;
+    using ControllerStateMap = std::unordered_map<int, ControllerStateArrayType>;
+
+
+    struct InputKey {
+        int DeviceID = -1; // -1 for keyboard
+        std::variant<EKey, EControllerButton> Key = EKey::KeyCount;
+
+        const bool operator==(const InputKey& other) const {
+            return DeviceID == other.DeviceID && Key == other.Key;
+        }
+    };
 }
 
 std::ostream &operator<<(std::ostream &out, const OZZ::EKeyState &state);

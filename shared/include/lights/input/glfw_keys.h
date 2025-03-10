@@ -13,6 +13,7 @@ namespace OZZ {
         GLFWKey(int glfwKeyCode);
 
         operator EKey() const { return key; }
+        operator int() const { return +key; }
     private:
         EKey key;
     };
@@ -23,6 +24,14 @@ namespace OZZ {
         explicit GLFWKeyState(int glfwKeyState);
 
         operator EKeyState() const { return state; }
+        operator float() const {
+            switch (state) {
+                case EKeyState::KeyPressed:
+                    return 1.f;
+                default:
+                    return 0;
+            }
+        }
     private:
         EKeyState state;
     };

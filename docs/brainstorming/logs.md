@@ -11,6 +11,16 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 10-03-2025 Input System
+
+Spent the morning and the last little while cleaning up interfaces and expanding the input system. Now, my axis mappings for controller input
+should be working for multiple controllers. Additionally, a "get current button state" for controllers should be working as well -- though admittedly I haven't 
+actually verified this. It's in the same block as the axis readings.
+
+What I want to do now is to generate events when the button states of the controller change. ....
+
+Nevermind I did that right after typing that out. I thought to myself "wait a minute it's probably easy" -- and it was
+
 ## 02-03-2025 Blocking collisions
 
 I got the core of the collision system complete today. Objects will now block against ground, walls, and ceilings. This will cover 90% of all collisions that I'm going to need

@@ -54,7 +54,7 @@ namespace OZZ::game {
 
             // Tick on all polled events
             if (input) {
-                input->Tick(window->GetKeyStates());
+                input->Tick(window->GetKeyStates(), window->GetControllerState());
             }
         }
     }
@@ -76,8 +76,8 @@ namespace OZZ::game {
             }
         };
 
-        window->OnKeyPressed = [this](EKey key, EKeyState state) {
-            input->NotifyKeyboardEvent({ key, state });
+        window->OnKeyPressed = [this](InputKey key, EKeyState state) {
+            input->NotifyInputEvent({ key, state });
         };
     }
 

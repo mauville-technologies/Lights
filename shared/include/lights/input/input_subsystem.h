@@ -7,21 +7,19 @@
 #include <string>
 #include <functional>
 #include <vector>
-#include <array>
 #include <chrono>
-#include <unordered_map>
+#include <variant>
 
 namespace OZZ {
-
     using namespace std::chrono_literals;
 
-    struct KeyboardEvent {
-        EKey Key;
+    struct InputEvent {
+        InputKey Key;
         EKeyState State;
     };
 
     struct InputChord {
-        std::vector<EKey> Keys;
+        std::vector<InputKey> Keys;
         bool bIsSequence { false };
         std::chrono::duration<long long, std::milli> TimeBetweenKeys { 1000 };
 
@@ -38,7 +36,7 @@ namespace OZZ {
          * @param State The state of the key
          * @return True if there was a change in chord state
          */
-        bool ReceiveEvent(EKey Key, EKeyState State);
+        bool ReceiveEvent(InputKey Key, EKeyState State);
         void EnsureInitialized();
 
         bool bInitialized { false };
@@ -58,7 +56,7 @@ namespace OZZ {
 
     struct AxisMapping {
         std::string Action;
-        std::vector<std::pair<EKey, float>> Keys;
+        std::vector<std::pair<InputKey, float>> Keys;
         float Value;
     };
 
@@ -71,15 +69,10 @@ namespace OZZ {
         void RegisterAxisMapping(AxisMapping&& Mapping);
         void UnregisterAxisMapping(const std::string& Action);
 
-        void NotifyKeyboardEvent(const KeyboardEvent& Event);
-        void Tick(const std::unordered_map<EKey, EKeyState> & pairs);;
+        void NotifyInputEvent(const InputEvent& Event);
+        void Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates);
 
-        [[nodiscard]] EKeyState GetKeyState(EKey Key) const {
-            return KeyStates[static_cast<size_t>(Key)];
-        }
-
-        float GetAxisValue(const std::string& Action) const;
-
+        [[nodiscard]] float GetAxisValue(const std::string& Action) const;
 
         ~InputSubsystem() = default;
     private:
@@ -88,7 +81,6 @@ namespace OZZ {
         void Shutdown();
 
     private:
-        std::array<EKeyState, static_cast<size_t>(EKey::KeyCount)> KeyStates {};
         std::vector<AxisMapping> AxisMappings {};
         std::vector<InputMapping> Mappings {};
     };

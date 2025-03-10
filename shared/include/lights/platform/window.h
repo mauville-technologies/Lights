@@ -5,9 +5,12 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <array>
+#include <unordered_map>
 #include <functional>
 #include "lights/input/input_keys.h"
 #include "glm/glm.hpp"
+#include <variant>
 
 namespace OZZ {
     class GLFWKey;
@@ -16,7 +19,9 @@ namespace OZZ {
     public:
         using OnWindowCloseCallback = std::function<void()>;
         using OnWindowResizedCallback = std::function<void(glm::ivec2)>;
-        using OnKeyPressedCallback = std::function<void(EKey, EKeyState)>;
+        using OnInputPressedCallback = std::function<void(InputKey, EKeyState)>;
+        using OnControllerConnectedCallback = std::function<void(int)>;
+        using OnControllerDisconnectedCallback = std::function<void(int)>;
 
         Window();
         ~Window();
@@ -26,20 +31,28 @@ namespace OZZ {
         void SwapBuffers();
 
         [[nodiscard]] glm::ivec2 GetSize() const;
-        void* GetWindowHandle() const;
-        const auto& GetKeyStates() const { return keyStates; }
-    public:
-        OnWindowCloseCallback OnWindowClose;
-        OnWindowResizedCallback OnWindowResized;
-        OnKeyPressedCallback OnKeyPressed;
+        [[nodiscard]] void* GetWindowHandle() const;
+        [[nodiscard]] const auto& GetKeyStates() const { return keyStates; }
+        [[nodiscard]] const auto& GetControllerState() const { return controllerState; }
 
     private:
         void initWindow();
+        void initControllers();
+
+        void addController(int index);
+        void removeController(int index);
+    public:
+        OnWindowCloseCallback OnWindowClose;
+        OnWindowResizedCallback OnWindowResized;
+        OnInputPressedCallback OnKeyPressed;
+        OnControllerConnectedCallback OnControllerConnected;
+        OnControllerDisconnectedCallback OnControllerDisconnected;
 
     private:
         GLFWwindow* window { nullptr };
 
         inline static bool bGLADInitialized {false};
-        std::unordered_map<EKey, EKeyState> keyStates;
+        KeyStateArrayType keyStates;
+        ControllerStateMap controllerState;
     };
 } // OZZ
