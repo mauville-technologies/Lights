@@ -7,12 +7,13 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <vector>
+
 #include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
 #include <lights/ui/user_interface.h>
-#include "lights/scene/constants.h"
+#include <lights/scene/constants.h>
 #include <lights/scene/scene_layer.h>
-
+#include <lights/scene/scene_layer_manager.h>
 
 namespace OZZ::scene {
 
@@ -21,22 +22,18 @@ namespace OZZ::scene {
         return lhs;
     }
 
-
     class Scene {
     public:
         // Should be called at the end of the derived class Init function
         virtual void Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) {
             ui = std::move(inUI);
             input = std::move(inInput);
+            layerManager = std::make_unique<SceneLayerManager>();
 
             const auto theWorld = GetWorld();
             theWorld->Init({
                 .Gravity = {0.f, -20.f * game::constants::PhysicsUnitPerMeter},
             });
-
-            for (const auto &Layer: Layers) {
-                Layer->Init();
-            }
         }
 
         virtual void Tick(float DeltaTime) {
@@ -64,13 +61,13 @@ namespace OZZ::scene {
         }
 
         virtual ~Scene() {
-            Layers.clear();
+            layerManager.reset();
 
             if (world) world->DeInit();
             world.reset();
         }
 
-        std::vector<std::shared_ptr<SceneLayer> > &GetLayers() { return Layers; }
+        std::vector<SceneLayer*> GetLayers() { return layerManager->GetActiveLayers(); }
 
         GameWorld *GetWorld() {
             if (!world) world = std::make_shared<GameWorld>();
@@ -78,7 +75,7 @@ namespace OZZ::scene {
         }
 
     protected:
-        std::vector<std::shared_ptr<SceneLayer> > Layers;
+        std::unique_ptr<SceneLayerManager> layerManager;
         std::shared_ptr<UserInterface> ui;
         std::shared_ptr<InputSubsystem> input;
 

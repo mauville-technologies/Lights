@@ -15,6 +15,6 @@ namespace OZZ::game::scene {
         void Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) override;
 
     private:
-        std::shared_ptr<PhysicsTestingLayer> mainLayer;
+        PhysicsTestingLayer* mainLayer;
     };
 }
