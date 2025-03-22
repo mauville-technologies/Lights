@@ -10,46 +10,17 @@
 #include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
 #include <lights/ui/user_interface.h>
-
-#include "lights/rendering/buffer.h"
-#include "lights/rendering/material.h"
 #include "lights/scene/constants.h"
+#include <lights/scene/scene_layer.h>
 
 
-namespace OZZ {
-    class Camera {
-    public:
-        glm::mat4 ViewMatrix{1.f};
-        glm::mat4 ProjectionMatrix{1.f};
-    };
+namespace OZZ::scene {
 
-    class SceneObject {
-    public:
-        glm::mat4 Transform{1.f}; // Model transformation matrix
-        std::shared_ptr<IndexVertexBuffer> Mesh{nullptr};
-        std::shared_ptr<Material> Mat{nullptr}; // Shader/texture parameters
-    };
+    inline std::vector<SceneObject>& operator+(std::vector<SceneObject> &lhs, std::vector<SceneObject> &rhs) {
+        lhs.insert(lhs.end(), rhs.begin(), rhs.end());
+        return lhs;
+    }
 
-    class SceneLayer {
-    public:
-        virtual ~SceneLayer() = default;
-
-        virtual void Init() {
-        };
-
-        virtual void PhysicsTick(float DeltaTime) {
-        };
-
-        virtual void Tick(float DeltaTime) {
-        };
-
-        virtual void RenderTargetResized(glm::ivec2 size) = 0;
-
-        virtual std::vector<SceneObject> GetSceneObjects() = 0;
-
-
-        Camera LayerCamera{};
-    };
 
     class Scene {
     public:

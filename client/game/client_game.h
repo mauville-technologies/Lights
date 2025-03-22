@@ -14,7 +14,6 @@
 #include "application_state.h"
 
 namespace OZZ::game {
-
     class ClientGame {
     public:
         ClientGame();
@@ -35,7 +34,7 @@ namespace OZZ::game {
         // TODO: The viewport will probably live in a render target
         void updateViewport(glm::ivec2 size);
 
-        void drawScene(Scene* scene);
+        void drawScene(scene::Scene* scene);
     private:
         bool bRunning{false};
 
@@ -45,7 +44,7 @@ namespace OZZ::game {
         std::shared_ptr<InputSubsystem> input;
         std::shared_ptr<UserInterface> ui;
 
-        std::unique_ptr<Scene> windowScene;
+        std::unique_ptr<scene::Scene> windowScene;
         std::unique_ptr<Renderer> renderer;
 
         std::thread networkThread;

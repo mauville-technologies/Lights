@@ -87,7 +87,7 @@ namespace OZZ::game::scene {
         // TODO: expand input mappings to support multiple chords
         input->RegisterInputMapping({
             .Action = "Jump",
-            .Chord = InputChord{.Keys = std::vector<InputKey>{{0,EControllerButton::A}}},
+            .Chord = InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
             // .Chord = InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
             .Callbacks = {
                 .OnPressed = [this]() {
@@ -146,22 +146,19 @@ namespace OZZ::game::scene {
                                                   1000.f);
     }
 
-    std::vector<SceneObject> PhysicsTestingLayer::GetSceneObjects() {
+    std::vector<OZZ::scene::SceneObject> PhysicsTestingLayer::GetSceneObjects() {
         auto pepeSceneObject = pepe->GetSceneObjects();
         auto groundSceneObjects = ground->GetSceneObjects();
         auto rightWallSceneObjects = rightWall->GetSceneObjects();
         auto leftWallSceneObjects = leftWall->GetSceneObjects();
         auto topWallSceneObjects = topWall->GetSceneObjects();
 
-        std::vector<SceneObject> sceneObjects;
-
-        sceneObjects.insert(sceneObjects.end(), pepeSceneObject.begin(), pepeSceneObject.end());
-        sceneObjects.insert(sceneObjects.end(), groundSceneObjects.begin(), groundSceneObjects.end());
-        sceneObjects.insert(sceneObjects.end(), rightWallSceneObjects.begin(), rightWallSceneObjects.end());
-        sceneObjects.insert(sceneObjects.end(), leftWallSceneObjects.begin(), leftWallSceneObjects.end());
-        sceneObjects.insert(sceneObjects.end(), topWallSceneObjects.begin(), topWallSceneObjects.end());
-
-        return sceneObjects;
+        return
+                groundSceneObjects +
+                rightWallSceneObjects +
+                leftWallSceneObjects +
+                topWallSceneObjects +
+                pepeSceneObject;
     }
 
     void PhysicsTestingLayer::updateViewMatrix() {

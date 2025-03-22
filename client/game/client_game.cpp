@@ -4,7 +4,6 @@
 
 #include "client_game.h"
 #include "spdlog/spdlog.h"
-#include "game/scenes/ingame/base_scene.h"
 #include "scenes/physics_testing/physics_testing_scene.h"
 
 namespace OZZ::game {
@@ -101,35 +100,35 @@ namespace OZZ::game {
         //     return appState;
         // });
         windowScene = std::make_unique<scene::PhysicsTestingScene>();
-        if (auto mainMenuScene = dynamic_cast<scene::BaseScene*>(windowScene.get())) {
-            mainMenuScene->ConnectToServerRequested = [this]() {
-                if (client) {
-                    client->Stop();
-                    if (networkThread.joinable()) {
-                        networkThread.join();
-                    }
-                    initNetwork();
-                }
-            };
-
-            mainMenuScene->DisconnectFromServerRequested = [this]() {
-                client->Stop();
-                if (networkThread.joinable()) {
-                    networkThread.join();
-                }
-            };
-
-            mainMenuScene->LoginRequested = [this](const std::string& username, const std::string& password) {
-                client->Login(username, password);
-            };
-
-            mainMenuScene->LogoutRequested = [this]() {
-                client->Stop();
-                if (networkThread.joinable()) {
-                    networkThread.join();
-                }
-            };
-        }
+        // if (auto mainMenuScene = dynamic_cast<scene::BaseScene*>(windowScene.get())) {
+        //     mainMenuScene->ConnectToServerRequested = [this]() {
+        //         if (client) {
+        //             client->Stop();
+        //             if (networkThread.joinable()) {
+        //                 networkThread.join();
+        //             }
+        //             initNetwork();
+        //         }
+        //     };
+        //
+        //     mainMenuScene->DisconnectFromServerRequested = [this]() {
+        //         client->Stop();
+        //         if (networkThread.joinable()) {
+        //             networkThread.join();
+        //         }
+        //     };
+        //
+        //     mainMenuScene->LoginRequested = [this](const std::string& username, const std::string& password) {
+        //         client->Login(username, password);
+        //     };
+        //
+        //     mainMenuScene->LogoutRequested = [this]() {
+        //         client->Stop();
+        //         if (networkThread.joinable()) {
+        //             networkThread.join();
+        //         }
+        //     };
+        // }
         windowScene->Init(input, ui);
         windowScene->RenderTargetResized(window->GetSize());
     }
@@ -179,7 +178,7 @@ namespace OZZ::game {
         glViewport(0, 0, size.x, size.y);
     }
 
-    void ClientGame::drawScene(Scene *scene) {
+    void ClientGame::drawScene(OZZ::scene::Scene *scene) {
         renderer->RenderScene(scene);
         ui->Render();
         if (scene == windowScene.get()) {

@@ -7,7 +7,7 @@
 #include <lights/scene/scene.h>
 
 namespace OZZ::game::scene {
-    class PhysicsTestingLayer : public SceneLayer {
+    class PhysicsTestingLayer : public OZZ::scene::SceneLayer {
     public:
         explicit PhysicsTestingLayer(GameWorld* inWorld);
         ~PhysicsTestingLayer() override;
@@ -17,7 +17,7 @@ namespace OZZ::game::scene {
         void Tick(float DeltaTime) override;
         void SetInputSubsystem(const std::shared_ptr<InputSubsystem>& inInput);
         void RenderTargetResized(glm::ivec2 size) override;
-        std::vector<SceneObject> GetSceneObjects() override;
+        std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
     private:
         void updateViewMatrix();
     private:

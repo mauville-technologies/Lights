@@ -25,7 +25,7 @@ namespace OZZ::game::scene {
             ~Tile() = default;
             void Tick(float DeltaTime);
 
-            SceneObject* GetSceneObject() { return &sceneObject; }
+            OZZ::scene::SceneObject* GetSceneObject() { return &sceneObject; }
 
             [[nodiscard]] const TileDescription& GetDescription() const { return description; }
             [[nodiscard]] const glm::vec2& GetTilemapPosition() const { return tilemapPosition; }
@@ -34,7 +34,7 @@ namespace OZZ::game::scene {
             glm::vec2 tilemapPosition;
             std::shared_ptr<Material> material;
 
-            SceneObject sceneObject;
+            OZZ::scene::SceneObject sceneObject;
         };
 
     public:
@@ -43,7 +43,7 @@ namespace OZZ::game::scene {
 
         void Init(const std::filesystem::path& mapPath);
         void Tick(float DeltaTime) override;
-        std::vector<SceneObject> GetSceneObjects() override;
+        std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
     private:
         void buildTiles();

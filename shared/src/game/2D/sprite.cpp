@@ -4,10 +4,11 @@
 
 #include <lights/game/2D/sprite.h>
 #include <lights/rendering/shapes.h>
+#include <lights/scene/scene_object.h>
 
 namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;
-    std::unordered_map<std::string, SceneObject> Sprite::debugShapes{};
+    std::unordered_map<std::string, OZZ::scene::SceneObject> Sprite::debugShapes{};
 
     Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path &texture) : GameObject(
         std::move(inWorld)) {
@@ -40,8 +41,8 @@ namespace OZZ::game::scene {
         }
     }
 
-    std::vector<SceneObject> Sprite::GetSceneObjects() {
-        std::vector<SceneObject> objects;
+    std::vector<OZZ::scene::SceneObject> Sprite::GetSceneObjects() {
+        std::vector<OZZ::scene::SceneObject> objects;
 
         /* TODO: This is going to be a terrible implementation
          * Later I will want to cache the transform but for now we'll rebuild it every frame
@@ -92,7 +93,7 @@ namespace OZZ::game::scene {
                 const auto circleMesh = std::make_shared<IndexVertexBuffer>();
                 circleMesh->UploadData(vertices, indices);
 
-                SceneObject circleObject;
+                OZZ::scene::SceneObject circleObject;
                 circleObject.Mat = std::make_unique<Material>();
                 circleObject.Mat->SetShader(debugShader);
                 circleObject.Mat->GetSettings().Mode = DrawMode::Lines;
@@ -110,7 +111,7 @@ namespace OZZ::game::scene {
                 const auto quadMesh = std::make_shared<IndexVertexBuffer>();
                 quadMesh->UploadData(vertices, indices);
 
-                SceneObject quadObject;
+                OZZ::scene::SceneObject quadObject;
                 quadObject.Mat = std::make_unique<Material>();
                 quadObject.Mat->SetShader(debugShader);
                 quadObject.Mat->GetSettings().LineWidth = debugDrawSize;
@@ -135,7 +136,7 @@ namespace OZZ::game::scene {
                 const auto pointMesh = std::make_shared<IndexVertexBuffer>();
                 pointMesh->UploadData(vertices, indices);
 
-                SceneObject pointObject;
+                OZZ::scene::SceneObject pointObject;
                 pointObject.Mat = std::make_unique<Material>();
                 pointObject.Mat->SetShader(debugShader);
                 pointObject.Mat->GetSettings().Mode = DrawMode::Points;

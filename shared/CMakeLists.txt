@@ -29,6 +29,8 @@ set(SOURCES
         src/rendering/shader.cpp
         src/rendering/texture.cpp
 
+        src/scene/scene_layer_manager.cpp
+
         src/ui/user_interface.cpp
 
         src/util/image.cpp

@@ -89,8 +89,8 @@ namespace OZZ::game::scene {
     void Tilemap::Tick(float DeltaTime) {
     }
 
-    std::vector<SceneObject> Tilemap::GetSceneObjects() {
-        std::vector<SceneObject> objects;
+    std::vector<OZZ::scene::SceneObject> Tilemap::GetSceneObjects() {
+        std::vector<OZZ::scene::SceneObject> objects;
         for (auto &tile: tiles) {
             // make a copy of the scene object
             auto sceneObject = *tile.GetSceneObject();

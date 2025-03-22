@@ -8,8 +8,6 @@ set (SOURCES
 
         game/client_game.cpp
 
-        game/scenes/ingame/base_scene.cpp
-        game/scenes/ingame/layers/game_layer.cpp
         game/scenes/physics_testing/physics_testing_scene.cpp
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
 

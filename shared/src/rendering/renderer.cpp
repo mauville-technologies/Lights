@@ -10,7 +10,7 @@ namespace OZZ {
 
     }
 
-    void Renderer::RenderScene(Scene *scene) {
+    void Renderer::RenderScene(scene::Scene *scene) {
         // TODO: Bind the render target
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

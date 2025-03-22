@@ -4,6 +4,7 @@
 #pragma once
 #include <lights/game/game_object.h>
 #include <lights/scene/scene.h>
+#include <lights/scene/scene_object.h>
 #include <unordered_map>
 #include <string>
 
@@ -14,7 +15,7 @@ namespace OZZ::game::scene {
     	~Sprite() override;
         void Tick(float DeltaTime) override;
 
-        std::vector<SceneObject> GetSceneObjects() override;
+        std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
         void SetTexture(const std::filesystem::path& inPath);
 
@@ -47,9 +48,9 @@ namespace OZZ::game::scene {
 
         float debugDrawSize = 2;
 
-        SceneObject sceneObject;
+        OZZ::scene::SceneObject sceneObject;
 
-        static std::unordered_map<std::string, SceneObject> debugShapes;
+        static std::unordered_map<std::string, OZZ::scene::SceneObject> debugShapes;
         static std::shared_ptr<Shader> debugShader;
     };
 }
