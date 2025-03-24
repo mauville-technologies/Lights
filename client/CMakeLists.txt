@@ -8,10 +8,15 @@ set (SOURCES
 
         game/client_game.cpp
 
+        game/abilities/ability_system_component.cpp
+        game/abilities/ability/jump_ability.cpp
+
+        game/objects/player/player.cpp
+        game/objects/tilemap.cpp
+
         game/scenes/physics_testing/physics_testing_scene.cpp
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
 
-        game/objects/tilemap.cpp
 
         game/ui/debug_window.cpp
 )

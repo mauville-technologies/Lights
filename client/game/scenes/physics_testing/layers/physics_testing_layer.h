@@ -6,6 +6,10 @@
 #include <lights/game/2D/sprite.h>
 #include <lights/scene/scene.h>
 
+namespace OZZ::game::objects {
+    class Player;
+}
+
 namespace OZZ::game::scene {
     class PhysicsTestingLayer : public OZZ::scene::SceneLayer {
     public:
@@ -23,8 +27,7 @@ namespace OZZ::game::scene {
     private:
         GameWorld* gameWorld;
 
-        Sprite* pepe;
-        uint64_t pepeid;
+        std::pair<uint64_t, objects::Player*> pepe {UINT64_MAX, nullptr};
 
         Sprite* ground;
         uint64_t groundId;

@@ -11,6 +11,14 @@ I was immediately about to work on "next".
 I'll keep newest at the top, with each header being some arbitrary period of time to keep track of roughly when
 I was doing what.
 
+## 23-03-2025 - Player Controller 
+
+It's now time for me to start looking at implementing a player controller. It'd be nice to have a player controller that
+feels fairly good to control. I'm going to start with a simple controller that can move around, jump, double-jump, and dash.
+Jump, double-jump, and dash will all be abilities that can be "equipped" to the player.
+
+This will make it so that the server can dictate what abilities the player has.
+
 ## 10-03-2025 Input System
 
 Spent the morning and the last little while cleaning up interfaces and expanding the input system. Now, my axis mappings for controller input

@@ -12,9 +12,11 @@
 #include <lights/scene/scene_object.h>
 
 namespace OZZ {
+    class GameWorld;
+
     class GameObject {
     public:
-        explicit GameObject(std::shared_ptr<OzzWorld2D>);
+        explicit GameObject(GameWorld* inWorld, std::shared_ptr<OzzWorld2D>);
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
         virtual std::vector<scene::SceneObject> GetSceneObjects() = 0;
@@ -23,12 +25,13 @@ namespace OZZ {
         [[nodiscard]] glm::vec3 GetScale() const { return Scale; }
         [[nodiscard]] glm::quat GetRotation() const { return Rotation; }
 
-        [[nodiscard]] OzzWorld2D* GetWorld() const { return world.get(); }
+        [[nodiscard]] OzzWorld2D* GetWorld() const { return physicsWorld.get(); }
     protected:
         glm::vec3 Position;
         glm::vec3 Scale;
         glm::quat Rotation;
 
-        std::shared_ptr<OzzWorld2D> world;
+        GameWorld* gameWorld;;
+        std::shared_ptr<OzzWorld2D> physicsWorld;
     };
 } // OZZ

@@ -58,7 +58,7 @@ namespace OZZ::game::scene {
 
     }
 
-    Tilemap::Tilemap(std::shared_ptr<OzzWorld2D> InCollision) : GameObject(std::move(InCollision)) {
+    Tilemap::Tilemap(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> InCollision) : GameObject(inGameWorld, std::move(InCollision)) {
         transform = glm::scale(glm::mat4{1.f}, glm::vec3(1.f, 1.f, 1.f));
     }
 

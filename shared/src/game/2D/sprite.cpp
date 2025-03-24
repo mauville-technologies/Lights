@@ -10,8 +10,9 @@ namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;
     std::unordered_map<std::string, OZZ::scene::SceneObject> Sprite::debugShapes{};
 
-    Sprite::Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path &texture) : GameObject(
-        std::move(inWorld)) {
+    Sprite::Sprite(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const std::filesystem::path &texture) : GameObject(
+        inGameWorld,
+        std::move(inPhysicsWorld)) {
         const auto shader = std::make_shared<Shader>("assets/shaders/sprite.vert", "assets/shaders/sprite.frag");
         sceneObject.Mat = std::make_unique<Material>();
         sceneObject.Mat->SetShader(shader);
@@ -26,14 +27,14 @@ namespace OZZ::game::scene {
 
     Sprite::~Sprite() {
         if (MainBody != InvalidBodyID) {
-            world->DestroyBody(MainBody);
+            physicsWorld->DestroyBody(MainBody);
             MainBody = InvalidBodyID;
         }
     }
 
     void Sprite::Tick(float DeltaTime) {
         // Update gameobject position to match main body position
-        if (const auto mainBody = world->GetBody(MainBody)) {
+        if (const auto mainBody = physicsWorld->GetBody(MainBody)) {
             // TODO: The rendering position and scale might need to be separate from the physics position and scale
             // this will work for now but I'll have to think about it more later
             Position = mainBody->GetPosition();
@@ -54,7 +55,7 @@ namespace OZZ::game::scene {
             0.f
         };
 
-        if (const auto mainBody = world->GetBody(MainBody)) {
+        if (const auto mainBody = physicsWorld->GetBody(MainBody)) {
             auto ShapePosition = mainBody->GetPosition();
             renderPosition.x = ShapePosition.x;
             renderPosition.y = ShapePosition.y;
@@ -147,7 +148,7 @@ namespace OZZ::game::scene {
             }
 
             // For each body in the Bodies array, let's draw its debug shape
-            if (auto *body = world->GetBody(MainBody)) {
+            if (auto *body = physicsWorld->GetBody(MainBody)) {
                 if (body->bCollidedThisFrame) {
                     debugShader->SetVec3("lineColor", {0.f, 1.f, 0.f});
                 } else {

@@ -40,7 +40,7 @@ namespace OZZ {
         template <typename T, typename... Args>
         std::pair<uint64_t, T*> CreateGameObject(Args&&... inArgs) {
             auto id = generateUnusedID();
-            auto newObject = std::make_unique<T>(world, std::forward<Args>(inArgs)...);
+            auto newObject = std::make_unique<T>(this, world, std::forward<Args>(inArgs)...);
             objects[id] = std::move(newObject);
             return {id, dynamic_cast<T*>(objects[id].get())};
         }

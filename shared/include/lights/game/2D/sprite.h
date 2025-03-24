@@ -11,7 +11,7 @@
 namespace OZZ::game::scene {
     class Sprite final : public GameObject {
     public:
-        explicit Sprite(std::shared_ptr<OzzWorld2D> inWorld, const std::filesystem::path& texture);
+        explicit Sprite(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const std::filesystem::path& texture);
     	~Sprite() override;
         void Tick(float DeltaTime) override;
 
@@ -27,14 +27,14 @@ namespace OZZ::game::scene {
         template <typename... Args>
     	void AddBody(Args&&... args) {
         	if (MainBody == InvalidBodyID) {
-        		world->DestroyBody(MainBody);
+        		physicsWorld->DestroyBody(MainBody);
         		MainBody = InvalidBodyID;
         	}
-			MainBody = world->CreateBody(std::forward<Args>(args)...);
+			MainBody = physicsWorld->CreateBody(std::forward<Args>(args)...);
 		}
 
     	[[nodiscard]] Body* GetBody() const {
-		    return world->GetBody(MainBody);
+		    return physicsWorld->GetBody(MainBody);
     	}
 
     private:

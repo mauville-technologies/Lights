@@ -3,6 +3,9 @@
 //
 
 #include "physics_testing_layer.h"
+
+#include <game/objects/player/player.h>
+
 #include "lights/game/game_object.h"
 
 namespace OZZ::game::scene {
@@ -11,7 +14,7 @@ namespace OZZ::game::scene {
 
     PhysicsTestingLayer::~PhysicsTestingLayer() {
         if (gameWorld) {
-            gameWorld->RemoveObject(pepeid);
+            gameWorld->RemoveObject(pepe.first);
             gameWorld->RemoveObject(groundId);
             gameWorld->RemoveObject(rightWallId);
             gameWorld->RemoveObject(leftWallId);
@@ -24,18 +27,8 @@ namespace OZZ::game::scene {
                                              glm::vec3(0.f, 0.f, 0.f), // Target to look at
                                              glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-        auto [id, inpepe] = gameWorld->CreateGameObject<Sprite>("assets/textures/pepe.png");
-        // scale pepe
-        pepeid = id;
-        pepe = inpepe;
-        pepe->AddBody(
-            BodyType::Dynamic,
-            OzzRectangle{
-                .Position = glm::vec3{0, 2.f * constants::PixelsPerMeter, 0.f},
-                .Size = glm::vec3{2.f * constants::PixelsPerMeter, 2.f * constants::PixelsPerMeter, 1.f}
-            },
-            glm::vec2{0, 0});
-
+        pepe = gameWorld->CreateGameObject<objects::Player>();
+        pepe.second->SetupInput(input.get());
 
         auto [rId, inRightWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
         rightWall = inRightWall;
@@ -83,36 +76,6 @@ namespace OZZ::game::scene {
             },
             glm::vec2{0, 0});
 
-        // Set up jump button
-        // TODO: expand input mappings to support multiple chords
-        input->RegisterInputMapping({
-            .Action = "Jump",
-            .Chords = {
-                InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
-                InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
-            },
-            .Callbacks = {
-                .OnPressed = [this]() {
-                    if (auto *body = pepe->GetBody()) {
-                        body->Velocity.y = 20;
-                    }
-                },
-                .OnReleased = [this]() {
-                }
-            }
-        });
-
-        input->RegisterAxisMapping({
-            .Action = "MoveLeftRight",
-            .Keys = {
-                {{-1, EKey::Left}, -1.f},
-                {{-1, EKey::Right}, 1.f},
-                {{-1, EKey::A}, -1.f},
-                {{-1, EKey::D}, 1.f},
-                {{0, EControllerButton::LeftStickX}, 1.f},
-            },
-        });
-
         updateViewMatrix();
     }
 
@@ -127,11 +90,6 @@ namespace OZZ::game::scene {
         // I'll leave it here for now and see if it makes sense to move it somewhere else (like the scene) further down the line
         // Doing it here makes it easy to forget in the future if
         gameWorld->Tick(DeltaTime);
-
-        const auto moveValue = input->GetAxisValue("MoveLeftRight");
-        if (auto *body = pepe->GetBody()) {
-            body->Velocity.x = moveValue * 10;
-        }
 
         updateViewMatrix();
     }
@@ -149,7 +107,7 @@ namespace OZZ::game::scene {
     }
 
     std::vector<OZZ::scene::SceneObject> PhysicsTestingLayer::GetSceneObjects() {
-        auto pepeSceneObject = pepe->GetSceneObjects();
+        auto pepeSceneObject = pepe.second->GetSceneObjects();
         auto groundSceneObjects = ground->GetSceneObjects();
         auto rightWallSceneObjects = rightWall->GetSceneObjects();
         auto leftWallSceneObjects = leftWall->GetSceneObjects();
@@ -164,7 +122,7 @@ namespace OZZ::game::scene {
     }
 
     void PhysicsTestingLayer::updateViewMatrix() {
-        const auto pepePosition = pepe->GetPosition();
+        const auto pepePosition = pepe.second->GetPosition();
         LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{pepePosition.x, pepePosition.y, 3.f}, // Camera position
                                              glm::vec3{pepePosition.x, pepePosition.y, 0.f}, // Target to look at
                                              glm::vec3{0.f, 1.f, 0.f}); // Up vector
