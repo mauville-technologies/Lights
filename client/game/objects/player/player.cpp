@@ -32,8 +32,8 @@ namespace OZZ::game::objects {
 	void Player::Tick(float DeltaTime) {
 		Position = sprite.second->GetPosition();
 
-        const auto moveValue = inputSubsystem->GetAxisValue("MoveLeftRight");
-        MoveLeft(moveValue);
+		const auto moveValue = inputSubsystem->GetAxisValue("MoveLeftRight");
+		MoveLeft(moveValue);
 	}
 
 	std::vector<OZZ::scene::SceneObject> Player::GetSceneObjects() {
@@ -42,31 +42,31 @@ namespace OZZ::game::objects {
 
 	void Player::SetupInput(InputSubsystem *input) {
 		inputSubsystem = input;
-		 input->RegisterInputMapping({
-            .Action = "Jump",
-            .Chords = {
-                InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
-                InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
-            },
-            .Callbacks = {
-                .OnPressed = [this]() {
-                    Jump();
-                },
-                .OnReleased = [this]() {
-                }
-            }
-        });
+		input->RegisterInputMapping({
+			.Action = "Jump",
+			.Chords = {
+				InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
+				InputChord{.Keys = std::vector<InputKey>{{-1, EKey::Space}}},
+			},
+			.Callbacks = {
+				.OnPressed = [this]() {
+					Jump();
+				},
+				.OnReleased = [this]() {
+				}
+			}
+		});
 
-        input->RegisterAxisMapping({
-            .Action = "MoveLeftRight",
-            .Keys = {
-                {{-1, EKey::Left}, -1.f},
-                {{-1, EKey::Right}, 1.f},
-                {{-1, EKey::A}, -1.f},
-                {{-1, EKey::D}, 1.f},
-                {{0, EControllerButton::LeftStickX}, 1.f},
-            },
-        });
+		input->RegisterAxisMapping({
+			.Action = "MoveLeftRight",
+			.Keys = {
+				{{-1, EKey::Left}, -1.f},
+				{{-1, EKey::Right}, 1.f},
+				{{-1, EKey::A}, -1.f},
+				{{-1, EKey::D}, 1.f},
+				{{0, EControllerButton::LeftStickX}, 1.f},
+			},
+		});
 	}
 
 	void Player::Jump() const {
@@ -76,8 +76,8 @@ namespace OZZ::game::objects {
 	}
 
 	void Player::MoveLeft(float value) const {
-        if (auto *body = sprite.second->GetBody()) {
-            body->Velocity.x = value * 10;
-        }
+		if (auto *body = sprite.second->GetBody()) {
+			body->Velocity.x = value * 10;
+		}
 	}
 } // OZZ
