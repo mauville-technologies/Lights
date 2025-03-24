@@ -21,18 +21,22 @@ namespace OZZ {
     void InputSubsystem::NotifyInputEvent(const InputEvent &Event) {
         // Notify all mappings
         for (auto &Mapping: Mappings) {
-            if (Mapping.Chord.ReceiveEvent(Event.Key, Event.State)) {
-                switch (Mapping.Chord.CurrentState) {
-                    case EKeyState::KeyPressed:
-                        if (Mapping.Callbacks.OnPressed)
-                            Mapping.Callbacks.OnPressed();
+            // loops through all chords, if one of them is triggered, call the callback
+            auto& chords = Mapping.Chords;
+            for (auto &Chord: chords) {
+                if (Chord.ReceiveEvent(Event.Key, Event.State)) {
+                    switch (Chord.CurrentState) {
+                        case EKeyState::KeyPressed:
+                            if (Mapping.Callbacks.OnPressed)
+                                Mapping.Callbacks.OnPressed();
                         break;
-                    case EKeyState::KeyReleased:
-                        if (Mapping.Callbacks.OnReleased)
-                            Mapping.Callbacks.OnReleased();
+                        case EKeyState::KeyReleased:
+                            if (Mapping.Callbacks.OnReleased)
+                                Mapping.Callbacks.OnReleased();
                         break;
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -53,7 +57,13 @@ namespace OZZ {
                 } else {
                     // this is a controller mapping
                     if (controllerStates.contains(eKey.DeviceID)) {
-                        Mapping.Value = std::clamp(controllerStates.at(eKey.DeviceID)[+std::get<EControllerButton>(eKey.Key)]* Weight, -1.f, 1.f);
+                        const auto key = std::get<EControllerButton>(eKey.Key);
+                        auto value = controllerStates.at(eKey.DeviceID)[+key];
+
+                        // TODO: Current deadzone is hardcoded. It might make sense to make this customizable
+                        value = value < 0.1f && value > -0.1f ? 0.f : value;
+
+                        Mapping.Value = std::clamp(value * Weight, -1.f, 1.f);
                     }
                 }
             }

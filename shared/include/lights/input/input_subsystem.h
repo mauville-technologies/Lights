@@ -49,7 +49,7 @@ namespace OZZ {
 
     struct InputMapping {
         std::string Action;
-        InputChord Chord;
+        std::vector<InputChord> Chords;
 
         ActionCallbacks Callbacks;
     };

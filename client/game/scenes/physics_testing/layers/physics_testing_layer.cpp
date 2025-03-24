@@ -87,8 +87,10 @@ namespace OZZ::game::scene {
         // TODO: expand input mappings to support multiple chords
         input->RegisterInputMapping({
             .Action = "Jump",
-            .Chord = InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
-            // .Chord = InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
+            .Chords = {
+                InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
+                InputChord{.Keys = std::vector<InputKey>{{-1,EKey::Space}}},
+            },
             .Callbacks = {
                 .OnPressed = [this]() {
                     if (auto *body = pepe->GetBody()) {
