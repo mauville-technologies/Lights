@@ -5,6 +5,8 @@
 #include "player.h"
 
 #include <utility>
+#include <game/abilities/ability_system_component.h>
+#include <game/abilities/ability/jump_ability.h>
 #include <lights/game/game_world.h>
 #include <lights/game/2D/sprite.h>
 #include <lights/scene/constants.h>
@@ -21,6 +23,22 @@ namespace OZZ::game::objects {
 				.Size = glm::vec3{2.f * constants::PixelsPerMeter, 2.f * constants::PixelsPerMeter, 1.f}
 			},
 			glm::vec2{0, 0});
+
+		abilitySystem = std::make_unique<abilities::AbilitySystemComponent>();
+		abilitySystem->GrantAbility<abilities::JumpAbility>("Jump", sprite.second,
+		                                                    abilities::JumpParameters {
+			                                                    .JumpStrength = 20.f
+		                                                    },
+		                                                    [] {
+			                                                    // TODO: Implement a proper isOnGround function
+			                                                    return true;
+		                                                    });
+
+		abilitySystem->OnAbilityActivated = [this](const std::string &abilityName) {
+			if (abilityName == "Jump") {
+				spdlog::info("Jump ability activated");
+			}
+		};
 	}
 
 	Player::~Player() {
@@ -30,6 +48,8 @@ namespace OZZ::game::objects {
 	}
 
 	void Player::Tick(float DeltaTime) {
+		abilitySystem->Tick(DeltaTime);
+		spdlog::info("sprite velocity: {}", sprite.second->GetBody()->Velocity.y);
 		Position = sprite.second->GetPosition();
 
 		const auto moveValue = inputSubsystem->GetAxisValue("MoveLeftRight");
@@ -50,7 +70,7 @@ namespace OZZ::game::objects {
 			},
 			.Callbacks = {
 				.OnPressed = [this]() {
-					Jump();
+					abilitySystem->ActivateAbility("Jump");
 				},
 				.OnReleased = [this]() {
 				}

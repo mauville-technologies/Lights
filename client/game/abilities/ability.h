@@ -9,6 +9,7 @@ namespace OZZ::game::abilities {
 	public:
 		virtual ~Ability() = default;
 		virtual bool Activate() = 0;
+		virtual void Execute() = 0;
 		virtual void Tick(float DeltaTime) = 0;
 	};
 }

@@ -5,6 +5,10 @@
 #pragma once
 #include <lights/game/game_object.h>
 
+namespace OZZ::game::abilities {
+	class AbilitySystemComponent;
+}
+
 namespace OZZ {
 	class InputSubsystem;
 }
@@ -30,6 +34,7 @@ namespace OZZ::game::objects {
 
 	private:
 		InputSubsystem *inputSubsystem { nullptr };
+		std::unique_ptr<abilities::AbilitySystemComponent> abilitySystem { nullptr };
 		std::pair<uint64_t, scene::Sprite*> sprite {UINT64_MAX, nullptr};
 	};
 } // OZZ

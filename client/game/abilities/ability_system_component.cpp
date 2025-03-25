@@ -19,6 +19,7 @@ namespace OZZ::game::abilities {
 	void AbilitySystemComponent::ActivateAbility(const std::string &AbilityName) {
 		if (Abilities.contains(AbilityName)) {
 			if (OnAbilityActivated && Abilities[AbilityName]->Activate()) {
+				Abilities[AbilityName]->Execute();
 				OnAbilityActivated(AbilityName);
 			}
 		}

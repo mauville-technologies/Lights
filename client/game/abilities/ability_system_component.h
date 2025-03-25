@@ -25,9 +25,17 @@ namespace OZZ::game::abilities {
 			return dynamic_cast<T*>(Abilities[AbilityName].get());
 		};
 
-		void RevokeAbility(const std::string& AbilityName);
+		template <typename T>
+		T* GetAbility(const std::string& AbilityName) {
+			if (Abilities.contains(AbilityName)) {
+				return dynamic_cast<T*>(Abilities[AbilityName].get());
+			}
+			return nullptr;
+		}
 
+		void RevokeAbility(const std::string& AbilityName);
 		void ActivateAbility(const std::string& AbilityName);
+
 		void Tick(float DeltaTime);
 
 	public:
