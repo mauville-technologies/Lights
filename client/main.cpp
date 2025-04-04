@@ -4,27 +4,15 @@
 
 #include <lights/lights.h>
 #include <spdlog/spdlog.h>
-#include <asio.hpp>
-#include "network/client.h"
+#include <game/scenes/physics_testing/physics_testing_scene.h>
+
 #include "game/client_game.h"
 
 int main() {
     // Print library version
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
 
-//    try {
-//        // Create an io_context object
-//        asio::io_context context;
-//
-//        // Create a server object
-//        OZZ::Client client(context, "127.0.0.1", 8080);
-//        client.Run();
-//        context.run();
-//    } catch (std::exception &e) {
-//        spdlog::error("Exception: {}", e.what());
-//    }
-
-    OZZ::game::ClientGame game {};
+    OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
     game.Run();
 
     return 0;

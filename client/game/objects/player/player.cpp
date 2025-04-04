@@ -49,7 +49,6 @@ namespace OZZ::game::objects {
 
 	void Player::Tick(float DeltaTime) {
 		abilitySystem->Tick(DeltaTime);
-		spdlog::info("sprite velocity: {}", sprite.second->GetBody()->Velocity.y);
 		Position = sprite.second->GetPosition();
 
 		const auto moveValue = inputSubsystem->GetAxisValue("MoveLeftRight");
