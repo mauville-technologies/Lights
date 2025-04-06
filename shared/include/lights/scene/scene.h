@@ -43,7 +43,7 @@ namespace OZZ::scene {
 
             while (accumulator >= physicsTickRate) {
                 for (const auto &Layer: GetLayers()) {
-                    // Layer->PhysicsTick(physicsTickRate);
+                    Layer->PhysicsTick(physicsTickRate);
                 }
                 GetWorld()->PhysicsTick(physicsTickRate);
                 accumulator -= physicsTickRate;
