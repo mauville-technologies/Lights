@@ -14,6 +14,11 @@ set (SOURCES
         game/objects/player/player.cpp
         game/objects/tilemap.cpp
 
+        game/scenes/mmo/mmo_scene.cpp
+        game/scenes/mmo/layers/mmo_character_select.cpp
+        game/scenes/mmo/layers/mmo_game.cpp
+        game/scenes/mmo/layers/mmo_title_screen.cpp
+
         game/scenes/physics_testing/physics_testing_scene.cpp
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
 

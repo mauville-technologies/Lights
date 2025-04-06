@@ -15,7 +15,9 @@ namespace OZZ {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glClearColor(0.392f, 0.584f, 0.929f, 1.0f);
+        auto sceneParams = scene->Params;
+
+        glClearColor(sceneParams.ClearColor.x, sceneParams.ClearColor.y, sceneParams.ClearColor.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // TODO: Render the scene
