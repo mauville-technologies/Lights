@@ -32,7 +32,7 @@ namespace OZZ {
             default:
                 spdlog::warn("Unsupported image format. Defaulting to RGBA");
         }
-
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      width, height, 0,
                      format, GL_UNSIGNED_BYTE, image->GetData().data());
