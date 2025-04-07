@@ -23,6 +23,9 @@ namespace OZZ {
         int format = GL_RGBA;
 
         switch (image->GetChannels()) {
+            case 1:
+                format = GL_RED;
+                break;
             case 3:
                 format = GL_RGB;
                 break;

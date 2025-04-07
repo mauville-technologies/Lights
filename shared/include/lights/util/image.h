@@ -11,7 +11,10 @@ namespace OZZ {
     public:
         using path = std::filesystem::path;
         Image(const path& texturePath, int desiredChannels = 4);
+        Image(const unsigned char* inData, int inWidth, int inHeight, int inChannels);
         ~Image();
+
+        void FlipPixels(bool bVertical = true, bool bHorizontal = true);
 
         [[nodiscard]] inline const std::vector<unsigned char>& GetData() const { return data; }
         [[nodiscard]] inline int GetWidth() const { return width; }

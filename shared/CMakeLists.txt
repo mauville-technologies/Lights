@@ -31,6 +31,8 @@ set(SOURCES
 
         src/scene/scene_layer_manager.cpp
 
+        src/text/font_loader.cpp
+
         src/ui/user_interface.cpp
 
         src/util/image.cpp
