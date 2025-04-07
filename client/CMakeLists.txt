@@ -11,6 +11,7 @@ set (SOURCES
         game/abilities/ability_system_component.cpp
         game/abilities/ability/jump_ability.cpp
 
+        game/objects/text/text_label.cpp
         game/objects/player/player.cpp
         game/objects/tilemap.cpp
 

@@ -28,10 +28,12 @@ namespace OZZ {
 
 		// Load a font from a file
 		std::unordered_map<char, Character*> GetString(const path& fontPath, const std::string& str, uint16_t fontSize);
+		constexpr static auto CharacterSet =
+			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;':\",.<>?`~ ";
 	private:
 		bool loadFont(const path& fontPath);
 
-		bool isCharacterLoaded(const path& fontPath, uint16_t fontSize, char character);
+		bool ensureCharactersLoaded(const path& fontPath, uint16_t fontSize);
 	private:
 		FT_Library library;
 
@@ -42,22 +44,5 @@ namespace OZZ {
 		std::unordered_map<path, std::unordered_map<uint16_t, std::unordered_map<char, std::unique_ptr<Character>>>> characters;
 	};
 
-	inline bool FontLoader::isCharacterLoaded(const path &fontPath, uint16_t fontSize, char character) {
-		const auto fontIt = characters.find(fontPath);
-		if (fontIt == characters.end()) {
-			return false;
-		}
 
-		const auto sizeIt = fontIt->second.find(fontSize);
-		if (sizeIt == fontIt->second.end()) {
-			return false;
-		}
-
-		const auto charIt = sizeIt->second.find(character);
-		if (charIt == sizeIt->second.end()) {
-			return false;
-		}
-
-		return true;
-	}
 } // OZZ

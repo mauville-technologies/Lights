@@ -15,7 +15,7 @@ void MMOTitleScreen::Init() {
 	fontLoader = std::make_unique<OZZ::FontLoader>();
 	alphabetCharacterData =
 		fontLoader->GetString(fontPath,
-			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;':\",.<>?`~ ",
+			"Lights",
 			32);
 
 	// put a log line in here so i can break on it
@@ -70,12 +70,12 @@ void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 }
 
 std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
-	auto sampleText = BuildText("Sample Text", {-256.f, -128.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 0.f});
-	auto titleText = BuildText("Lights", {0.f, (1080.f / 2) - 32.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 0.f});
+	// auto sampleText = BuildText("Sample Text", {-256.f, -128.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 0.f});
+	auto titleText = BuildText("Lights", {0.f, (1080.f / 2) - 32.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 0.f, 0.f});
 
 	auto titleScreenObjects = std::vector<OZZ::scene::SceneObject>();
-	titleScreenObjects.reserve(sampleText.size() + titleText.size());
-	titleScreenObjects.insert(titleScreenObjects.end(), sampleText.begin(), sampleText.end());
+	// titleScreenObjects.reserve(sampleText.size() + titleText.size());
+	// titleScreenObjects.insert(titleScreenObjects.end(), sampleText.begin(), sampleText.end());
 	titleScreenObjects.insert(titleScreenObjects.end(), titleText.begin(), titleText.end());
 	return titleScreenObjects;
 }
@@ -95,7 +95,12 @@ std::vector<OZZ::scene::SceneObject> MMOTitleScreen::BuildText(const std::string
 			0.f);
 		characterObj.Transform = glm::translate(characterObj.Transform, characterPosition);
 		characterObj.Transform = glm::scale(characterObj.Transform, glm::vec3(scale.x * characterData->Size.x, scale.y * characterData->Size.y, 1.f));
-		characterObj.Mat->GetShader()->SetVec3("textColor", color);
+
+		// TODO: Enhance the material to be able to dynamically set these uniforms per material instance
+		characterObj.Mat->AddUniformSetting({
+			.Name = "textColor",
+			.Value = color
+		});
 
 		nextCharacterX += characterData->Advance >> 6;
 
