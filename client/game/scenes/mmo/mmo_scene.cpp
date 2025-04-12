@@ -12,7 +12,7 @@ void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput, std::shared_pt
 	Scene::Init(inInput, inUI);
 	Params.ClearColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	layerManager->LoadLayer<MMOTitleScreen>("TitleScreen");
+	layerManager->LoadLayer<MMOTitleScreen>("TitleScreen", GetWorld());
 	layerManager->SetLayerActive("TitleScreen", true);
 	layerManager->LoadLayer<MMOCharacterSelect>("CharacterSelect");
 	layerManager->SetLayerActive("CharacterSelect", false);

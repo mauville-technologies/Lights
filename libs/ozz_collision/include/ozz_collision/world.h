@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <mutex>
 #include <ozz_collision/ozz_collision_shapes.h>
+#include <algorithm>
 
 namespace OZZ {
     using namespace OZZ::collision::shapes;

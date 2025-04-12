@@ -22,6 +22,7 @@ namespace OZZ {
         virtual std::vector<scene::SceneObject> GetSceneObjects() = 0;
 
         [[nodiscard]] glm::vec3 GetPosition() const { return Position; }
+        void SetPosition(const glm::vec3& inPosition) { Position = inPosition; }
         [[nodiscard]] glm::vec3 GetScale() const { return Scale; }
         [[nodiscard]] glm::quat GetRotation() const { return Rotation; }
 

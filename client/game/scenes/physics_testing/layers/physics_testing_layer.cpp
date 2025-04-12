@@ -30,7 +30,7 @@ namespace OZZ::game::scene {
         pepe = gameWorld->CreateGameObject<objects::Player>();
         pepe.second->SetupInput(input.get());
 
-        auto [rId, inRightWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/container.jpg");
+        auto [rId, inRightWall] = gameWorld->CreateGameObject<Sprite>("assets/textures/cone.png");
         rightWall = inRightWall;
         rightWallId = rId;
         rightWall->AddBody(

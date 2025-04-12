@@ -26,8 +26,9 @@ namespace OZZ {
 		FontLoader();
 		~FontLoader() = default;
 
-		// Load a font from a file
 		std::unordered_map<char, Character*> GetString(const path& fontPath, const std::string& str, uint16_t fontSize);
+		std::unordered_map<char, Character*> GetCharacterSet(const path& fontPath, uint16_t fontSize);
+
 		constexpr static auto CharacterSet =
 			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;':\",.<>?`~ ";
 	private:

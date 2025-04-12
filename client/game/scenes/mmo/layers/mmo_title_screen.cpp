@@ -5,6 +5,10 @@
 #include "mmo_title_screen.h"
 
 #include <lights/rendering/shapes.h>
+#include <game/objects/text/text_label.h>
+
+MMOTitleScreen::MMOTitleScreen(OZZ::GameWorld *inWorld) : gameWorld(inWorld) {
+}
 
 void MMOTitleScreen::Init() {
 	SceneLayer::Init();
@@ -12,45 +16,9 @@ void MMOTitleScreen::Init() {
 	                                     glm::vec3(0.f, 0.f, 0.f), // Target to look at
 	                                     glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-	fontLoader = std::make_unique<OZZ::FontLoader>();
-	alphabetCharacterData =
-		fontLoader->GetString(fontPath,
-			"Lights",
-			32);
+	titleScreenText = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
+		std::filesystem::path("assets/fonts/game_bubble.ttf"), 128, "Lights Text Label");
 
-	// put a log line in here so i can break on it
-	spdlog::info("MMOTitleScreen::Init() - Font loaded");
-
-	const auto shader = std::make_shared<OZZ::Shader>("assets/shaders/font.vert", "assets/shaders/font.frag");
-	// create the title screen quads
-	for (const auto [character, characterData]: alphabetCharacterData) {
-		// create title screen material
-		const auto texture = std::make_shared<OZZ::Texture>();
-		characterData->Texture->FlipPixels(true, false);
-		texture->UploadData(characterData->Texture.get());
-		const auto mat = std::make_shared<OZZ::Material>();
-		mat->SetShader(shader);
-		mat->AddTextureMapping({
-			.SlotName = "inTexture",
-			.SlotNumber = GL_TEXTURE0,
-			.TextureResource = texture
-		});
-
-		// create mesh for quad
-		glm::mat4 transform = glm::mat4(1.0f);
-
-		auto quadMesh = std::make_shared<OZZ::IndexVertexBuffer>();
-		auto quad = OZZ::scene::SceneObject{
-			.Transform = transform,
-			.Mesh = quadMesh,
-			.Mat = mat,
-		};
-		auto vertices = std::vector<OZZ::Vertex>(OZZ::quadVertices.begin(), OZZ::quadVertices.end());
-		auto indices = std::vector<uint32_t>(OZZ::quadIndices.begin(), OZZ::quadIndices.end());
-		quad.Mesh->UploadData(vertices, indices);
-
-		titleScreenQuads[character] = quad;
-	}
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -59,6 +27,21 @@ void MMOTitleScreen::PhysicsTick(float DeltaTime) {
 
 void MMOTitleScreen::Tick(float DeltaTime) {
 	SceneLayer::Tick(DeltaTime);
+
+	// TODO: I feel like the gameworld doesn't need to be owned by the layer -- though I'm not entirely sure of the alternative.
+	// I'll leave it here for now and see if it makes sense to move it somewhere else (like the scene) further down the line
+	// Doing it here makes it easy to forget in the future if
+	gameWorld->Tick(DeltaTime);
+
+	static glm::vec3 titleScreenOffset {-400.f, 0.f, 0.f};
+	static float totalTime = 1.f;
+
+	totalTime += DeltaTime;
+	// apply a sin wave
+	titleScreenOffset.y = std::sin(totalTime * 2.f) * 64;
+
+	titleScreenText.second->SetPosition(titleScreenOffset);
+
 }
 
 void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
@@ -70,42 +53,9 @@ void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 }
 
 std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
-	// auto sampleText = BuildText("Sample Text", {-256.f, -128.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 0.f});
-	auto titleText = BuildText("Lights", {0.f, (1080.f / 2) - 32.f, 0.f}, {1.f, 1.f, 1.f}, {1.f, 0.f, 0.f});
+	auto titleTextObjObjects = titleScreenText.second->GetSceneObjects();
 
 	auto titleScreenObjects = std::vector<OZZ::scene::SceneObject>();
-	// titleScreenObjects.reserve(sampleText.size() + titleText.size());
-	// titleScreenObjects.insert(titleScreenObjects.end(), sampleText.begin(), sampleText.end());
-	titleScreenObjects.insert(titleScreenObjects.end(), titleText.begin(), titleText.end());
+	titleScreenObjects.insert(titleScreenObjects.end(), titleTextObjObjects.begin(), titleTextObjObjects.end());
 	return titleScreenObjects;
-}
-
-std::vector<OZZ::scene::SceneObject> MMOTitleScreen::BuildText(const std::string &text, const glm::vec3 &position,
-	const glm::vec3 &scale, glm::vec3 color) {
-	std::vector<OZZ::scene::SceneObject> textObjects;
-
-	int nextCharacterX = position.x;
-	for (auto character : text) {
-		auto characterData = alphabetCharacterData[character];
-		auto characterObj = titleScreenQuads[character];
-
-		auto characterPosition = glm::vec3(
-			(characterData->Size.x / 2) + (nextCharacterX + characterData->Bearing.x),
-			(position.y + characterData->Bearing.y * scale.y) - (characterData->Size.y / 2),
-			0.f);
-		characterObj.Transform = glm::translate(characterObj.Transform, characterPosition);
-		characterObj.Transform = glm::scale(characterObj.Transform, glm::vec3(scale.x * characterData->Size.x, scale.y * characterData->Size.y, 1.f));
-
-		// TODO: Enhance the material to be able to dynamically set these uniforms per material instance
-		characterObj.Mat->AddUniformSetting({
-			.Name = "textColor",
-			.Value = color
-		});
-
-		nextCharacterX += characterData->Advance >> 6;
-
-		textObjects.push_back(characterObj);
-	}
-
-	return textObjects;
 }

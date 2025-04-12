@@ -4,6 +4,7 @@
 
 #include "lights/rendering/material.h"
 #include <glad/glad.h>
+#include <algorithm>
 
 namespace OZZ {
     void Material::Bind() {

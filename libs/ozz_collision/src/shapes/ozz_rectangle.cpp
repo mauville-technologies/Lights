@@ -2,6 +2,8 @@
 // Created by ozzadar on 2025-01-14.
 //
 
+
+#include <algorithm>
 #include "ozz_collision/shapes/ozz_rectangle.h"
 #include "ozz_collision/shapes/ozz_circle.h"
 #include "ozz_collision/shapes/ozz_point.h"

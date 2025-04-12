@@ -4,6 +4,7 @@
 
 #include "lights/util/image.h"
 #include <stb_image.h>
+#include <algorithm>
 
 namespace OZZ {
     Image::Image(const path& texturePath, int desiredChannels) {

@@ -7,8 +7,13 @@
 #include <lights/scene/scene.h>
 #include <lights/text/font_loader.h>
 
+namespace OZZ::game::objects {
+	class TextLabel;
+}
+
 class MMOTitleScreen : public OZZ::scene::SceneLayer {
 public:
+	MMOTitleScreen(OZZ::GameWorld* inWorld);
 	~MMOTitleScreen() override = default;
 
 	/// Override
@@ -33,4 +38,10 @@ private:
 
 	// title screen quads
 	std::unordered_map<char, OZZ::scene::SceneObject> titleScreenQuads {};
+
+
+	// Keep the things under here
+	OZZ::GameWorld* gameWorld;
+	std::pair<uint64_t, OZZ::game::objects::TextLabel*> titleScreenText { UINT64_MAX, nullptr };
+
 };

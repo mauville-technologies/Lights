@@ -8,6 +8,7 @@
 #include <array>
 #include <unordered_map>
 #include <variant>
+#include <cstdint>
 
 namespace OZZ {
     enum class EKeyState : uint8_t {

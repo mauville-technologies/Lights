@@ -13,7 +13,7 @@ int main() {
     // Print library version
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
 
-    // OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
+     // OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
     OZZ::game::ClientGame<MMOScene> game {};
     game.Run();
 

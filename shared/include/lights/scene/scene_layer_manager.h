@@ -6,7 +6,6 @@
 
 #include <string>
 #include <set>
-#include <ranges>
 #include <lights/scene/scene_layer.h>
 
 namespace OZZ::scene {

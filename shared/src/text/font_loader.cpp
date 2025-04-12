@@ -27,6 +27,10 @@ namespace OZZ {
 		return outCharacters;
 	}
 
+	std::unordered_map<char, Character *> FontLoader::GetCharacterSet(const path &fontPath, uint16_t fontSize) {
+		return GetString(fontPath, CharacterSet, fontSize);
+	}
+
 	bool FontLoader::loadFont(const path &fontPath) {
 		spdlog::info("Loading font from {}", fontPath.string());
 		FT_Face face;
@@ -81,6 +85,7 @@ namespace OZZ {
 			}
 
 			auto characterImage = std::make_unique<Image>(face->glyph->bitmap.buffer, face->glyph->bitmap.width, face->glyph->bitmap.rows, 1);
+			characterImage->FlipPixels(true, false);
 			auto newCharacter = std::make_unique<Character>(std::move(characterImage),
 															glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 															glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
