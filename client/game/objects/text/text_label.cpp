@@ -64,7 +64,6 @@ namespace OZZ::game::objects {
 		// create the texture
 		fontTexture.reset();
 		fontTexture = std::make_shared<OZZ::Texture>();
-		fontSet->Texture->SaveToFile("assets/textures/font.png");
 		fontTexture->UploadData(fontSet->Texture.get());
 
 		// crate the shader

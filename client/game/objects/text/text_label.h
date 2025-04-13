@@ -41,8 +41,6 @@ namespace OZZ::game::objects {
 		// bLikelyToChange is used to determine if the text is likely to change, which affects the way textures are cached
 		bool bLikelyToChange;
 
-		std::unordered_map<char, Character*> characterSet;
-
 		// internal junk
 		FontSet* fontSet { nullptr };
 

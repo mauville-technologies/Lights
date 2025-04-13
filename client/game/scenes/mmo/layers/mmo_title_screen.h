@@ -25,20 +25,8 @@ public:
     std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
 private:
-	std::vector<OZZ::scene::SceneObject> BuildText(const std::string &text, const glm::vec3 &position, const glm::vec3 &scale, glm::vec3 color = {1.f, 1.f, 1.f});
-
-private:
 	std::filesystem::path fontPath { "assets/fonts/game_bubble.ttf" };
 	std::unique_ptr<OZZ::FontLoader> fontLoader { nullptr };
-
-	std::unordered_map<char, OZZ::Character*> alphabetCharacterData {};
-
-	// title screen material
-	std::shared_ptr<OZZ::Material> titleScreenMaterial { nullptr };
-
-	// title screen quads
-	std::unordered_map<char, OZZ::scene::SceneObject> titleScreenQuads {};
-
 
 	// Keep the things under here
 	OZZ::GameWorld* gameWorld;
