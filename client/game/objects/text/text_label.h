@@ -30,7 +30,7 @@ namespace OZZ::game::objects {
 		void rebuildText();
 		void reloadCharacterSet();
 		void updateText();
-		void updateCharacterTransforms();
+		void updateTransform();
 	private:
 		// Parameters
 		std::unique_ptr<OZZ::FontLoader> fontLoader { nullptr };

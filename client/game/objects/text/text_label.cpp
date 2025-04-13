@@ -46,11 +46,12 @@ namespace OZZ::game::objects {
 	void TextLabel::rebuildText() {
 		reloadCharacterSet();
 		updateText();
-		updateCharacterTransforms();
+		updateTransform();
 	}
 
 	void TextLabel::reloadCharacterSet() {
-		fontSet = fontLoader->GetFontSet(fontPath, fontSize);
+		if (!fontSet)
+			fontSet = fontLoader->GetFontSet(fontPath, fontSize);
 	}
 
 	void TextLabel::updateText() {
@@ -167,30 +168,13 @@ namespace OZZ::game::objects {
 		builtText = text;
 	}
 
-	void TextLabel::updateCharacterTransforms() {
+	void TextLabel::updateTransform() {
 		if (text.empty() || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
 		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position);
 		fontRenderObject.Transform *= glm::mat4_cast(Rotation);
 		fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, Scale);
-		// // TODO: Determine width of the string, and set the position of the first character
-		// int nextCharacterX = Position.x;
-		// int index = 0;
-		// for (auto& character : text) {
-		// 	auto characterData = characterSet[character];
-		// 	// get the character data
-		// 	auto characterPosition = glm::vec3(
-		// 		(characterData->Size.x / 2) + (nextCharacterX + characterData->Bearing.x * Scale.x),
-		// 		(Position.y + characterData->Bearing.y * Scale.y) - (characterData->Size.y / 2),
-		// 		0.f);
-		// 	auto transform = glm::translate(glm::mat4{1.f}, characterPosition);
-		// 	transform = glm::scale(transform, glm::vec3(Scale.x * characterData->Size.x, Scale.y * characterData->Size.y, 1.f));
-		//
-		// 	textObjects[index].Transform = transform;
-		// 	nextCharacterX += characterData->Advance >> 6;
-		// 	index++;
-		// }
-		//
+
 		builtPosition = Position;
 		builtScale = Scale;
 		builtRotation = Rotation;
