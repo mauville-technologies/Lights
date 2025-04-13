@@ -4,9 +4,71 @@
 
 #include "lights/util/image.h"
 #include <stb_image.h>
+#include <stb_image_write.h>
+#include <spdlog/spdlog.h>
 #include <algorithm>
 
 namespace OZZ {
+    std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>> Image::MergeImages(const std::vector<std::unique_ptr<Image>>& images) {
+        // let's assume a max width of 4096
+        constexpr int maxTextureDimension = 4096;
+
+        auto result = std::make_unique<Image>();
+
+        // we're going to merge the images top-left to bottom-right
+        // so we need to find the max width and height
+        // we also need to know the max channels, we'll fill any missing channels with 0's
+        int maxWidth = 0;
+        int maxHeight = 0;
+        int maxChannels = 0;
+        for (const auto& image : images) {
+            maxWidth = std::max(maxWidth, image->GetWidth());
+            maxHeight = std::max(maxHeight, image->GetHeight());
+            maxChannels = std::max(maxChannels, image->GetChannels());
+        }
+
+        // calculate the number of rows and columns, and the total size
+        int numCols = maxTextureDimension / (maxWidth * maxChannels);
+        int numRows = (static_cast<int>(images.size()) / numCols) + (images.size() % numCols != 0 ? 1 : 0);
+
+        result->width = maxWidth * numCols * maxChannels;
+        result->height = maxHeight * numRows;
+
+        // resize data array
+        result->data.resize(result->width * result->height * maxChannels);
+
+        // loop through all the images, and copy them into the result image in the appropriate position
+        for (int i = 0; i < images.size(); ++i) {
+            const auto& image = images[i];
+
+            // calculate the position in the result image
+            int resultStartXPosition = ((i % numCols) * (maxWidth * maxChannels));
+            int resultStartYPosition = ((i / numCols) * maxHeight);
+
+            // copy the image data into the result image
+            for (int y = 0; y < image->GetHeight(); y++) {
+                for (int x = 0; x < image->GetWidth(); x++) {
+                    auto currentX = resultStartXPosition + (x * maxChannels);
+                    auto currentY = resultStartYPosition + y;
+
+                    // copy the pixel data
+                    for (int channel = 0; channel < maxChannels; channel++) {
+                        if (channel < image->GetChannels()) {
+                            result->data[(currentY * result->width) + currentX + channel] = image->GetData()[(y * image->GetWidth() * image->GetChannels()) + (x * image->GetChannels()) + channel];
+                        } else {
+                            result->data[(currentY * result->width) + currentX + channel] = 0; // fill with 0's
+                        }
+                    }
+                }
+            }
+        }
+
+        result->channels = maxChannels;
+        result->height = maxHeight * numRows;
+        result->width = maxWidth * numCols * maxChannels;
+        return {glm::vec2{numCols, numRows}, glm::vec2{maxWidth, maxHeight}, std::move(result)};
+    }
+
     Image::Image(const path& texturePath, int desiredChannels) {
         stbi_set_flip_vertically_on_load(true);
         auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, desiredChannels);
@@ -55,6 +117,20 @@ namespace OZZ {
                     std::swap(data[i * stepSize + (j*width)], data[(width - 1 - i) * stepSize + (j*width)]);
                 }
             }
+        }
+    }
+
+    void Image::SaveToFile(std::filesystem::path imagePath) {
+        // check if the path exists
+        if (std::filesystem::exists(imagePath)) {
+            // remove the file
+            std::filesystem::remove(imagePath);
+        }
+        // save the image
+        if (stbi_write_png(imagePath.string().c_str(), width, height, channels, data.data(), width * channels) == 0) {
+            spdlog::error("Could not save image to file: {}", imagePath.string());
+        } else {
+            spdlog::info("Saved image to file: {}", imagePath.string());
         }
     }
 }

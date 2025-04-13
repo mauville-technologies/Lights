@@ -44,16 +44,19 @@ namespace OZZ::game::objects {
 		std::unordered_map<char, Character*> characterSet;
 
 		// internal junk
-		std::shared_ptr<OZZ::Shader> textShader { nullptr };
-		std::shared_ptr<OZZ::Material> textMaterial { nullptr };
-		std::shared_ptr<OZZ::IndexVertexBuffer> textVertexBuffer { nullptr };
+		FontSet* fontSet { nullptr };
 
-		std::vector<OZZ::scene::SceneObject> textObjects {};
+		std::shared_ptr<OZZ::Texture> fontTexture;
+		std::shared_ptr<OZZ::Shader> fontShader { nullptr };
+		std::shared_ptr<OZZ::Material> fontMaterial { nullptr };
+		std::shared_ptr<OZZ::IndexVertexBuffer> fontMesh { nullptr };
 
+		OZZ::scene::SceneObject fontRenderObject {};
 
 		// cache things
 		glm::vec3 builtPosition;
 		glm::vec3 builtScale;
 		std::string builtText;
+		glm::quat builtRotation;
 	};
 } // game

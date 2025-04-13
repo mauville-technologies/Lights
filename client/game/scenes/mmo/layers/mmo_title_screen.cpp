@@ -17,7 +17,7 @@ void MMOTitleScreen::Init() {
 	                                     glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
 	titleScreenText = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		std::filesystem::path("assets/fonts/game_bubble.ttf"), 128, "Lights Text Label");
+		std::filesystem::path("assets/fonts/Starjedi.ttf"), 128, "Star Wars", glm::vec3{1.f, 1.f, 0.f});
 
 }
 
@@ -40,7 +40,7 @@ void MMOTitleScreen::Tick(float DeltaTime) {
 	// apply a sin wave
 	titleScreenOffset.y = std::sin(totalTime * 2.f) * 64;
 
-	titleScreenText.second->SetPosition(titleScreenOffset);
+	// titleScreenText.second->SetPosition(titleScreenOffset);
 
 }
 

@@ -6,12 +6,15 @@
 #include <spdlog/spdlog.h>
 #include <game/scenes/physics_testing/physics_testing_scene.h>
 #include <game/scenes/mmo/mmo_scene.h>
+#include <lights/text/font_loader.h>
 
 #include "game/client_game.h"
 
 int main() {
     // Print library version
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
+
+
 
      // OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
     OZZ::game::ClientGame<MMOScene> game {};

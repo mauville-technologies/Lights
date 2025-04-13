@@ -20,10 +20,20 @@ namespace OZZ::game::objects {
 
 	void TextLabel::Tick(float DeltaTime) {
 		rebuildText();
+
+		// static int frameCount = 0;
+		// frameCount++;
+		//
+		// // rotate a little
+		// if (frameCount % 1000 == 0) {
+		// 	// rotate a little
+		// 	// create 1 degree quaternion
+		// 	Rotation = glm::normalize(Rotation * glm::angleAxis(glm::radians(-1.f), glm::vec3(0.f, 0.f, 1.f)));
+		// }
 	}
 
 	std::vector<scene::SceneObject> TextLabel::GetSceneObjects() {
-		return textObjects;
+		return {fontRenderObject};
 	}
 
 	void TextLabel::SetColor(const glm::vec3 &inColor) {
@@ -40,80 +50,150 @@ namespace OZZ::game::objects {
 	}
 
 	void TextLabel::reloadCharacterSet() {
-		// we only load the character set once if it's likely to change
-		if (bLikelyToChange && !characterSet.empty()) {
-			return;
-		}
-
-		characterSet.clear();
-		characterSet = bLikelyToChange ? fontLoader->GetCharacterSet(fontPath, fontSize) :
-			fontLoader->GetString(fontPath, text, fontSize);
-
-		// load the textures and build materials and junk
-		textShader = std::make_shared<OZZ::Shader>("assets/shaders/font.vert", "assets/shaders/font.frag");
-		textMaterial = std::make_shared<OZZ::Material>();
-		textMaterial->SetShader(textShader);
-		textMaterial->AddUniformSetting(OZZ::Material::UniformSetting{
-			.Name = "textColor",
-			.Value = glm::vec3{1.f, 1.f, 1.f},
-		});
-
-		textVertexBuffer = std::make_shared<OZZ::IndexVertexBuffer>();
-		auto vertices = std::vector<OZZ::Vertex>(OZZ::quadVertices.begin(), OZZ::quadVertices.end());
-		auto indices = std::vector<uint32_t>(OZZ::quadIndices.begin(), OZZ::quadIndices.end());
-		textVertexBuffer->UploadData(vertices, indices);
+		fontSet = fontLoader->GetFontSet(fontPath, fontSize);
 	}
 
 	void TextLabel::updateText() {
-		if (text == builtText) return;
-
-		textObjects.clear();
-		for (auto& character : text) {
-			auto characterData = characterSet[character];
-			const auto texture = std::make_shared<OZZ::Texture>();
-			texture->UploadData(characterData->Texture.get());
-			const auto mat = std::make_shared<OZZ::Material>();
-			mat->SetShader(textShader);
-			mat->AddTextureMapping({
-				.SlotName = "inTexture",
-				.SlotNumber = GL_TEXTURE0,
-				.TextureResource = texture
-			});
-			mat->AddUniformSetting(OZZ::Material::UniformSetting{
-				.Name = "textColor",
-				.Value = color,
-			});
-
-			textObjects.emplace_back(OZZ::scene::SceneObject {
-				.Mesh = textVertexBuffer,
-				.Mat = mat,
-			});
+		if (!fontSet) {
+			spdlog::error("FontSet is null");
+			return;
 		}
+
+		if (text == builtText) return;
+		fontRenderObject = {};
+		// create the texture
+		fontTexture.reset();
+		fontTexture = std::make_shared<OZZ::Texture>();
+		fontSet->Texture->SaveToFile("assets/textures/font.png");
+		fontTexture->UploadData(fontSet->Texture.get());
+
+		// crate the shader
+		fontShader = std::make_shared<OZZ::Shader>("assets/shaders/font.vert", "assets/shaders/font.frag");
+
+		//create the material
+		fontMaterial = std::make_shared<OZZ::Material>();
+		fontMaterial->SetShader(fontShader);
+		fontMaterial->AddTextureMapping({
+			.SlotName = "inTexture",
+			.SlotNumber = GL_TEXTURE0,
+			.TextureResource = fontTexture,
+		});
+		fontMaterial->AddUniformSetting({
+			.Name = "textColor",
+			.Value = color,
+		});
+
+		// create the mesh
+		auto meshVertices = std::vector<Vertex>();
+		auto meshIndices = std::vector<uint32_t>();
+
+		// calculate total width
+		int totalWidth = 0;
+		int totalHeight = 0;
+		for (auto& character : text) {
+			auto characterIndex = std::string(FontLoader::CharacterSet).find(character);
+			if (characterIndex == std::string::npos) {
+				spdlog::error("Character {} not found in character set", character);
+				continue;
+			}
+			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
+			// calculate the total width
+			totalWidth += Advance.x >> 6;
+			totalHeight = std::max(totalHeight, Size.y);
+		}
+		// build the text object
+		int nextCharacterX = 0;
+		int startIndex = 0;
+		for (auto& character : text) {
+			// get index of the character
+			auto characterIndex = std::string(FontLoader::CharacterSet).find(character);
+			if (characterIndex == std::string::npos) {
+				spdlog::error("Character {} not found in character set", character);
+				continue;
+			}
+
+			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
+			auto characterTopLeft = glm::vec3(
+				-(totalWidth/2) + (Bearing.x + nextCharacterX * Scale.x),
+				-(totalHeight/2) -(Size.y - Bearing.y) * Scale.y,
+				0.f);
+			// first vertex
+			auto topLeft = Vertex{
+				.position = characterTopLeft,
+				.color = {1.f, 1.f, 1.f, 1.f},
+				.uv = {UV.x, UV.y},
+			};
+			// second vertex
+			auto topRight = Vertex{
+				.position = characterTopLeft + glm::vec3(Size.x * Scale.x, 0.f, 0.f),
+				.color = {1.f, 1.f, 1.f, 1.f},
+				.uv = {UV.z, UV.y},
+			};
+			// third vertex
+			auto bottomLeft = Vertex{
+				.position = characterTopLeft + glm::vec3(0.f, Size.y * Scale.y, 0.f),
+				.color = {1.f, 1.f, 1.f, 1.f},
+				.uv = {UV.x, UV.w},
+			};
+			// fourth vertex
+			auto bottomRight = Vertex{
+				.position = characterTopLeft + glm::vec3(Size.x * Scale.x, Size.y * Scale.y, 0.f),
+				.color = {1.f, 1.f, 1.f, 1.f},
+				.uv = {UV.z, UV.w},
+			};
+
+			meshVertices.push_back(topLeft);
+			meshVertices.push_back(topRight);
+			meshVertices.push_back(bottomLeft);
+			meshVertices.push_back(bottomRight);
+			meshIndices.push_back(startIndex + 0);
+			meshIndices.push_back(startIndex + 1);
+			meshIndices.push_back(startIndex + 2);
+			meshIndices.push_back(startIndex + 1);
+			meshIndices.push_back(startIndex + 3);
+			meshIndices.push_back(startIndex + 2);
+
+			startIndex += 4;
+			nextCharacterX += Advance.x >> 6;
+		}
+		fontMesh = std::make_shared<OZZ::IndexVertexBuffer>();
+		fontMesh->UploadData(meshVertices, meshIndices);
+
+		fontRenderObject = {
+			.Transform = glm::translate(glm::mat4{1.f}, Position),
+			.Mesh = fontMesh,
+			.Mat = fontMaterial,
+		};
+
 		builtText = text;
 	}
 
 	void TextLabel::updateCharacterTransforms() {
-		if (text.empty() || (builtPosition == Position && builtScale == Scale)) return;
+		if (text.empty() || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
-		// TODO: Determine width of the string, and set the position of the first character
-		int nextCharacterX = Position.x;
-		int index = 0;
-		for (auto& character : text) {
-			auto characterData = characterSet[character];
-			// get the character data
-			auto characterPosition = glm::vec3(
-				(characterData->Size.x / 2) + (nextCharacterX + characterData->Bearing.x * Scale.x),
-				(Position.y + characterData->Bearing.y * Scale.y) - (characterData->Size.y / 2),
-				0.f);
-			auto transform = glm::translate(glm::mat4{1.f}, characterPosition);
-			transform = glm::scale(transform, glm::vec3(Scale.x * characterData->Size.x, Scale.y * characterData->Size.y, 1.f));
-
-			textObjects[index].Transform = transform;
-			nextCharacterX += characterData->Advance >> 6;
-			index++;
-		}
-
+		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position);
+		fontRenderObject.Transform *= glm::mat4_cast(Rotation);
+		fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, Scale);
+		// // TODO: Determine width of the string, and set the position of the first character
+		// int nextCharacterX = Position.x;
+		// int index = 0;
+		// for (auto& character : text) {
+		// 	auto characterData = characterSet[character];
+		// 	// get the character data
+		// 	auto characterPosition = glm::vec3(
+		// 		(characterData->Size.x / 2) + (nextCharacterX + characterData->Bearing.x * Scale.x),
+		// 		(Position.y + characterData->Bearing.y * Scale.y) - (characterData->Size.y / 2),
+		// 		0.f);
+		// 	auto transform = glm::translate(glm::mat4{1.f}, characterPosition);
+		// 	transform = glm::scale(transform, glm::vec3(Scale.x * characterData->Size.x, Scale.y * characterData->Size.y, 1.f));
+		//
+		// 	textObjects[index].Transform = transform;
+		// 	nextCharacterX += characterData->Advance >> 6;
+		// 	index++;
+		// }
+		//
 		builtPosition = Position;
 		builtScale = Scale;
+		builtRotation = Rotation;
 	}
 }
