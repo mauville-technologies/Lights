@@ -167,7 +167,7 @@ namespace OZZ {
         int DeviceID = -1; // -1 for keyboard
         std::variant<EKey, EControllerButton> Key = EKey::KeyCount;
 
-        const bool operator==(const InputKey& other) const {
+        bool operator==(const InputKey &other) const {
             return DeviceID == other.DeviceID && Key == other.Key;
         }
     };

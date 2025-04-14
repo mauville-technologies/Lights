@@ -54,7 +54,7 @@ namespace OZZ {
         glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
             auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
             if (win->OnKeyPressed) {
-                if (action == GLFW_REPEAT) return; // Repeat is not needed.
+                if (action == GLFW_REPEAT) action = GLFW_PRESS; // Repeat is not needed.
                 GLFWKeyState glfwKeyState(action);
                 win->OnKeyPressed({-1, GLFWKey(key)}, glfwKeyState);
             }
@@ -66,6 +66,12 @@ namespace OZZ {
                 win->addController(jid);
             } else if (event == GLFW_DISCONNECTED) {
                 win->removeController(jid);
+            }
+        });
+        glfwSetCharCallback(window, [](GLFWwindow *window, unsigned int codepoint) {
+            auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            if (win->OnTextEvent) {
+                win->OnTextEvent(codepoint);
             }
         });
     }

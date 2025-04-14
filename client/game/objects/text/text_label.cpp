@@ -10,10 +10,10 @@
 namespace OZZ::game::objects {
 	TextLabel::TextLabel(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
 	                     const std::filesystem::path &inFontPath, const uint16_t inFontSize,
-	                     const std::string &inText, const glm::vec3 &inColor, const bool inLikelyToChange)
+	                     const std::string &inText, const glm::vec3 &inColor, AnchorPoint inAnchorPoint)
 		: GameObject(inGameWorld, std::move(inPhysicsWorld)),
 		  fontLoader(std::make_unique<OZZ::FontLoader>()), fontPath(inFontPath), fontSize(inFontSize),
-			text(inText), color(inColor), bLikelyToChange(inLikelyToChange) {
+			text(inText), color(inColor), anchorPoint(inAnchorPoint){
 
 		rebuildText();
 	}
@@ -36,6 +36,11 @@ namespace OZZ::game::objects {
 		return {fontRenderObject};
 	}
 
+	void TextLabel::SetText(const std::string &string) {
+		text = string;
+		rebuildText();
+	}
+
 	void TextLabel::SetColor(const glm::vec3 &inColor) {
 		if (inColor != color) {
 			color = inColor;
@@ -47,6 +52,7 @@ namespace OZZ::game::objects {
 		reloadCharacterSet();
 		updateText();
 		updateTransform();
+		bBuilt = true;
 	}
 
 	void TextLabel::reloadCharacterSet() {
@@ -60,7 +66,7 @@ namespace OZZ::game::objects {
 			return;
 		}
 
-		if (text == builtText) return;
+		if ((text == builtText && bBuilt)) return;
 		fontRenderObject = {};
 		// create the texture
 		fontTexture.reset();
@@ -104,6 +110,17 @@ namespace OZZ::game::objects {
 		// build the text object
 		int nextCharacterX = 0;
 		int startIndex = 0;
+		glm::vec2 anchorPosition = {0.f, 0.f};
+		switch (anchorPoint) {
+			case AnchorPoint::CenterLeft:
+                anchorPosition = {0.f, -(totalHeight / 2)};
+                break;
+			case AnchorPoint::Center:
+			default:
+                anchorPosition = {-(totalWidth / 2), -(totalHeight / 2)};
+                break;
+		}
+
 		for (auto& character : text) {
 			// get index of the character
 			auto characterIndex = std::string(FontLoader::CharacterSet).find(character);
@@ -114,8 +131,8 @@ namespace OZZ::game::objects {
 
 			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
 			auto characterTopLeft = glm::vec3(
-				-(totalWidth/2) + (Bearing.x + nextCharacterX * Scale.x),
-				-(totalHeight/2) -(Size.y - Bearing.y) * Scale.y,
+				anchorPosition.x + (Bearing.x + nextCharacterX * Scale.x),
+				anchorPosition.y -(Size.y - Bearing.y) * Scale.y,
 				0.f);
 			// first vertex
 			auto topLeft = Vertex{
@@ -169,7 +186,7 @@ namespace OZZ::game::objects {
 	}
 
 	void TextLabel::updateTransform() {
-		if (text.empty() || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
+		if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
 		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position);
 		fontRenderObject.Transform *= glm::mat4_cast(Rotation);

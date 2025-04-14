@@ -4,6 +4,7 @@
 
 #include "mmo_title_screen.h"
 
+#include <game/objects/text/text_input.h>
 #include <lights/rendering/shapes.h>
 #include <game/objects/text/text_label.h>
 
@@ -16,9 +17,12 @@ void MMOTitleScreen::Init() {
 	                                     glm::vec3(0.f, 0.f, 0.f), // Target to look at
 	                                     glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-	titleScreenText = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		std::filesystem::path("assets/fonts/Starjedi.ttf"), 128, "Star Wars", glm::vec3{1.f, 1.f, 0.f});
+	// titleScreenText = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
+	// 	std::filesystem::path("assets/fonts/Starjedi.ttf"), 128, "Star Wars", glm::vec3{1.f, 1.f, 0.f},
+	// 	AnchorPoint::CenterLeft);
 
+	UsernameInputBox = gameWorld->CreateGameObject<OZZ::game::objects::TextInput>();
+	UsernameInputBox.second->SetupInput(input.get());
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -44,6 +48,10 @@ void MMOTitleScreen::Tick(float DeltaTime) {
 
 }
 
+void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
+	input = inInput;
+}
+
 void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 	const auto width = 1920;
 	const auto height = 1080;
@@ -53,9 +61,11 @@ void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 }
 
 std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
-	auto titleTextObjObjects = titleScreenText.second->GetSceneObjects();
+	// auto titleTextObjObjects = titleScreenText.second->GetSceneObjects();
+	auto usernameInputBoxObjects = UsernameInputBox.second->GetSceneObjects();
 
 	auto titleScreenObjects = std::vector<OZZ::scene::SceneObject>();
-	titleScreenObjects.insert(titleScreenObjects.end(), titleTextObjObjects.begin(), titleTextObjObjects.end());
+	// titleScreenObjects.insert(titleScreenObjects.end(), titleTextObjObjects.begin(), titleTextObjObjects.end());
+	titleScreenObjects.insert(titleScreenObjects.end(), usernameInputBoxObjects.begin(), usernameInputBoxObjects.end());
 	return titleScreenObjects;
 }

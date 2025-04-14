@@ -20,6 +20,7 @@ namespace OZZ {
         using OnWindowCloseCallback = std::function<void()>;
         using OnWindowResizedCallback = std::function<void(glm::ivec2)>;
         using OnInputPressedCallback = std::function<void(InputKey, EKeyState)>;
+        using OnTextEventCallback = std::function<void(unsigned int)>;
         using OnControllerConnectedCallback = std::function<void(int)>;
         using OnControllerDisconnectedCallback = std::function<void(int)>;
 
@@ -45,6 +46,7 @@ namespace OZZ {
         OnWindowCloseCallback OnWindowClose;
         OnWindowResizedCallback OnWindowResized;
         OnInputPressedCallback OnKeyPressed;
+        OnTextEventCallback OnTextEvent;
         OnControllerConnectedCallback OnControllerConnected;
         OnControllerDisconnectedCallback OnControllerDisconnected;
 

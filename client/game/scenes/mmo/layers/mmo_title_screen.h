@@ -8,6 +8,7 @@
 #include <lights/text/font_loader.h>
 
 namespace OZZ::game::objects {
+	class TextInput;
 	class TextLabel;
 }
 
@@ -20,7 +21,7 @@ public:
 	void Init() override;
 	void PhysicsTick(float DeltaTime) override;
 	void Tick(float DeltaTime) override;
-
+	void SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem>& inInput);
     void RenderTargetResized(glm::ivec2 size) override;
     std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
@@ -31,5 +32,9 @@ private:
 	// Keep the things under here
 	OZZ::GameWorld* gameWorld;
 	std::pair<uint64_t, OZZ::game::objects::TextLabel*> titleScreenText { UINT64_MAX, nullptr };
+	std::pair<uint64_t, OZZ::game::objects::TextInput*> UsernameInputBox { UINT64_MAX, nullptr };
 
+
+	std::shared_ptr<OZZ::InputSubsystem> input;
 };
+

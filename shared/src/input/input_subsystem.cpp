@@ -42,6 +42,15 @@ namespace OZZ {
         }
     }
 
+    void InputSubsystem::NotifyTextEvent(char character) {
+        // Notify all text mappings
+        for (auto &[Name, Callback]: TextMappings) {
+            if (Callback) {
+                Callback(character);
+            }
+        }
+    }
+
     void InputSubsystem::Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates) {
         // Update all the axis mappings
         for (auto &Mapping: AxisMappings) {
@@ -125,6 +134,27 @@ namespace OZZ {
         });
     }
 
+    void InputSubsystem::RegisterTextListener(TextListenerMapping &&Mapping) {
+        const std::string &name = Mapping.Name;
+        bool bFound = false;
+        for (auto &ExistingMapping: TextMappings) {
+            if (ExistingMapping.Name == name) {
+                ExistingMapping = Mapping;
+                bFound = true;
+                break;
+            }
+        }
+        if (!bFound) {
+            TextMappings.push_back(Mapping);
+        }
+    }
+
+    void InputSubsystem::UnregisterTextListener(const std::string &Name) {
+        std::erase_if(TextMappings, [&Name](const TextListenerMapping &Mapping) {
+            return Mapping.Name == Name;
+        });
+    }
+
     bool InputChord::ReceiveEvent(InputKey Key, EKeyState State) {
         EnsureInitialized();
 
@@ -148,7 +178,7 @@ namespace OZZ {
 
             EKeyState NewState{bAllPressed ? EKeyState::KeyPressed : EKeyState::KeyReleased};
 
-            if (NewState != CurrentState) {
+            if (NewState != CurrentState || bCanRepeat) {
                 CurrentState = NewState;
                 return true;
             }

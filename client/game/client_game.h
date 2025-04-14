@@ -83,6 +83,12 @@ namespace OZZ::game {
             window->OnKeyPressed = [this](InputKey key, EKeyState state) {
                 input->NotifyInputEvent({key, state});
             };
+
+            window->OnTextEvent = [this](unsigned int unicode) {
+                // convert unicode to char
+                char character = static_cast<char>(unicode);
+                input->NotifyTextEvent(character);
+            };
         }
 
         void initGL() {

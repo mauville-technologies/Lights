@@ -3,9 +3,9 @@
 //
 
 #pragma once
-#include <unordered_map>
 #include <lights/game/game_object.h>
 #include <lights/text/font_loader.h>
+#include <lights/game/anchors.h>
 
 namespace OZZ {
 	class FontLoader;
@@ -17,7 +17,7 @@ namespace OZZ::game::objects {
 
 		explicit TextLabel(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
 		                   const std::filesystem::path& inFontPath, uint16_t inFontSize = 32, const std::string& inText = "",
-		                   const glm::vec3 &inColor = {1.f, 1.f, 1.f}, bool inLikelyToChange = false);
+		                   const glm::vec3 &inColor = {1.f, 1.f, 1.f}, AnchorPoint inAnchorPoint = AnchorPoint::Center);
 
 		void Tick(float DeltaTime) override;
 		std::vector<scene::SceneObject> GetSceneObjects() override;
@@ -38,8 +38,7 @@ namespace OZZ::game::objects {
 		uint16_t fontSize;
 		std::string text;
 		glm::vec3 color;
-		// bLikelyToChange is used to determine if the text is likely to change, which affects the way textures are cached
-		bool bLikelyToChange;
+		AnchorPoint anchorPoint;
 
 		// internal junk
 		FontSet* fontSet { nullptr };
@@ -52,9 +51,10 @@ namespace OZZ::game::objects {
 		OZZ::scene::SceneObject fontRenderObject {};
 
 		// cache things
-		glm::vec3 builtPosition;
-		glm::vec3 builtScale;
-		std::string builtText;
-		glm::quat builtRotation;
+		bool bBuilt {false};
+		glm::vec3 builtPosition {};
+		glm::vec3 builtScale {};
+		std::string builtText {};
+		glm::quat builtRotation {};
 	};
 } // game
