@@ -10,8 +10,10 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+out vec3 fragLocalPosition;
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos.xy, 0, 1.0);
+    fragLocalPosition = aPos;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
     texCoord = aTexCoord;
 }

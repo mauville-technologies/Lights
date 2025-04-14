@@ -16,8 +16,8 @@ namespace OZZ::game::objects {
 				200.f, 50.f
 			};
 
-			glm::vec3 BackgroundColor {
-				0.2f, 0.2f, 0.2f
+			glm::vec4 BackgroundColor {
+				0.2f, 0.2f, 0.2f, 1.f
 			};
 
 			glm::vec3 CursorColor {

@@ -23,6 +23,7 @@ namespace OZZ {
 	struct FontSet {
 		std::unique_ptr<Image> Texture { nullptr };
 		std::unordered_map<char, CharacterDetails> Characters {};
+		glm::vec2 CharacterSize {};
 	};
 
 	class FontLoader {

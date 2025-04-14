@@ -48,16 +48,23 @@ namespace OZZ::game::objects {
 		}
 	}
 
+	void TextLabel::SetRectBounds(const glm::vec2 &size) {
+		rectBounds = size;
+	}
+
 	void TextLabel::rebuildText() {
 		reloadCharacterSet();
 		updateText();
 		updateTransform();
+		updateRectBounds();
 		bBuilt = true;
 	}
 
 	void TextLabel::reloadCharacterSet() {
-		if (!fontSet)
+		if (!fontSet) {
 			fontSet = fontLoader->GetFontSet(fontPath, fontSize);
+			characterSize = fontSet->CharacterSize;
+		}
 	}
 
 	void TextLabel::updateText() {
@@ -74,7 +81,7 @@ namespace OZZ::game::objects {
 		fontTexture->UploadData(fontSet->Texture.get());
 
 		// crate the shader
-		fontShader = std::make_shared<OZZ::Shader>("assets/shaders/font.vert", "assets/shaders/font.frag");
+		fontShader = std::make_shared<OZZ::Shader>("assets/shaders/text/font.vert", "assets/shaders/text/font.frag");
 
 		//create the material
 		fontMaterial = std::make_shared<OZZ::Material>();
@@ -89,37 +96,14 @@ namespace OZZ::game::objects {
 			.Value = color,
 		});
 
+
 		// create the mesh
 		auto meshVertices = std::vector<Vertex>();
 		auto meshIndices = std::vector<uint32_t>();
 
-		// calculate total width
-		int totalWidth = 0;
-		int totalHeight = 0;
-		for (auto& character : text) {
-			auto characterIndex = std::string(FontLoader::CharacterSet).find(character);
-			if (characterIndex == std::string::npos) {
-				spdlog::error("Character {} not found in character set", character);
-				continue;
-			}
-			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
-			// calculate the total width
-			totalWidth += Advance.x >> 6;
-			totalHeight = std::max(totalHeight, Size.y);
-		}
 		// build the text object
 		int nextCharacterX = 0;
 		int startIndex = 0;
-		glm::vec2 anchorPosition = {0.f, 0.f};
-		switch (anchorPoint) {
-			case AnchorPoint::CenterLeft:
-                anchorPosition = {0.f, -(totalHeight / 2)};
-                break;
-			case AnchorPoint::Center:
-			default:
-                anchorPosition = {-(totalWidth / 2), -(totalHeight / 2)};
-                break;
-		}
 
 		for (auto& character : text) {
 			// get index of the character
@@ -128,6 +112,8 @@ namespace OZZ::game::objects {
 				spdlog::error("Character {} not found in character set", character);
 				continue;
 			}
+
+			auto anchorPosition = getAnchorPosition();
 
 			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
 			auto characterTopLeft = glm::vec3(
@@ -195,5 +181,65 @@ namespace OZZ::game::objects {
 		builtPosition = Position;
 		builtScale = Scale;
 		builtRotation = Rotation;
+	}
+
+	void TextLabel::updateRectBounds() {
+		if (builtRectBounds == glm::vec2{0.f} && rectBounds != glm::vec2{0.f}) {
+			// remove the uniform
+			fontMaterial->RemoveUniformSetting("rectBounds");
+			builtRectBounds = rectBounds;
+			return;
+		}
+
+		if (builtRectBounds == glm::vec2{0.f}) return;
+
+		// TODO: I also need to take position into account
+		const auto anchorPosition = getAnchorPosition();
+		const auto leftBounds = anchorPosition.x;
+		const auto rightBounds = anchorPosition.x + rectBounds.x;
+		const auto topBounds = anchorPosition.y;
+		const auto bottomBounds = anchorPosition.y + rectBounds.y;
+		fontMaterial->AddUniformSetting({
+			.Name = "rectBounds",
+            .Value = glm::vec4{
+                leftBounds, topBounds,
+            	rightBounds, bottomBounds,
+            },
+		});
+		builtRectBounds = rectBounds;
+	}
+
+	glm::vec2 TextLabel::getTotalSize() const {
+		int totalWidth = 0;
+		int totalHeight = 0;
+		for (auto& character : text) {
+			auto characterIndex = std::string(FontLoader::CharacterSet).find(character);
+			if (characterIndex == std::string::npos) {
+				spdlog::error("Character {} not found in character set", character);
+				continue;
+			}
+			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
+			// calculate the total width
+			totalWidth += Advance.x >> 6;
+			totalHeight = std::max(totalHeight, Size.y);
+		}
+		return {totalWidth, totalHeight};
+	}
+
+	glm::vec2 TextLabel::getAnchorPosition() const {
+		const auto size = getTotalSize();
+		const auto totalWidth = size.x;
+		const auto totalHeight = size.y;
+		glm::vec2 anchorPosition = {0.f, 0.f};
+		switch (anchorPoint) {
+			case AnchorPoint::CenterLeft:
+                anchorPosition = {0.f, -(totalHeight / 2)};
+                break;
+			case AnchorPoint::Center:
+			default:
+                anchorPosition = {-(totalWidth / 2), -(totalHeight / 2)};
+                break;
+		}
+		return anchorPosition;
 	}
 }

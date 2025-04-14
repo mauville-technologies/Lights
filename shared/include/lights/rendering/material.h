@@ -45,7 +45,7 @@ namespace OZZ {
     public:
         struct UniformSetting {
             std::string Name;
-            std::variant<int, glm::vec3> Value;
+            std::variant<int, glm::vec3, glm::vec4> Value;
         };
 
         struct MaterialSettings {

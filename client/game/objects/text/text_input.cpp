@@ -5,6 +5,7 @@
 #include "text_input.h"
 
 #include <lights/game/game_world.h>
+#include <lights/scene/scene.h>
 #include <spdlog/spdlog.h>
 
 namespace OZZ::game::objects {
@@ -14,6 +15,58 @@ namespace OZZ::game::objects {
 		// create a text label
 		label = gameWorld->CreateGameObject<TextLabel>(
 			std::filesystem::path("assets/fonts/game_bubble.ttf"), 32, "", glm::vec3{1.f, 1.f, 1.f}, AnchorPoint::CenterLeft);
+
+		auto labelSize = label.second->GetCharacterSize();
+		label.second->SetPosition({-params.Size.x/2, 0.f, 0.f});
+		label.second->SetRectBounds({params.Size.x, labelSize.y});
+
+		// let's build a quad of the correct size
+		auto backgroundMesh = std::make_shared<IndexVertexBuffer>();
+		auto vertices = std::vector<Vertex>();
+		auto indices = std::vector<uint32_t>();
+
+		vertices.push_back(Vertex {
+			.position = {
+				-params.Size.x /2, -labelSize.y /2, 0.f
+			}
+		});
+		vertices.push_back(Vertex {
+			.position = {
+				params.Size.x /2, -labelSize.y /2, 0.f
+			}
+		});
+		vertices.push_back(Vertex {
+			.position = {
+				-params.Size.x /2, labelSize.y /2, 0.f
+			}
+		});
+		vertices.push_back(Vertex {
+			.position = {
+				params.Size.x /2, labelSize.y /2, 0.f
+			}
+		});
+
+		indices.push_back(0);
+		indices.push_back(1);
+		indices.push_back(2);
+		indices.push_back(1);
+		indices.push_back(3);
+		indices.push_back(2);
+		backgroundMesh->UploadData(vertices, indices);
+
+		auto backgroundShader = std::make_shared<Shader>("assets/shaders/text/input_rectangle.vert", "assets/shaders/text/input_rectangle.frag");
+		auto backgroundMaterial = std::make_shared<Material>();
+		backgroundMaterial->SetShader(backgroundShader);
+		backgroundMaterial->AddUniformSetting({
+			.Name = "backgroundColor",
+			.Value = params.BackgroundColor,
+		});
+
+		backgroundBox = scene::SceneObject {
+			.Transform = glm::mat4{1.f},
+			.Mesh = backgroundMesh,
+			.Mat = backgroundMaterial,
+		};
 	}
 
 	TextInput::~TextInput() {
@@ -29,7 +82,9 @@ namespace OZZ::game::objects {
 	}
 
 	std::vector<OZZ::scene::SceneObject> TextInput::GetSceneObjects() {
-		return {label.second->GetSceneObjects()};
+		auto labelObjects = label.second->GetSceneObjects();
+		auto backgroundObjects = std::vector<OZZ::scene::SceneObject>{backgroundBox};
+		return backgroundObjects + labelObjects;
 	}
 
 	void TextInput::SetupInput(InputSubsystem *inInputSubsystem) {

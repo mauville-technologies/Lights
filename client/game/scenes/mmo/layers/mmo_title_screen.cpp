@@ -21,7 +21,11 @@ void MMOTitleScreen::Init() {
 	// 	std::filesystem::path("assets/fonts/Starjedi.ttf"), 128, "Star Wars", glm::vec3{1.f, 1.f, 0.f},
 	// 	AnchorPoint::CenterLeft);
 
-	UsernameInputBox = gameWorld->CreateGameObject<OZZ::game::objects::TextInput>();
+	OZZ::game::objects::TextInput::TextInputParams textInputParams {};
+	textInputParams.Size = {400.f, 50.f};
+	textInputParams.BackgroundColor = {1.0f, 0.2f, 0.2f, 0.5f};
+
+	UsernameInputBox = gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams);
 	UsernameInputBox.second->SetupInput(input.get());
 }
 

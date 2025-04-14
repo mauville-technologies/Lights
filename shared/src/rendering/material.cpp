@@ -23,6 +23,8 @@ namespace OZZ {
                 shader->SetInteger(Name, std::get<int>(Value));
             } else if (std::holds_alternative<glm::vec3>(Value)) {
                 shader->SetVec3(Name, std::get<glm::vec3>(Value));
+            } else if (std::holds_alternative<glm::vec4>(Value)) {
+                shader->SetVec4(Name, std::get<glm::vec4>(Value));
             }
         }
     }

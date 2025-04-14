@@ -68,6 +68,7 @@ namespace OZZ {
 		NewFontSet->Texture = std::move(texture);
 		NewFontSet->Texture->FlipPixels(true, false);
 		NewFontSet->Characters = characterDetails;
+		NewFontSet->CharacterSize = imageSize;
 		fontSets[fontPath][fontSize] = std::move(NewFontSet);
 
 		auto* currentFontSet = fontSets[fontPath][fontSize].get();
