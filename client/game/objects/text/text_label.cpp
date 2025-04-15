@@ -172,7 +172,7 @@ namespace OZZ::game::objects {
 	}
 
 	void TextLabel::updateTransform() {
-		// if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
+		if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
 		auto anchorPosition = getAnchorPosition();
 		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position + glm::vec3(getAnchorPosition(), 1));

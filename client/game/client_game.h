@@ -42,7 +42,7 @@ namespace OZZ::game {
 
             auto lastTickTime = std::chrono::high_resolution_clock::now();
             auto lastRenderTime = std::chrono::high_resolution_clock::now();
-            const auto FPS = 60.f;
+            const auto FPS = 120.f;
             const auto renderRate = std::chrono::duration<float>(1.0f / FPS);
 
             while (bRunning) {
