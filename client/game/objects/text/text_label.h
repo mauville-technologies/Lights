@@ -17,7 +17,7 @@ namespace OZZ::game::objects {
 
 		explicit TextLabel(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
 		                   const std::filesystem::path& inFontPath, uint16_t inFontSize = 32, const std::string& inText = "",
-		                   const glm::vec3 &inColor = {1.f, 1.f, 1.f}, AnchorPoint inAnchorPoint = AnchorPoint::Center);
+		                   const glm::vec3 &inColor = {1.f, 1.f, 1.f}, AnchorPoint inAnchorPoint = AnchorPoint::CenterMiddle);
 
 		void Tick(float DeltaTime) override;
 		std::vector<scene::SceneObject> GetSceneObjects() override;
@@ -38,6 +38,7 @@ namespace OZZ::game::objects {
 		void updateRectBounds();
 
 		[[nodiscard]] glm::vec2 getTotalSize() const;
+		[[nodiscard]] glm::vec2 getTopLeftVertexPosition() const;
 		[[nodiscard]] glm::vec2 getAnchorPosition() const;
 	private:
 		// Parameters

@@ -9,16 +9,51 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ::game::objects {
-	TextInput::TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams inParams)
+	TextInput::TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams &inParams)
 		: GameObject(inGameWorld, std::move(inPhysicsWorld)), params(inParams) {
 
+		currentString = "";
 		// create a text label
 		label = gameWorld->CreateGameObject<TextLabel>(
-			std::filesystem::path("assets/fonts/game_bubble.ttf"), 32, "", glm::vec3{1.f, 1.f, 1.f}, AnchorPoint::CenterLeft);
+			std::filesystem::path("assets/fonts/game_bubble.ttf"), 32, currentString, params.TextColor, params.TextAnchorPoint);
 
-		auto labelSize = label.second->GetCharacterSize();
-		label.second->SetPosition({-params.Size.x/2, 0.f, 0.f});
-		label.second->SetRectBounds({params.Size.x, labelSize.y});
+		auto textPosition = glm::vec3{0.f};
+		switch (params.TextAnchorPoint) {
+			case AnchorPoint::LeftTop:
+			case AnchorPoint::LeftBottom:
+			case AnchorPoint::LeftMiddle:
+				textPosition.x = -params.Size.x / 2;
+				break;
+			case AnchorPoint::RightTop:
+			case AnchorPoint::RightBottom:
+			case AnchorPoint::RightMiddle:
+				textPosition.x = params.Size.x / 2;
+				break;
+			case AnchorPoint::CenterMiddle:
+			case AnchorPoint::CenterTop:
+			case AnchorPoint::CenterBottom:
+				break;
+		}
+
+		switch (params.TextAnchorPoint) {
+			case AnchorPoint::LeftTop:
+			case AnchorPoint::RightTop:
+			case AnchorPoint::CenterTop:
+				textPosition.y = -params.Size.y / 2;
+				break;
+			case AnchorPoint::LeftBottom:
+			case AnchorPoint::RightBottom:
+			case AnchorPoint::CenterBottom:
+				textPosition.y = params.Size.y / 2;
+				break;
+			case AnchorPoint::LeftMiddle:
+			case AnchorPoint::RightMiddle:
+			case AnchorPoint::CenterMiddle:
+				break;
+		}
+
+		label.second->SetPosition(textPosition);
+		label.second->SetRectBounds({params.Size.x, params.Size.y});
 
 		// let's build a quad of the correct size
 		auto backgroundMesh = std::make_shared<IndexVertexBuffer>();
@@ -27,22 +62,22 @@ namespace OZZ::game::objects {
 
 		vertices.push_back(Vertex {
 			.position = {
-				-params.Size.x /2, -labelSize.y /2, 0.f
+				-params.Size.x /2, -params.Size.y /2, 0.f
 			}
 		});
 		vertices.push_back(Vertex {
 			.position = {
-				params.Size.x /2, -labelSize.y /2, 0.f
+				params.Size.x /2, -params.Size.y /2, 0.f
 			}
 		});
 		vertices.push_back(Vertex {
 			.position = {
-				-params.Size.x /2, labelSize.y /2, 0.f
+				-params.Size.x /2, params.Size.y /2, 0.f
 			}
 		});
 		vertices.push_back(Vertex {
 			.position = {
-				params.Size.x /2, labelSize.y /2, 0.f
+				params.Size.x /2, params.Size.y /2, 0.f
 			}
 		});
 
@@ -60,6 +95,11 @@ namespace OZZ::game::objects {
 		backgroundMaterial->AddUniformSetting({
 			.Name = "backgroundColor",
 			.Value = params.BackgroundColor,
+		});
+
+		backgroundMaterial->AddUniformSetting({
+			.Name = "rectBounds",
+			.Value = glm::vec4{-params.Size.x/2, -params.Size.y/2, params.Size.x/2, params.Size.y/2},
 		});
 
 		backgroundBox = scene::SceneObject {
@@ -105,6 +145,7 @@ namespace OZZ::game::objects {
 		inputSubsystem->RegisterTextListener({
 			.Name = inputSID,
 			.Callback = [this] (const char character) {
+				if (!isFocused) return;
 				appendCharacter(character);
 			},
 		});
@@ -121,6 +162,7 @@ namespace OZZ::game::objects {
 			},
 			.Callbacks = {
 				.OnPressed = [this]() {
+					if (!isFocused) return;
 					removeCharacter();
 				}
 			}
@@ -136,6 +178,21 @@ namespace OZZ::game::objects {
 		if (!currentString.empty()) {
 			currentString.pop_back();
 			label.second->SetText(currentString);
+		}
+	}
+
+	void TextInput::SetFocused(bool focused) {
+		isFocused = focused;
+
+		if (auto backgroundMaterial = backgroundBox.Mat) {
+			backgroundMaterial->AddUniformSetting({
+				.Name = "borderColor",
+				.Value = params.FocusedColor,
+			});
+			backgroundMaterial->AddUniformSetting({
+				.Name = "borderThickness",
+				.Value = focused ? params.FocusedThickness : glm::vec4{0},
+			});
 		}
 	}
 }

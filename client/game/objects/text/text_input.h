@@ -25,24 +25,30 @@ namespace OZZ::game::objects {
 			};
 
 			glm::vec3 TextColor {
-				1.f, 1.f, 1.f
+				1.f, 1.f, 0.f
 			};
 
-			glm::vec3 FocusedColor {
-				0.5f, 0.5f, 0.5f
+			glm::vec4 FocusedColor {
+				1.f, 0.f, 0.5f, 1.f
 			};
+
+			glm::vec4 FocusedThickness {5.f};
+
+			AnchorPoint TextAnchorPoint {AnchorPoint::LeftMiddle};
 		};
 
-        explicit TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, TextInputParams inParams = {});
+        explicit TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams &inParams = {});
 		~TextInput() override;
         void Tick(float DeltaTime) override;
         std::vector<scene::SceneObject> GetSceneObjects() override;
 
 		void SetupInput(InputSubsystem* inInputSubsystem);
+		void SetFocused(bool focused);
 
 	private:
 		void appendCharacter(char character);
 		void removeCharacter();
+
 	private:
 		std::pair<uint64_t, TextLabel*> label {UINT16_MAX, nullptr};
 		InputSubsystem* inputSubsystem { nullptr };
@@ -53,5 +59,6 @@ namespace OZZ::game::objects {
 
         scene::SceneObject backgroundBox {};
 		scene::SceneObject cursor {};
+		bool isFocused { false };
 	};
 }

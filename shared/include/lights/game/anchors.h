@@ -5,13 +5,13 @@
 #pragma once
 
 enum class AnchorPoint {
-    TopLeft,
-	TopRight,
-	BottomLeft,
-	BottomRight,
-	Center,
+    LeftTop,
+	RightTop,
+	LeftBottom,
+	RightBottom,
+	CenterMiddle,
 	CenterTop,
 	CenterBottom,
-	CenterLeft,
-	CenterRight
+	LeftMiddle,
+	RightMiddle
 };

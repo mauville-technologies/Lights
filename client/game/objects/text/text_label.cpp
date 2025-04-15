@@ -113,12 +113,12 @@ namespace OZZ::game::objects {
 				continue;
 			}
 
-			auto anchorPosition = getAnchorPosition();
+			auto topLeftPosition = getTopLeftVertexPosition();
 
 			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
 			auto characterTopLeft = glm::vec3(
-				anchorPosition.x + (Bearing.x + nextCharacterX * Scale.x),
-				anchorPosition.y -(Size.y - Bearing.y) * Scale.y,
+				topLeftPosition.x + (Bearing.x + nextCharacterX * Scale.x),
+				topLeftPosition.y -(Size.y - Bearing.y) * Scale.y,
 				0.f);
 			// first vertex
 			auto topLeft = Vertex{
@@ -172,9 +172,10 @@ namespace OZZ::game::objects {
 	}
 
 	void TextLabel::updateTransform() {
-		if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
+		// if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
-		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position);
+		auto anchorPosition = getAnchorPosition();
+		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position + glm::vec3(getAnchorPosition(), 1));
 		fontRenderObject.Transform *= glm::mat4_cast(Rotation);
 		fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, Scale);
 
@@ -195,10 +196,39 @@ namespace OZZ::game::objects {
 
 		// TODO: I also need to take position into account
 		const auto anchorPosition = getAnchorPosition();
-		const auto leftBounds = anchorPosition.x;
-		const auto rightBounds = anchorPosition.x + rectBounds.x;
-		const auto topBounds = anchorPosition.y;
-		const auto bottomBounds = anchorPosition.y + rectBounds.y;
+		auto leftBounds = anchorPosition.x;
+		auto rightBounds = anchorPosition.x;
+		auto topBounds = anchorPosition.y;
+		auto bottomBounds = anchorPosition.y;
+
+		bool bIsMiddle = anchorPoint == AnchorPoint::CenterMiddle ||
+			anchorPoint == AnchorPoint::LeftMiddle || anchorPoint == AnchorPoint::RightMiddle;
+		bool bIsCenter = anchorPoint == AnchorPoint::CenterTop ||
+			anchorPoint == AnchorPoint::CenterBottom || anchorPoint == AnchorPoint::CenterMiddle;
+		bool bIsTop = anchorPoint == AnchorPoint::LeftTop ||
+			anchorPoint == AnchorPoint::RightTop || anchorPoint == AnchorPoint::CenterTop;
+		bool bIsBottom = anchorPoint == AnchorPoint::LeftBottom ||
+			anchorPoint == AnchorPoint::RightBottom || anchorPoint == AnchorPoint::CenterBottom;
+		bool bIsLeft = anchorPoint == AnchorPoint::LeftTop ||
+			anchorPoint == AnchorPoint::LeftBottom || anchorPoint == AnchorPoint::LeftMiddle;
+		bool bIsRight = anchorPoint == AnchorPoint::RightTop ||
+			anchorPoint == AnchorPoint::RightBottom || anchorPoint == AnchorPoint::RightMiddle;
+
+		if (bIsCenter) {
+			leftBounds = -rectBounds.x / 2;
+			rightBounds = rectBounds.x / 2;
+		}
+		if (bIsLeft) {
+			leftBounds = 0;
+			rightBounds += rectBounds.x;
+		}
+		if (bIsRight) {
+			leftBounds -= rectBounds.x;
+		}
+
+		topBounds = -rectBounds.y / 2;
+		bottomBounds = rectBounds.y / 2;
+
 		fontMaterial->AddUniformSetting({
 			.Name = "rectBounds",
             .Value = glm::vec4{
@@ -226,19 +256,67 @@ namespace OZZ::game::objects {
 		return {totalWidth, totalHeight};
 	}
 
-	glm::vec2 TextLabel::getAnchorPosition() const {
+	glm::vec2 TextLabel::getTopLeftVertexPosition() const {
 		const auto size = getTotalSize();
 		const auto totalWidth = size.x;
 		const auto totalHeight = size.y;
-		glm::vec2 anchorPosition = {0.f, 0.f};
+		glm::vec2 topLeftPosition = {0.f, 0.f};
 		switch (anchorPoint) {
-			case AnchorPoint::CenterLeft:
-                anchorPosition = {0.f, -(totalHeight / 2)};
-                break;
-			case AnchorPoint::Center:
-			default:
-                anchorPosition = {-(totalWidth / 2), -(totalHeight / 2)};
-                break;
+			case AnchorPoint::LeftTop:
+			case AnchorPoint::LeftBottom:
+			case AnchorPoint::LeftMiddle:
+				topLeftPosition.x = 0;
+				break;
+			case AnchorPoint::RightTop:
+			case AnchorPoint::RightBottom:
+			case AnchorPoint::RightMiddle:
+				spdlog::error("Right align not implemented in text label yet");
+				break;
+			case AnchorPoint::CenterTop:
+			case AnchorPoint::CenterMiddle:
+			case AnchorPoint::CenterBottom:
+				topLeftPosition.x = -(totalWidth / 2);
+				break;
+		}
+		topLeftPosition.y = -(totalHeight / 2);
+		return topLeftPosition;
+	}
+
+	glm::vec2 TextLabel::getAnchorPosition() const {
+		glm::vec2 anchorPosition = {0.f, 0.f};
+
+		switch (anchorPoint) {
+			case AnchorPoint::LeftTop:
+			case AnchorPoint::LeftBottom:
+			case AnchorPoint::LeftMiddle:
+				anchorPosition.x = 0;
+				break;
+			case AnchorPoint::RightTop:
+			case AnchorPoint::RightBottom:
+			case AnchorPoint::RightMiddle:
+				anchorPosition.x = rectBounds.x / 2;
+				break;
+			case AnchorPoint::CenterMiddle:
+			case AnchorPoint::CenterTop:
+			case AnchorPoint::CenterBottom:
+				break;
+		}
+
+		switch (anchorPoint) {
+			case AnchorPoint::LeftBottom:
+			case AnchorPoint::RightBottom:
+			case AnchorPoint::CenterBottom:
+				anchorPosition.y = -rectBounds.y + fontSet->CharacterSize.y;
+				break;
+			case AnchorPoint::LeftTop:
+			case AnchorPoint::RightTop:
+			case AnchorPoint::CenterTop:
+				anchorPosition.y = rectBounds.y -fontSet->CharacterSize.y /2;
+				break;
+			case AnchorPoint::LeftMiddle:
+			case AnchorPoint::RightMiddle:
+			case AnchorPoint::CenterMiddle:
+				break;
 		}
 		return anchorPosition;
 	}

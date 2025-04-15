@@ -26,6 +26,8 @@ public:
     std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
 private:
+	void selectNextInputBox();
+private:
 	std::filesystem::path fontPath { "assets/fonts/game_bubble.ttf" };
 	std::unique_ptr<OZZ::FontLoader> fontLoader { nullptr };
 
@@ -34,7 +36,9 @@ private:
 	std::pair<uint64_t, OZZ::game::objects::TextLabel*> titleScreenText { UINT64_MAX, nullptr };
 	std::pair<uint64_t, OZZ::game::objects::TextInput*> UsernameInputBox { UINT64_MAX, nullptr };
 
-
 	std::shared_ptr<OZZ::InputSubsystem> input;
+
+	std::vector<std::pair<uint64_t, OZZ::game::objects::TextInput*>> inputBoxes;
+	uint64_t focusedBox { UINT64_MAX };
 };
 

@@ -22,11 +22,18 @@ void MMOTitleScreen::Init() {
 	// 	AnchorPoint::CenterLeft);
 
 	OZZ::game::objects::TextInput::TextInputParams textInputParams {};
-	textInputParams.Size = {400.f, 50.f};
+	textInputParams.Size = {400.f, 100.f};
 	textInputParams.BackgroundColor = {1.0f, 0.2f, 0.2f, 0.5f};
+	textInputParams.TextAnchorPoint = AnchorPoint::LeftMiddle;
+	// bright blue border color
+	textInputParams.FocusedColor = {1.f, 0.2f, 1.f, 1.f};
 
-	UsernameInputBox = gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams);
-	UsernameInputBox.second->SetupInput(input.get());
+	textInputParams.FocusedThickness = glm::vec4{5.f, 4.f, 4.f, 1.f};
+
+	inputBoxes.emplace_back(gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams));
+	inputBoxes.back().second->SetupInput(input.get());
+	inputBoxes.back().second->SetFocused(true);
+	focusedBox = inputBoxes.size() - 1;
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -54,6 +61,17 @@ void MMOTitleScreen::Tick(float DeltaTime) {
 
 void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
 	input = inInput;
+
+	// listen to TAB to switch input boxes
+	input->RegisterInputMapping(OZZ::InputMapping{
+		.Action = "SelectNextInputBox",
+		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{-1, OZZ::EKey::Tab}}}},
+		.Callbacks = {
+			.OnPressed = [this] () {
+				selectNextInputBox();
+			},
+		}
+	});
 }
 
 void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
@@ -66,10 +84,28 @@ void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 
 std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
 	// auto titleTextObjObjects = titleScreenText.second->GetSceneObjects();
-	auto usernameInputBoxObjects = UsernameInputBox.second->GetSceneObjects();
 
 	auto titleScreenObjects = std::vector<OZZ::scene::SceneObject>();
-	// titleScreenObjects.insert(titleScreenObjects.end(), titleTextObjObjects.begin(), titleTextObjObjects.end());
-	titleScreenObjects.insert(titleScreenObjects.end(), usernameInputBoxObjects.begin(), usernameInputBoxObjects.end());
+	for (const auto inputbox : inputBoxes) {
+		auto sceneObjects = inputbox.second->GetSceneObjects();
+		titleScreenObjects = titleScreenObjects + sceneObjects;
+	}
 	return titleScreenObjects;
+}
+
+void MMOTitleScreen::selectNextInputBox() {
+	// delesect the current box
+	if (focusedBox < inputBoxes.size()) {
+		inputBoxes[focusedBox].second->SetFocused(false);
+	}
+	focusedBox++;
+
+	// if we're at the end of the list plus one, no selection
+	if (focusedBox > inputBoxes.size()) {
+		focusedBox = 0;
+	}
+
+	if (focusedBox < inputBoxes.size()) {
+		inputBoxes[focusedBox].second->SetFocused(true);
+	}
 }
