@@ -15,8 +15,9 @@ namespace OZZ::game::objects {
 		currentString = "";
 		// create a text label
 		label = gameWorld->CreateGameObject<TextLabel>(
-			std::filesystem::path("assets/fonts/game_bubble.ttf"), 32, currentString, params.TextColor, params.TextAnchorPoint);
+			params.FontPath, params.FontSize, currentString, params.TextColor, params.TextAnchorPoint);
 
+		label.second->SetParent(this);
 		auto textPosition = glm::vec3{0.f};
 		switch (params.TextAnchorPoint) {
 			case AnchorPoint::LeftTop:
@@ -52,6 +53,9 @@ namespace OZZ::game::objects {
 				break;
 		}
 
+		if (params.bIsPassword) {
+			textPosition.y -= label.second->GetCharacterSize().y / 2;
+		}
 		label.second->SetPosition(textPosition);
 		label.second->SetRectBounds({params.Size.x, params.Size.y});
 
@@ -107,6 +111,7 @@ namespace OZZ::game::objects {
 			.Mesh = backgroundMesh,
 			.Mat = backgroundMaterial,
 		};
+		TextInput::onPositionChanged();
 	}
 
 	TextInput::~TextInput() {
@@ -169,15 +174,20 @@ namespace OZZ::game::objects {
 		});
 	}
 
+	void TextInput::updateTextLabel() const {
+		const auto text = params.bIsPassword ? std::string(currentString.size(), '*') : currentString;
+		label.second->SetText(text);
+	}
+
 	void TextInput::appendCharacter(const char character) {
 		currentString += character;
-		label.second->SetText(currentString);
+		updateTextLabel();
 	}
 
 	void TextInput::removeCharacter() {
 		if (!currentString.empty()) {
 			currentString.pop_back();
-			label.second->SetText(currentString);
+			updateTextLabel();
 		}
 	}
 
@@ -194,5 +204,17 @@ namespace OZZ::game::objects {
 				.Value = focused ? params.FocusedThickness : glm::vec4{0},
 			});
 		}
+	}
+
+	void TextInput::onPositionChanged() {
+		GameObject::onPositionChanged();
+
+		// update the transform of the background box
+		auto transform = glm::mat4{1.f};
+		transform = glm::translate(transform, Position);
+		transform *= glm::mat4_cast(Rotation);
+		transform = glm::scale(transform, Scale);
+
+		backgroundBox.Transform = transform;
 	}
 }

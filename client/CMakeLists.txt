@@ -6,8 +6,6 @@ set (SOURCES
         main.cpp
         network/client.cpp
 
-        game/client_game.cpp
-
         game/abilities/ability_system_component.cpp
         game/abilities/ability/jump_ability.cpp
 
@@ -23,7 +21,6 @@ set (SOURCES
 
         game/scenes/physics_testing/physics_testing_scene.cpp
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
-
 
         game/ui/debug_window.cpp
 )

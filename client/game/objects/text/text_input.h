@@ -12,6 +12,9 @@ namespace OZZ::game::objects {
 	class TextInput : public GameObject {
 	public:
 		struct TextInputParams {
+			uint16_t FontSize {32};
+			std::filesystem::path FontPath {""};
+
 			glm::vec2 Size {
 				200.f, 50.f
 			};
@@ -35,6 +38,8 @@ namespace OZZ::game::objects {
 			glm::vec4 FocusedThickness {5.f};
 
 			AnchorPoint TextAnchorPoint {AnchorPoint::LeftMiddle};
+
+			bool bIsPassword {false};
 		};
 
         explicit TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams &inParams = {});
@@ -43,7 +48,13 @@ namespace OZZ::game::objects {
         std::vector<scene::SceneObject> GetSceneObjects() override;
 
 		void SetupInput(InputSubsystem* inInputSubsystem);
+
+		void updateTextLabel() const;
+
 		void SetFocused(bool focused);
+
+	protected:
+		void onPositionChanged() override;
 
 	private:
 		void appendCharacter(char character);

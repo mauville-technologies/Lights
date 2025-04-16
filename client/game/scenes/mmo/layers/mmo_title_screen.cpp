@@ -17,23 +17,29 @@ void MMOTitleScreen::Init() {
 	                                     glm::vec3(0.f, 0.f, 0.f), // Target to look at
 	                                     glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-	// titleScreenText = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-	// 	std::filesystem::path("assets/fonts/Starjedi.ttf"), 128, "Star Wars", glm::vec3{1.f, 1.f, 0.f},
-	// 	AnchorPoint::CenterLeft);
-
 	OZZ::game::objects::TextInput::TextInputParams textInputParams {};
+	textInputParams.FontPath = "assets/fonts/game_bubble.ttf";
+	textInputParams.FontSize = 32;
 	textInputParams.Size = {400.f, 100.f};
 	textInputParams.BackgroundColor = {1.0f, 0.2f, 0.2f, 0.5f};
 	textInputParams.TextAnchorPoint = AnchorPoint::LeftMiddle;
 	// bright blue border color
 	textInputParams.FocusedColor = {1.f, 0.2f, 1.f, 1.f};
-
-	textInputParams.FocusedThickness = glm::vec4{5.f, 4.f, 4.f, 1.f};
+	textInputParams.FocusedThickness = glm::vec4{5.f};
 
 	inputBoxes.emplace_back(gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams));
 	inputBoxes.back().second->SetupInput(input.get());
 	inputBoxes.back().second->SetFocused(true);
-	focusedBox = inputBoxes.size() - 1;
+	inputBoxes.back().second->SetPosition({-50.f, 100.f, 0.f});
+
+	textInputParams.bIsPassword = true;
+	textInputParams.FontSize = 64;
+	textInputParams.TextAnchorPoint = AnchorPoint::LeftMiddle;
+	inputBoxes.emplace_back(gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams));
+	inputBoxes.back().second->SetupInput(input.get());
+	inputBoxes.back().second->SetFocused(false);
+	inputBoxes.back().second->SetPosition({-50.f, -100.f, 0.f});
+	focusedBox = 0;
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -105,6 +111,7 @@ void MMOTitleScreen::selectNextInputBox() {
 		focusedBox = 0;
 	}
 
+	spdlog::info("Selected box: {}", focusedBox);
 	if (focusedBox < inputBoxes.size()) {
 		inputBoxes[focusedBox].second->SetFocused(true);
 	}

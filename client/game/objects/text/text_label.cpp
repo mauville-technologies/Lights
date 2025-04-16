@@ -7,15 +7,18 @@
 #include <lights/rendering/shapes.h>
 #include <lights/text/font_loader.h>
 
+#include <utility>
+
 namespace OZZ::game::objects {
 	TextLabel::TextLabel(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
-	                     const std::filesystem::path &inFontPath, const uint16_t inFontSize,
-	                     const std::string &inText, const glm::vec3 &inColor, AnchorPoint inAnchorPoint)
+	                     std::filesystem::path inFontPath, const uint16_t inFontSize,
+	                     std::string inText, const glm::vec3 &inColor, const AnchorPoint inAnchorPoint)
 		: GameObject(inGameWorld, std::move(inPhysicsWorld)),
-		  fontLoader(std::make_unique<OZZ::FontLoader>()), fontPath(inFontPath), fontSize(inFontSize),
-			text(inText), color(inColor), anchorPoint(inAnchorPoint){
+		  fontLoader(std::make_unique<OZZ::FontLoader>()), fontPath(std::move(inFontPath)), fontSize(inFontSize),
+			text(std::move(inText)), color(inColor), anchorPoint(inAnchorPoint){
 
 		rebuildText();
+		TextLabel::onPositionChanged();
 	}
 
 	void TextLabel::Tick(float DeltaTime) {
@@ -52,10 +55,29 @@ namespace OZZ::game::objects {
 		rectBounds = size;
 	}
 
+	void TextLabel::onPositionChanged() {
+		GameObject::onPositionChanged();
+		updateTransform();
+	}
+
+	void TextLabel::onScaleChanged() {
+		GameObject::onScaleChanged();
+		updateTransform();
+;	}
+
+	void TextLabel::onRotationChanged() {
+		GameObject::onRotationChanged();
+		updateTransform();
+	}
+
+	void TextLabel::onParentChanged() {
+		GameObject::onParentChanged();
+		updateTransform();
+	}
+
 	void TextLabel::rebuildText() {
 		reloadCharacterSet();
 		updateText();
-		updateTransform();
 		updateRectBounds();
 		bBuilt = true;
 	}
@@ -168,16 +190,18 @@ namespace OZZ::game::objects {
 			.Mat = fontMaterial,
 		};
 
+		updateTransform();
 		builtText = text;
 	}
 
 	void TextLabel::updateTransform() {
-		if (text.empty() || !bBuilt || (builtPosition == Position && builtScale == Scale && builtRotation == Rotation)) return;
 
-		auto anchorPosition = getAnchorPosition();
-		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, Position + glm::vec3(getAnchorPosition(), 1));
-		fontRenderObject.Transform *= glm::mat4_cast(Rotation);
-		fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, Scale);
+		const auto parentOffset = parent? parent->GetPosition() : glm::vec3{0.f};
+		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, parentOffset + Position + glm::vec3(getAnchorPosition(), 1));
+		const auto parentRotation = parent? parent->GetRotation() : glm::quat{};
+		fontRenderObject.Transform *= glm::mat4_cast(glm::normalize(parentRotation * Rotation));
+		const auto parentScale = parent? parent->GetScale() : glm::vec3{1.f};
+		fontRenderObject.Transform *= glm::scale(glm::mat4{1.f}, parentScale * Scale);
 
 		builtPosition = Position;
 		builtScale = Scale;
@@ -201,17 +225,11 @@ namespace OZZ::game::objects {
 		auto topBounds = anchorPosition.y;
 		auto bottomBounds = anchorPosition.y;
 
-		bool bIsMiddle = anchorPoint == AnchorPoint::CenterMiddle ||
-			anchorPoint == AnchorPoint::LeftMiddle || anchorPoint == AnchorPoint::RightMiddle;
-		bool bIsCenter = anchorPoint == AnchorPoint::CenterTop ||
+		const bool bIsCenter = anchorPoint == AnchorPoint::CenterTop ||
 			anchorPoint == AnchorPoint::CenterBottom || anchorPoint == AnchorPoint::CenterMiddle;
-		bool bIsTop = anchorPoint == AnchorPoint::LeftTop ||
-			anchorPoint == AnchorPoint::RightTop || anchorPoint == AnchorPoint::CenterTop;
-		bool bIsBottom = anchorPoint == AnchorPoint::LeftBottom ||
-			anchorPoint == AnchorPoint::RightBottom || anchorPoint == AnchorPoint::CenterBottom;
-		bool bIsLeft = anchorPoint == AnchorPoint::LeftTop ||
+		const bool bIsLeft = anchorPoint == AnchorPoint::LeftTop ||
 			anchorPoint == AnchorPoint::LeftBottom || anchorPoint == AnchorPoint::LeftMiddle;
-		bool bIsRight = anchorPoint == AnchorPoint::RightTop ||
+		const bool bIsRight = anchorPoint == AnchorPoint::RightTop ||
 			anchorPoint == AnchorPoint::RightBottom || anchorPoint == AnchorPoint::RightMiddle;
 
 		if (bIsCenter) {

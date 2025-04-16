@@ -16,7 +16,7 @@ namespace OZZ::game::objects {
 	public:
 
 		explicit TextLabel(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
-		                   const std::filesystem::path& inFontPath, uint16_t inFontSize = 32, const std::string& inText = "",
+		                   std::filesystem::path  inFontPath, uint16_t inFontSize = 32, std::string  inText = "",
 		                   const glm::vec3 &inColor = {1.f, 1.f, 1.f}, AnchorPoint inAnchorPoint = AnchorPoint::CenterMiddle);
 
 		void Tick(float DeltaTime) override;
@@ -29,6 +29,12 @@ namespace OZZ::game::objects {
 		[[nodiscard]] glm::vec2 GetCharacterSize() const {
 			return characterSize;
 		};
+
+	protected:
+		void onPositionChanged() override;
+		void onScaleChanged() override;
+		void onRotationChanged() override;
+		void onParentChanged() override;
 	private:
 
 		void rebuildText();
