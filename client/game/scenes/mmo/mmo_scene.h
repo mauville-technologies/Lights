@@ -10,4 +10,5 @@ public:
 	~MMOScene() override = default;
 
 	void Init(std::shared_ptr<OZZ::InputSubsystem> inInput, std::shared_ptr<OZZ::UserInterface> inUI) override;
+	void RenderTargetResized(glm::ivec2 size) override;
 };

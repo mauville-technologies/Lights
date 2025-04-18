@@ -17,7 +17,12 @@
 
 namespace OZZ::scene {
 
-    inline std::vector<SceneObject>& operator+(std::vector<SceneObject> &lhs, std::vector<SceneObject> &rhs) {
+    inline std::vector<SceneObject> operator+(std::vector<SceneObject> lhs, std::vector<SceneObject> rhs) {
+        lhs.insert(lhs.end(), rhs.begin(), rhs.end());
+        return lhs;
+    }
+
+    inline std::vector<SceneObject>& operator+=(std::vector<SceneObject>& lhs, const std::vector<SceneObject>& rhs) {
         lhs.insert(lhs.end(), rhs.begin(), rhs.end());
         return lhs;
     }
@@ -58,7 +63,7 @@ namespace OZZ::scene {
         };
 
         // Marked virtual to allow derived Scenes with custom entities
-        void RenderTargetResized(glm::ivec2 size) {
+        virtual void RenderTargetResized(glm::ivec2 size) {
             for (auto &Layer: GetLayers()) {
                 Layer->RenderTargetResized(size);
             }

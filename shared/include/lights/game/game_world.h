@@ -17,9 +17,13 @@
  * In theory however, everything could be done locally in the case of a single player game.
  */
 namespace OZZ {
+
     struct WorldParams {
         glm::vec2 Gravity = {0.f, -9.8f};
     };
+
+    template <typename T>
+    using GameObjectContainer = std::pair<uint64_t, T*>;
 
     class GameWorld {
     public:

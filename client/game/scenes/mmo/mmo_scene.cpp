@@ -22,3 +22,8 @@ void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput, std::shared_pt
 
 	layerManager->Init();
 }
+
+void MMOScene::RenderTargetResized(glm::ivec2 size) {
+	// locking to 1920 x 1080
+	Scene::RenderTargetResized({1920, 1080});
+}
