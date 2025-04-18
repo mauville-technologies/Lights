@@ -23,6 +23,8 @@ namespace OZZ {
         using OnTextEventCallback = std::function<void(unsigned int)>;
         using OnControllerConnectedCallback = std::function<void(int)>;
         using OnControllerDisconnectedCallback = std::function<void(int)>;
+        using OnMouseMoveEventCallback = std::function<void(glm::vec2)>;
+        using OnMouseScrollEventCallback = std::function<void(glm::vec2)>;
 
         Window();
         ~Window();
@@ -49,6 +51,8 @@ namespace OZZ {
         OnTextEventCallback OnTextEvent;
         OnControllerConnectedCallback OnControllerConnected;
         OnControllerDisconnectedCallback OnControllerDisconnected;
+        OnMouseMoveEventCallback OnMouseMove;
+        OnMouseScrollEventCallback OnMouseScroll;
 
     private:
         GLFWwindow* window { nullptr };

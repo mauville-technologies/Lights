@@ -61,7 +61,7 @@ namespace OZZ {
                     break;
                 }
 
-                if (eKey.DeviceID == -1) {
+                if (eKey.DeviceID == EDeviceID::Keyboard) {
                     Mapping.Value = std::clamp(keyStates[+std::get<EKey>(eKey.Key)] * Weight, -1.f, 1.f);
                 } else {
                     // this is a controller mapping

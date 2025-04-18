@@ -81,7 +81,7 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 	// listen to TAB to switch input boxes
 	input->RegisterInputMapping(OZZ::InputMapping{
 		.Action = "SelectNextInputBox",
-		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{-1, OZZ::EKey::Tab}}}},
+		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::Tab}}}},
 		.Callbacks = {
 			.OnPressed = [this] () {
 				selectNextInputBox(bShiftPressed ? -1 : 1);
@@ -92,8 +92,8 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 	input->RegisterInputMapping(OZZ::InputMapping{
 		.Action = "PreviousInputBox",
 		.Chords = {
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{-1, OZZ::EKey::LShift}}},
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{-1, OZZ::EKey::RShift}}}
+			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::LShift}}},
+			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::RShift}}}
 		},
 		.Callbacks = {
 			.OnPressed = [this] () {
@@ -103,6 +103,20 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 				bShiftPressed = false;
 			}
 		}
+	});
+
+	// let's look for mouse input
+	input->RegisterInputMapping(OZZ::InputMapping{
+		.Action = "MouseInput",
+		.Chords = {OZZ::InputChord {.Keys = {{OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Forward}}}},
+		.Callbacks = {
+            .OnPressed = [this] () {
+            	spdlog::info("Mouse pressed!");
+            },
+			.OnReleased = [this] () {
+				spdlog::info("Mouse released!");
+			}
+        }
 	});
 
 }

@@ -11,6 +11,20 @@
 #include <cstdint>
 
 namespace OZZ {
+    enum class EDeviceID : uint8_t {
+        Unknown = -3,
+        Mouse = -2,
+        Keyboard = -1,
+        GamePad0,
+        GamePad1,
+        GamePad2,
+        GamePad3,
+        GamePad4,
+        GamePad5,
+        GamePad6,
+        GamePad7,
+        GamePad8,
+    };
     enum class EKeyState : uint8_t {
         KeyReleased,
         KeyPressed,
@@ -147,6 +161,17 @@ namespace OZZ {
         ButtonCount
     };
 
+    enum class EMouseButton : uint8_t {
+        Left,
+        Right,
+        Middle,
+        Back,
+        Forward,
+        Extra0,
+        Extra1,
+        Extra2
+    };
+
     constexpr int operator+(const EKey &key) {
         return static_cast<int>(key);
     }
@@ -154,18 +179,27 @@ namespace OZZ {
     constexpr int operator+(const EControllerButton &button) {
         return static_cast<int>(button);
     }
+
     constexpr int operator+(const EKeyState &state) {
         return static_cast<int>(state);
     }
 
+    constexpr int operator+(const EMouseButton &button) {
+        return static_cast<int>(button);
+    }
+
+    constexpr int operator+(const EDeviceID &deviceId) {
+        return static_cast<int>(deviceId);
+    }
+
     using KeyStateArrayType = std::array<float, +EKey::KeyCount>;
     using ControllerStateArrayType = std::array<float, +EControllerButton::ButtonCount>;
-    using ControllerStateMap = std::unordered_map<int, ControllerStateArrayType>;
+    using ControllerStateMap = std::unordered_map<EDeviceID, ControllerStateArrayType>;
 
 
     struct InputKey {
-        int DeviceID = -1; // -1 for keyboard
-        std::variant<EKey, EControllerButton> Key = EKey::KeyCount;
+        EDeviceID DeviceID = EDeviceID::Unknown;
+        std::variant<EKey, EControllerButton, EMouseButton> Key = EKey::KeyCount;
 
         bool operator==(const InputKey &other) const {
             return DeviceID == other.DeviceID && Key == other.Key;

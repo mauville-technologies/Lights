@@ -45,23 +45,20 @@ namespace OZZ {
         glfwSetWindowUserPointer(window, this);
 
         glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height) {
-            auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
-            if (win->OnWindowResized) {
+            if (const auto win = static_cast<Window*>(glfwGetWindowUserPointer(window)); win->OnWindowResized) {
                 win->OnWindowResized({width, height});
             }
         });
 
         glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
-            auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
-            if (win->OnKeyPressed) {
-                if (action == GLFW_REPEAT) action = GLFW_PRESS; // Repeat is not needed.
-                GLFWKeyState glfwKeyState(action);
-                win->OnKeyPressed({-1, GLFWKey(key)}, glfwKeyState);
+            if (const auto win = static_cast<Window*>(glfwGetWindowUserPointer(window)); win->OnKeyPressed) {
+                const GLFWKeyState glfwKeyState(action);
+                win->OnKeyPressed({EDeviceID::Keyboard, GLFWKey(key)}, glfwKeyState);
             }
         });
 
         glfwSetJoystickCallback([](int jid, int event) {
-            auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            const auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
             if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
                 win->addController(jid);
             } else if (event == GLFW_DISCONNECTED) {
@@ -69,9 +66,13 @@ namespace OZZ {
             }
         });
         glfwSetCharCallback(window, [](GLFWwindow *window, unsigned int codepoint) {
-            auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
-            if (win->OnTextEvent) {
+            if (const auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->OnTextEvent) {
                 win->OnTextEvent(codepoint);
+            }
+        });
+        glfwSetMouseButtonCallback(window, [](GLFWwindow *window, int button, int action, int mods) {
+            if (const auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->OnKeyPressed) {
+                win->OnKeyPressed({EDeviceID::Mouse, static_cast<EMouseButton>(button)}, GLFWKeyState(action));
             }
         });
     }
@@ -87,15 +88,14 @@ namespace OZZ {
 
     void Window::addController(int index) {
         spdlog::info("Controller {} connected", index);
-        controllerState[index] = {};
+        controllerState[static_cast<EDeviceID>(index)] = {};
         if (OnControllerConnected) {
             OnControllerConnected(index);
         }
     }
 
     void Window::removeController(int index) {
-        const auto controllerRemoved = controllerState.erase(index);
-        if (controllerRemoved) {
+        if (controllerState.erase(static_cast<EDeviceID>(index))) {
             spdlog::info("Controller {} disconnected", index);
             if (OnControllerDisconnected) {
                 OnControllerDisconnected(index);
@@ -120,9 +120,9 @@ namespace OZZ {
 
         // get all controller states
         for (auto &[index, controller]: controllerState) {
-            if (glfwJoystickIsGamepad(index)) {
+            if (glfwJoystickIsGamepad(+index)) {
                 GLFWgamepadstate gamepadState;
-                if (glfwGetGamepadState(index, &gamepadState)) {
+                if (glfwGetGamepadState(+index, &gamepadState)) {
                     // update all buttons
                     for (int i = 0; i < GLFW_GAMEPAD_BUTTON_LAST; ++i) {
                         const auto newState = gamepadState.buttons[i];

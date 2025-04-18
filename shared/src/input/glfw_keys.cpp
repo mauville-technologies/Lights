@@ -115,7 +115,10 @@ namespace OZZ {
 
     GLFWKeyState::GLFWKeyState(int glfwKeyState) {
         switch(glfwKeyState) {
-            case GLFW_PRESS: state = EKeyState::KeyPressed; break;
+            case GLFW_PRESS:
+            case GLFW_REPEAT:
+                state = EKeyState::KeyPressed;
+                break;
             case GLFW_RELEASE: state = EKeyState::KeyReleased; break;
             default: state = EKeyState::Unknown; break; // Unknown key state
         }

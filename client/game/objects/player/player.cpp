@@ -64,8 +64,8 @@ namespace OZZ::game::objects {
 		input->RegisterInputMapping({
 			.Action = "Jump",
 			.Chords = {
-				InputChord{.Keys = std::vector<InputKey>{{0, EControllerButton::A}}},
-				InputChord{.Keys = std::vector<InputKey>{{-1, EKey::Space}}},
+				InputChord{.Keys = std::vector<InputKey>{{EDeviceID::GamePad0, EControllerButton::A}}},
+				InputChord{.Keys = std::vector<InputKey>{{EDeviceID::Keyboard, EKey::Space}}},
 			},
 			.Callbacks = {
 				.OnPressed = [this]() {
@@ -79,11 +79,11 @@ namespace OZZ::game::objects {
 		input->RegisterAxisMapping({
 			.Action = "MoveLeftRight",
 			.Keys = {
-				{{-1, EKey::Left}, -1.f},
-				{{-1, EKey::Right}, 1.f},
-				{{-1, EKey::A}, -1.f},
-				{{-1, EKey::D}, 1.f},
-				{{0, EControllerButton::LeftStickX}, 1.f},
+				{{EDeviceID::Keyboard, EKey::Left}, -1.f},
+				{{EDeviceID::Keyboard, EKey::Right}, 1.f},
+				{{EDeviceID::Keyboard, EKey::A}, -1.f},
+				{{EDeviceID::Keyboard, EKey::D}, 1.f},
+				{{EDeviceID::GamePad0, EControllerButton::LeftStickX}, 1.f},
 			},
 		});
 	}

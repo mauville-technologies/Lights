@@ -160,7 +160,7 @@ namespace OZZ::game::objects {
 			.Action = inputSID,
 			.Chords = {
 				InputChord{
-					.Keys = {{-1, EKey::BackSpace}},
+					.Keys = {{EDeviceID::Keyboard, EKey::BackSpace}},
 					.bIsSequence = false,
 					.bCanRepeat = true
 				}
