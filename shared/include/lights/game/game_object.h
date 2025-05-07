@@ -16,19 +16,22 @@ namespace OZZ {
 
     class GameObject {
     public:
+
         explicit GameObject(GameWorld* inWorld, std::shared_ptr<OzzWorld2D>);
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
         virtual std::vector<scene::SceneObject> GetSceneObjects() = 0;
 
-        [[nodiscard]] glm::vec3 GetPosition() const { return Position; }
-        void SetPosition(const glm::vec3& inPosition) { Position = inPosition; onPositionChanged(); }
-        [[nodiscard]] glm::vec3 GetScale() const { return Scale; }
-        void SetScale(const glm::vec3& inScale) { Scale = inScale; onScaleChanged(); }
-        [[nodiscard]] glm::quat GetRotation() const { return Rotation; }
-        void SetRotation(const glm::quat& inRotation) { Rotation = inRotation; onRotationChanged(); }
+        [[nodiscard]] glm::vec3 GetPosition() const { return position; }
+        void SetPosition(const glm::vec3& inPosition) { position = inPosition; updateTransform(); onPositionChanged(); }
+        [[nodiscard]] glm::vec3 GetScale() const { return scale; }
+        void SetScale(const glm::vec3& inScale) { scale = inScale; updateTransform(); onScaleChanged(); }
+        [[nodiscard]] glm::quat GetRotation() const { return rotation; }
+        void SetRotation(const glm::quat& inRotation) { rotation = inRotation; updateTransform(); onRotationChanged(); }
 
-        void SetParent(GameObject* inParent) { parent = inParent; }
+        [[nodiscard]] glm::mat4 GetWorldTransform() const { return transform; }
+
+        void SetParent(GameObject* inParent) { parent = inParent; onParentChanged(); }
         [[nodiscard]] OzzWorld2D* GetWorld() const { return physicsWorld.get(); }
     protected:
         virtual void onPositionChanged() {};
@@ -36,13 +39,18 @@ namespace OZZ {
         virtual void onRotationChanged() {};
         virtual void onParentChanged() {};
 
-    protected:
-        glm::vec3 Position {0.f};
-        glm::vec3 Scale {1.f};
-        glm::quat Rotation {};
+    private:
+        void updateTransform();
 
+    protected:
         GameWorld* gameWorld;;
         std::shared_ptr<OzzWorld2D> physicsWorld { nullptr };
         GameObject* parent { nullptr };
+
+    private:
+        glm::vec3 position {0.f};
+        glm::vec3 scale {1.f};
+        glm::quat rotation {};
+        glm::mat4 transform {1.f};
     };
-} // OZZ
+} // O {1.f}ZZ

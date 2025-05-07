@@ -75,7 +75,7 @@ namespace OZZ::game {
             window->OnWindowResized = [this](glm::ivec2 size) {
                 updateViewport(size);
                 if (scene) {
-                    scene->RenderTargetResized(size);
+                    scene->WindowResized(size);
                     drawScene(scene.get());
                 }
             };
@@ -88,6 +88,10 @@ namespace OZZ::game {
                 // convert unicode to char
                 char character = static_cast<char>(unicode);
                 input->NotifyTextEvent(character);
+            };
+
+            window->OnMouseMove = [this](const glm::vec2 pos) {
+                input->NotifyMouseMove(pos);
             };
         }
 
@@ -104,7 +108,7 @@ namespace OZZ::game {
         void initScene() {
             scene = std::make_unique<SceneType>();
             scene->Init(input, ui);
-            scene->RenderTargetResized(window->GetSize());
+            scene->WindowResized(window->GetSize());
         }
 
         void initRenderer() {

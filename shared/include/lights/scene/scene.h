@@ -63,7 +63,7 @@ namespace OZZ::scene {
         };
 
         // Marked virtual to allow derived Scenes with custom entities
-        virtual void RenderTargetResized(glm::ivec2 size) {
+        virtual void WindowResized(glm::ivec2 size) {
             for (auto &Layer: GetLayers()) {
                 Layer->RenderTargetResized(size);
             }

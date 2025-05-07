@@ -75,6 +75,11 @@ namespace OZZ {
                 win->OnKeyPressed({EDeviceID::Mouse, static_cast<EMouseButton>(button)}, GLFWKeyState(action));
             }
         });
+        glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xpos, double ypos) {
+             if (const auto win = static_cast<Window*>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->OnMouseMove) {
+                 win->OnMouseMove({static_cast<float>(xpos), static_cast<float>(ypos)});
+             }
+        });
     }
 
     void Window::initControllers() {

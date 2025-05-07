@@ -95,6 +95,7 @@ namespace OZZ::game::objects {
 			return;
 		}
 
+		builtText = "";
 		if ((text == builtText && bBuilt)) return;
 		fontRenderObject = {};
 		// create the texture
@@ -138,9 +139,10 @@ namespace OZZ::game::objects {
 			auto topLeftPosition = getTopLeftVertexPosition();
 
 			auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
+			const auto& scale = GetScale();
 			auto characterTopLeft = glm::vec3(
-				topLeftPosition.x + (Bearing.x + nextCharacterX * Scale.x),
-				topLeftPosition.y -(Size.y - Bearing.y) * Scale.y,
+				topLeftPosition.x + (Bearing.x + nextCharacterX * scale.x),
+				topLeftPosition.y -(Size.y - Bearing.y) * scale.y,
 				0.f);
 			// first vertex
 			auto topLeft = Vertex{
@@ -150,19 +152,19 @@ namespace OZZ::game::objects {
 			};
 			// second vertex
 			auto topRight = Vertex{
-				.position = characterTopLeft + glm::vec3(Size.x * Scale.x, 0.f, 0.f),
+				.position = characterTopLeft + glm::vec3(Size.x * scale.x, 0.f, 0.f),
 				.color = {1.f, 1.f, 1.f, 1.f},
 				.uv = {UV.z, UV.y},
 			};
 			// third vertex
 			auto bottomLeft = Vertex{
-				.position = characterTopLeft + glm::vec3(0.f, Size.y * Scale.y, 0.f),
+				.position = characterTopLeft + glm::vec3(0.f, Size.y * scale.y, 0.f),
 				.color = {1.f, 1.f, 1.f, 1.f},
 				.uv = {UV.x, UV.w},
 			};
 			// fourth vertex
 			auto bottomRight = Vertex{
-				.position = characterTopLeft + glm::vec3(Size.x * Scale.x, Size.y * Scale.y, 0.f),
+				.position = characterTopLeft + glm::vec3(Size.x * scale.x, Size.y * scale.y, 0.f),
 				.color = {1.f, 1.f, 1.f, 1.f},
 				.uv = {UV.z, UV.w},
 			};
@@ -184,8 +186,9 @@ namespace OZZ::game::objects {
 		fontMesh = std::make_shared<OZZ::IndexVertexBuffer>();
 		fontMesh->UploadData(meshVertices, meshIndices);
 
+		const auto& position = GetPosition();
 		fontRenderObject = {
-			.Transform = glm::translate(glm::mat4{1.f}, Position),
+			.Transform = glm::translate(glm::mat4{1.f}, position),
 			.Mesh = fontMesh,
 			.Mat = fontMaterial,
 		};
@@ -196,16 +199,23 @@ namespace OZZ::game::objects {
 
 	void TextLabel::updateTransform() {
 
-		const auto parentOffset = parent? parent->GetPosition() : glm::vec3{0.f};
-		fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, parentOffset + Position + glm::vec3(getAnchorPosition(), 1));
-		const auto parentRotation = parent? parent->GetRotation() : glm::quat{};
-		fontRenderObject.Transform *= glm::mat4_cast(glm::normalize(parentRotation * Rotation));
-		const auto parentScale = parent? parent->GetScale() : glm::vec3{1.f};
-		fontRenderObject.Transform *= glm::scale(glm::mat4{1.f}, parentScale * Scale);
+		fontRenderObject.Transform = GetWorldTransform();
+		// const auto& position = GetPosition();
+		// const auto& scale = GetScale();
+		// const auto& rotation = GetRotation();
+		//
+		// const auto parentOffset = parent? parent->GetPosition() : glm::vec3{0.f};
+		// spdlog::info("|\t {} \t| parent: {} {} {}", text, parentOffset.x, parentOffset.y, parentOffset.z);
+		// // TODO:: ADD TRANSFORM TO THE GAMEOBJECT, FOLLOW PARENT CHAIN
+		// fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, parentOffset + position + glm::vec3(getAnchorPosition(), 1));
+		// const auto parentRotation = parent? parent->GetRotation() : glm::quat{};
+		// fontRenderObject.Transform *= glm::mat4_cast(glm::normalize(parentRotation * rotation));
+		// const auto parentScale = parent? parent->GetScale() : glm::vec3{1.f};
+		// fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, parentScale * scale);
 
-		builtPosition = Position;
-		builtScale = Scale;
-		builtRotation = Rotation;
+		builtPosition = GetPosition();
+		builtScale = GetPosition();
+		builtRotation = GetRotation();
 	}
 
 	void TextLabel::updateRectBounds() {

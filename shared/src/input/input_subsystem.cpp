@@ -20,7 +20,7 @@ namespace OZZ {
 
     void InputSubsystem::NotifyInputEvent(const InputEvent &Event) {
         // Notify all mappings
-        for (auto &Mapping: Mappings) {
+        for (auto &Mapping: mappings) {
             // loops through all chords, if one of them is triggered, call the callback
             auto& chords = Mapping.Chords;
             for (auto &Chord: chords) {
@@ -44,16 +44,20 @@ namespace OZZ {
 
     void InputSubsystem::NotifyTextEvent(char character) {
         // Notify all text mappings
-        for (auto &[Name, Callback]: TextMappings) {
+        for (auto &[Name, Callback]: textMappings) {
             if (Callback) {
                 Callback(character);
             }
         }
     }
 
+    void InputSubsystem::NotifyMouseMove(glm::vec2 inMousePosition) {
+        mousePosition = inMousePosition;
+    }
+
     void InputSubsystem::Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates) {
         // Update all the axis mappings
-        for (auto &Mapping: AxisMappings) {
+        for (auto &Mapping: axisMappings) {
             Mapping.Value = 0.f;
 
             for (auto &[eKey, Weight] : Mapping.Keys) {
@@ -80,20 +84,24 @@ namespace OZZ {
     }
 
     float InputSubsystem::GetAxisValue(const std::string &Action) const {
-        auto Mapping = std::ranges::find_if(AxisMappings, [&Action](const AxisMapping& Mapping) {
+        auto Mapping = std::ranges::find_if(axisMappings, [&Action](const AxisMapping& Mapping) {
             return Mapping.Action == Action;
         });
 
-        if (Mapping != AxisMappings.end()) {
+        if (Mapping != axisMappings.end()) {
             return Mapping->Value;
         }
         return 0.f;
     }
 
+    const glm::vec2 & InputSubsystem::GetMousePosition() const {
+        return mousePosition;
+    }
+
     void InputSubsystem::RegisterInputMapping(InputMapping &&Mapping) {
         std::string Action = Mapping.Action;
         bool bFound = false;
-        for (auto &ExistingMapping: Mappings) {
+        for (auto &ExistingMapping: mappings) {
             if (ExistingMapping.Action == Action) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -102,12 +110,12 @@ namespace OZZ {
         }
 
         if (!bFound) {
-            Mappings.push_back(Mapping);
+            mappings.push_back(Mapping);
         }
     }
 
     void InputSubsystem::UnregisterInputMapping(const std::string &Action) {
-        std::erase_if(Mappings, [&Action](const InputMapping &Mapping) {
+        std::erase_if(mappings, [&Action](const InputMapping &Mapping) {
             return Mapping.Action == Action;
         });
     }
@@ -115,7 +123,7 @@ namespace OZZ {
     void InputSubsystem::RegisterAxisMapping(AxisMapping &&Mapping) {
         const std::string &action = Mapping.Action;
         bool bFound = false;
-        for (auto &ExistingMapping: AxisMappings) {
+        for (auto &ExistingMapping: axisMappings) {
             if (ExistingMapping.Action == action) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -124,12 +132,12 @@ namespace OZZ {
         }
 
         if (!bFound) {
-            AxisMappings.push_back(Mapping);
+            axisMappings.push_back(Mapping);
         }
     }
 
     void InputSubsystem::UnregisterAxisMapping(const std::string &Action) {
-        std::erase_if(AxisMappings, [&Action](const AxisMapping &Mapping) {
+        std::erase_if(axisMappings, [&Action](const AxisMapping &Mapping) {
             return Mapping.Action == Action;
         });
     }
@@ -137,7 +145,7 @@ namespace OZZ {
     void InputSubsystem::RegisterTextListener(TextListenerMapping &&Mapping) {
         const std::string &name = Mapping.Name;
         bool bFound = false;
-        for (auto &ExistingMapping: TextMappings) {
+        for (auto &ExistingMapping: textMappings) {
             if (ExistingMapping.Name == name) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -145,12 +153,12 @@ namespace OZZ {
             }
         }
         if (!bFound) {
-            TextMappings.push_back(Mapping);
+            textMappings.push_back(Mapping);
         }
     }
 
     void InputSubsystem::UnregisterTextListener(const std::string &Name) {
-        std::erase_if(TextMappings, [&Name](const TextListenerMapping &Mapping) {
+        std::erase_if(textMappings, [&Name](const TextListenerMapping &Mapping) {
             return Mapping.Name == Name;
         });
     }

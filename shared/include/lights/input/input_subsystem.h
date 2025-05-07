@@ -9,6 +9,7 @@
 #include <vector>
 #include <chrono>
 #include <variant>
+#include <glm/glm.hpp>
 
 namespace OZZ {
     using namespace std::chrono_literals;
@@ -80,10 +81,12 @@ namespace OZZ {
 
         void NotifyInputEvent(const InputEvent& Event);
         void NotifyTextEvent(char character);
+        void NotifyMouseMove(glm::vec2 inMousePosition);
 
         void Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates);
 
         [[nodiscard]] float GetAxisValue(const std::string& Action) const;
+        [[nodiscard]] const glm::vec2& GetMousePosition() const;
 
         ~InputSubsystem() = default;
     private:
@@ -93,8 +96,10 @@ namespace OZZ {
 
 
     private:
-        std::vector<AxisMapping> AxisMappings {};
-        std::vector<InputMapping> Mappings {};
-        std::vector<TextListenerMapping> TextMappings {};
+        std::vector<AxisMapping> axisMappings {};
+        std::vector<InputMapping> mappings {};
+        std::vector<TextListenerMapping> textMappings {};
+
+        glm::vec2 mousePosition {};
     };
 } // OZZ

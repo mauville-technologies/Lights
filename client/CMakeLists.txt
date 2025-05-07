@@ -9,9 +9,10 @@ set (SOURCES
         game/abilities/ability_system_component.cpp
         game/abilities/ability/jump_ability.cpp
 
-        game/objects/text/text_input.cpp
-        game/objects/text/text_label.cpp
+        game/objects/input/button.cpp
+        game/objects/input/text_input.cpp
         game/objects/player/player.cpp
+        game/objects/text/text_label.cpp
         game/objects/tilemap.cpp
 
         game/scenes/mmo/mmo_scene.cpp

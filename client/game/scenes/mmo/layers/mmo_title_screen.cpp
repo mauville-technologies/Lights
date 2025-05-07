@@ -5,20 +5,68 @@
 #include "mmo_title_screen.h"
 
 #include <ranges>
-#include <game/objects/text/text_input.h>
+#include <game/objects/input/button.h>
+#include <game/objects/input/text_input.h>
 #include <lights/rendering/shapes.h>
 #include <game/objects/text/text_label.h>
+#include <game/utils/mouse_utils.h>
 
 MMOTitleScreen::MMOTitleScreen(OZZ::GameWorld *inWorld) : gameWorld(inWorld) {
+}
+
+void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
+	input = inInput;
+
+	// listen to TAB to switch input boxes
+	input->RegisterInputMapping(OZZ::InputMapping{
+		.Action = "SelectNextInputBox",
+		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::Tab}}}},
+		.Callbacks = {
+			.OnPressed = [this]() {
+				selectNextInputBox(bShiftPressed ? -1 : 1);
+			},
+		}
+	});
+
+	input->RegisterInputMapping(OZZ::InputMapping{
+		.Action = "PreviousInputBox",
+		.Chords = {
+			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::LShift}}},
+			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::RShift}}}
+		},
+		.Callbacks = {
+			.OnPressed = [this]() {
+				bShiftPressed = true;
+			},
+			.OnReleased = [this]() {
+				bShiftPressed = false;
+			}
+		}
+	});
+
+	// let's look for mouse input
+	input->RegisterInputMapping(OZZ::InputMapping{
+		.Action = "MouseInput",
+		.Chords = {OZZ::InputChord{.Keys = {{OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Left}}}},
+		.Callbacks = {
+			.OnPressed = [this]() {
+				const auto mousePosition = CenteredMousePosition(input->GetMousePosition(), {width, height});
+				spdlog::info("Mouse pressed {} {}!", mousePosition.x, mousePosition.y);
+			},
+			.OnReleased = [this]() {
+				spdlog::info("Mouse released!");
+			}
+		}
+	});
 }
 
 void MMOTitleScreen::Init() {
 	SceneLayer::Init();
 	LayerCamera.ViewMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), // Camera position
-										 glm::vec3(0.f, 0.f, 0.f), // Target to look at
-										 glm::vec3(0.f, 1.f, 0.f)); // Up vector
+	                                     glm::vec3(0.f, 0.f, 0.f), // Target to look at
+	                                     glm::vec3(0.f, 1.f, 0.f)); // Up vector
 
-	OZZ::game::objects::TextInput::TextInputParams textInputParams {};
+	OZZ::game::objects::TextInput::TextInputParams textInputParams{};
 	textInputParams.FontPath = "assets/fonts/PrintBold.ttf";
 	textInputParams.FontSize = 36;
 	textInputParams.Size = {600.f, 50.f};
@@ -42,14 +90,28 @@ void MMOTitleScreen::Init() {
 	inputBoxes.back().second->SetPosition({-0.f, -175.f, 0.f});
 	focusedBox = 0;
 
-	titleLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(fontPath, 64, "Lights", glm::vec3(1.f, 0.f, 0.f));
+	titleLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
+		fontPath, 64, "Lights", glm::vec3(1.f, 0.f, 0.f));
 	titleLabel.second->SetPosition({0.f, 100, 0.f});
 	titleLabel.second->SetScale(glm::vec3(3.f));
 
-	usernameLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(fontPath, 32, "Username", glm::vec3(1.f, 0.f, 0.f));
+	usernameLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
+		fontPath, 32, "Username", glm::vec3(1.f, 0.f, 0.f));
 	usernameLabel.second->SetPosition({-220.f, -25.f, 0.f});
-    passwordLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(fontPath, 32, "Password", glm::vec3(1.f, 0.f, 0.f));
+	passwordLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
+		fontPath, 32, "Password", glm::vec3(1.f, 0.f, 0.f));
 	passwordLabel.second->SetPosition({-220.f, -125.f, 0.f});
+
+	// login button
+	OZZ::game::objects::Button::ButtonParams buttonParams = {};
+	buttonParams.Text = "Log In";
+	buttonParams.FontPath = "assets/fonts/PrintBold.ttf";
+	buttonParams.FontSize = 36;
+	buttonParams.Size = {600.f, 50.f};
+	buttonParams.BackgroundColor = {0.2f, 0.2f, 0.2f, 0.5f};
+
+	loginButton = gameWorld->CreateGameObject<OZZ::game::objects::Button>(buttonParams);
+	loginButton.second->SetPosition({-0.f, -325.f, 0.f});
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -64,62 +126,16 @@ void MMOTitleScreen::Tick(float DeltaTime) {
 	// Doing it here makes it easy to forget in the future if
 	gameWorld->Tick(DeltaTime);
 
-	static glm::vec3 titleScreenOffset {0.f, 0.f, 0.f};
+	static glm::vec3 titleScreenOffset{0.f, 0.f, 0.f};
 	static float totalTime = 1.f;
 
 	totalTime += DeltaTime;
 	// apply a sin wave
-	titleScreenOffset.y = std::sin(totalTime * 2.f) * 32 + height/4;
+	titleScreenOffset.y = std::sin(totalTime * 2.f) * 32 + height / 4;
 
 	titleLabel.second->SetPosition(titleScreenOffset);
-
 }
 
-void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
-	input = inInput;
-
-	// listen to TAB to switch input boxes
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "SelectNextInputBox",
-		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::Tab}}}},
-		.Callbacks = {
-			.OnPressed = [this] () {
-				selectNextInputBox(bShiftPressed ? -1 : 1);
-			},
-		}
-	});
-
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "PreviousInputBox",
-		.Chords = {
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::LShift}}},
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::RShift}}}
-		},
-		.Callbacks = {
-			.OnPressed = [this] () {
-				bShiftPressed = true;
-			},
-			.OnReleased = [this] () {
-				bShiftPressed = false;
-			}
-		}
-	});
-
-	// let's look for mouse input
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "MouseInput",
-		.Chords = {OZZ::InputChord {.Keys = {{OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Forward}}}},
-		.Callbacks = {
-            .OnPressed = [this] () {
-            	spdlog::info("Mouse pressed!");
-            },
-			.OnReleased = [this] () {
-				spdlog::info("Mouse released!");
-			}
-        }
-	});
-
-}
 
 void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 	width = size.x;
@@ -134,7 +150,10 @@ std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
 	for (const auto val: inputBoxes | std::views::values) {
 		titleScreenObjects += val->GetSceneObjects();
 	}
-	titleScreenObjects += titleLabel.second->GetSceneObjects() + usernameLabel.second->GetSceneObjects() + passwordLabel.second->GetSceneObjects();
+	titleScreenObjects += titleLabel.second->GetSceneObjects()
+		+ usernameLabel.second->GetSceneObjects()
+		+ passwordLabel.second->GetSceneObjects()
+		+ loginButton.second->GetSceneObjects();
 	return titleScreenObjects;
 }
 
@@ -158,5 +177,4 @@ void MMOTitleScreen::selectNextInputBox(int direction) {
 	if (focusedBox < inputBoxes.size()) {
 		inputBoxes[focusedBox].second->SetFocused(true);
 	}
-
 }

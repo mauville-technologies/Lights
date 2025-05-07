@@ -49,7 +49,7 @@ namespace OZZ::game::objects {
 
 	void Player::Tick(float DeltaTime) {
 		abilitySystem->Tick(DeltaTime);
-		Position = sprite.second->GetPosition();
+		SetPosition(sprite.second->GetPosition());
 
 		const auto moveValue = inputSubsystem->GetAxisValue("MoveLeftRight");
 		MoveLeft(moveValue);

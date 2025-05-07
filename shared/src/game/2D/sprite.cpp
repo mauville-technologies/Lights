@@ -22,7 +22,7 @@ namespace OZZ::game::scene {
         sceneObject.Mesh->UploadData(vertices, indices);
 
         SetTexture(texture);
-        Scale = {1.f, 1.f, 1.f};
+        SetScale({1.f, 1.f, 1.f});
     }
 
     Sprite::~Sprite() {
@@ -37,8 +37,8 @@ namespace OZZ::game::scene {
         if (const auto mainBody = physicsWorld->GetBody(MainBody)) {
             // TODO: The rendering position and scale might need to be separate from the physics position and scale
             // this will work for now but I'll have to think about it more later
-            Position = mainBody->GetPosition();
-            Scale = {mainBody->GetScale(), 1.f};
+            SetPosition(mainBody->GetPosition());
+            SetScale({mainBody->GetScale(), 1.f});
         }
     }
 
@@ -49,9 +49,11 @@ namespace OZZ::game::scene {
          * Later I will want to cache the transform but for now we'll rebuild it every frame
          */
         glm::mat4 transform(1.f);
+        const auto& position = GetPosition();
+        const auto& scale = GetScale();
         glm::vec3 renderPosition = {
-            Position.x,
-            Position.y,
+            position.x,
+            position.y,
             0.f
         };
 
@@ -64,8 +66,8 @@ namespace OZZ::game::scene {
         transform = glm::translate(transform, renderPosition);
 
         glm::vec3 renderScale = {
-            Scale.x,
-            Scale.y,
+            scale.x,
+            scale.y,
             1.f
         };
 

@@ -6,14 +6,15 @@
 #include <lights/game/game_object.h>
 #include <lights/input/input_subsystem.h>
 
-#include "text_label.h"
+#include <game/objects/text/text_label.h>
 
 namespace OZZ::game::objects {
-	class TextInput : public GameObject {
+	class Button : public GameObject {
 	public:
-		struct TextInputParams {
-			uint16_t FontSize {32};
+		struct ButtonParams {
+			uint16_t FontSize { 32 };
 			std::filesystem::path FontPath {""};
+			std::string Text;
 
 			glm::vec2 Size {
 				200.f, 50.f
@@ -36,29 +37,22 @@ namespace OZZ::game::objects {
 			};
 
 			glm::vec4 FocusedThickness {5.f};
-
-			AnchorPoint TextAnchorPoint {AnchorPoint::LeftMiddle};
-
-			bool bIsPassword {false};
 		};
 
-        explicit TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams &inParams = {});
-		~TextInput() override;
+        explicit Button(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const ButtonParams &inParams = {});
+		~Button() override;
         void Tick(float DeltaTime) override;
         std::vector<scene::SceneObject> GetSceneObjects() override;
 
 		void SetupInput(InputSubsystem* inInputSubsystem);
-
-		void updateTextLabel() const;
-
 		void SetFocused(bool focused);
 
 	protected:
 		void onPositionChanged() override;
 
 	private:
-		void appendCharacter(char character);
-		void removeCharacter();
+		void setText(const std::string &inText);
+		void updateTextLabel() const;
 
 	private:
 		std::pair<uint64_t, TextLabel*> label {UINT16_MAX, nullptr};
@@ -66,7 +60,7 @@ namespace OZZ::game::objects {
 		std::string inputSID {};
 
 		std::string currentString {};
-		TextInputParams params {};
+		ButtonParams params {};
 
         scene::SceneObject backgroundBox {};
 		scene::SceneObject cursor {};
