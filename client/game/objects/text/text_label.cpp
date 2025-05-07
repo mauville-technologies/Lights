@@ -199,7 +199,7 @@ namespace OZZ::game::objects {
 
 	void TextLabel::updateTransform() {
 
-		fontRenderObject.Transform = GetWorldTransform();
+        fontRenderObject.Transform = parent ? parent->GetWorldTransform() * GetWorldTransform() : GetWorldTransform();
 		// const auto& position = GetPosition();
 		// const auto& scale = GetScale();
 		// const auto& rotation = GetRotation();
@@ -214,7 +214,7 @@ namespace OZZ::game::objects {
 		// fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, parentScale * scale);
 
 		builtPosition = GetPosition();
-		builtScale = GetPosition();
+		builtScale = GetScale();
 		builtRotation = GetRotation();
 	}
 

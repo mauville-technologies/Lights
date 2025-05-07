@@ -18,7 +18,7 @@ namespace OZZ::game::objects {
 		label.second->SetParent(this);
 		auto textPosition = glm::vec3{0.f};
 		// textPosition.x = -params.Size.x / 2;
-		textPosition.y = params.Size.y / 2;
+		// textPosition.y = params.Size.y / 2;
 		currentString = params.Text;
 		setText(currentString);
 		label.second->SetPosition(textPosition);
@@ -90,6 +90,7 @@ namespace OZZ::game::objects {
 	}
 
 	void Button::Tick(float DeltaTime) {
+		onPositionChanged();
 	}
 
 	std::vector<OZZ::scene::SceneObject> Button::GetSceneObjects() {
@@ -125,7 +126,7 @@ namespace OZZ::game::objects {
 	void Button::SetFocused(const bool focused) {
 		isFocused = focused;
 
-		if (auto backgroundMaterial = backgroundBox.Mat) {
+		if (const auto backgroundMaterial = backgroundBox.Mat) {
 			backgroundMaterial->AddUniformSetting({
 				.Name = "borderColor",
 				.Value = params.FocusedColor,
@@ -140,15 +141,6 @@ namespace OZZ::game::objects {
 	void Button::onPositionChanged() {
 		GameObject::onPositionChanged();
 
-		const auto& position = GetPosition();
-		const auto& scale = GetScale();
-		const auto& rotation = GetRotation();
-		// update the transform of the background box
-		auto transform = glm::mat4{1.f};
-		transform = glm::translate(transform, position);
-		transform *= glm::mat4_cast(rotation);
-		transform = glm::scale(transform, scale);
-
-		backgroundBox.Transform = transform;
+		backgroundBox.Transform = GetWorldTransform();
 	}
 }
