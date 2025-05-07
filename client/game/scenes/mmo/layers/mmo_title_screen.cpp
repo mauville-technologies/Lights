@@ -51,7 +51,42 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 		.Callbacks = {
 			.OnPressed = [this]() {
 				const auto mousePosition = CenteredMousePosition(input->GetMousePosition(), {width, height});
-				spdlog::info("Mouse pressed {} {}!", mousePosition.x, mousePosition.y);
+				const auto worldPosition = ScreenToWorldPosition(input->GetMousePosition(), {width, height}, 
+					LayerCamera.ProjectionMatrix, LayerCamera.ViewMatrix);
+				spdlog::info("Mouse pressed at screen: ({}, {}), world: ({}, {})!", 
+					mousePosition.x, mousePosition.y, worldPosition.x, worldPosition.y);
+				
+				// Try to click the login button
+				if (loginButton.second->TryClick(worldPosition)) {
+					// remove focus from all input boxes
+					for (auto& box : inputBoxes) {
+						box.second->SetFocused(false);
+						focusedBox = INT_MAX;
+					}
+					return;
+				}
+
+				// Try to click any of the input boxes
+				// loop through input boxes, i need the value and the index
+				for (int i = 0; i < inputBoxes.size(); i++) {
+					auto& box = inputBoxes[i];
+					if (box.second->TryClick(worldPosition)) {
+						if (!box.second->GetFocused()) {
+							if (focusedBox != INT_MAX) {
+								inputBoxes[focusedBox].second->SetFocused(false);
+							}
+							focusedBox = i;
+							box.second->SetFocused(true);
+						}
+						return;
+					}
+				}
+
+				// unfocus all input boxes
+				for (auto& box : inputBoxes) {
+					box.second->SetFocused(false);
+					focusedBox = INT_MAX;
+				}
 			},
 			.OnReleased = [this]() {
 				spdlog::info("Mouse released!");
@@ -109,6 +144,9 @@ void MMOTitleScreen::Init() {
 	buttonParams.FontSize = 36;
 	buttonParams.Size = {600.f, 50.f};
 	buttonParams.BackgroundColor = {0.2f, 0.2f, 0.2f, 0.5f};
+	buttonParams.OnClick = [this]() {
+		spdlog::info("Login button clicked!");
+	};
 
 	loginButton = gameWorld->CreateGameObject<OZZ::game::objects::Button>(buttonParams);
 	loginButton.second->SetPosition({-0.f, -325.f, 0.f});

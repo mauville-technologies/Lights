@@ -11,6 +11,8 @@
 namespace OZZ::game::objects {
 	class Button : public GameObject {
 	public:
+		using ClickCallback = std::function<void()>;
+
 		struct ButtonParams {
 			uint16_t FontSize { 32 };
 			std::filesystem::path FontPath {""};
@@ -37,6 +39,8 @@ namespace OZZ::game::objects {
 			};
 
 			glm::vec4 FocusedThickness {5.f};
+
+			ClickCallback OnClick {nullptr};
 		};
 
         explicit Button(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const ButtonParams &inParams = {});
@@ -46,6 +50,8 @@ namespace OZZ::game::objects {
 
 		void SetupInput(InputSubsystem* inInputSubsystem);
 		void SetFocused(bool focused);
+		glm::vec2 GetSize() const { return params.Size; }
+		bool TryClick(const glm::vec2& worldPos);
 
 	protected:
 		void onPositionChanged() override;

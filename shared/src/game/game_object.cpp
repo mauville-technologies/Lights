@@ -12,13 +12,11 @@ namespace OZZ {
 		updateTransform();
 	}
 
+	glm::mat4 GameObject::GetWorldTransform() const { return parent ? parent->GetWorldTransform() * transform : transform; }
+
 	void GameObject::updateTransform() {
 		transform = glm::translate(glm::mat4{1.f}, position);
 		transform = glm::scale(transform, scale);
 		transform = glm::rotate(transform, rotation.x, glm::vec3(1, 0, 0));
-
-		if (parent) {
-			transform = parent->GetWorldTransform() * transform;
-		}
 	}
 } // OZZ

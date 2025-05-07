@@ -23,19 +23,11 @@ namespace OZZ::game::objects {
 
 	void TextLabel::Tick(float DeltaTime) {
 		rebuildText();
-
-		// static int frameCount = 0;
-		// frameCount++;
-		//
-		// // rotate a little
-		// if (frameCount % 1000 == 0) {
-		// 	// rotate a little
-		// 	// create 1 degree quaternion
-		// 	Rotation = glm::normalize(Rotation * glm::angleAxis(glm::radians(-1.f), glm::vec3(0.f, 0.f, 1.f)));
-		// }
 	}
 
 	std::vector<scene::SceneObject> TextLabel::GetSceneObjects() {
+		// update transform
+		updateTransform();
 		return {fontRenderObject};
 	}
 
@@ -95,7 +87,6 @@ namespace OZZ::game::objects {
 			return;
 		}
 
-		builtText = "";
 		if ((text == builtText && bBuilt)) return;
 		fontRenderObject = {};
 		// create the texture
@@ -118,7 +109,6 @@ namespace OZZ::game::objects {
 			.Name = "textColor",
 			.Value = color,
 		});
-
 
 		// create the mesh
 		auto meshVertices = std::vector<Vertex>();
@@ -198,24 +188,10 @@ namespace OZZ::game::objects {
 	}
 
 	void TextLabel::updateTransform() {
-
-        fontRenderObject.Transform = parent ? parent->GetWorldTransform() * GetWorldTransform() : GetWorldTransform();
-		// const auto& position = GetPosition();
-		// const auto& scale = GetScale();
-		// const auto& rotation = GetRotation();
-		//
-		// const auto parentOffset = parent? parent->GetPosition() : glm::vec3{0.f};
-		// spdlog::info("|\t {} \t| parent: {} {} {}", text, parentOffset.x, parentOffset.y, parentOffset.z);
-		// // TODO:: ADD TRANSFORM TO THE GAMEOBJECT, FOLLOW PARENT CHAIN
-		// fontRenderObject.Transform = glm::translate(glm::mat4{1.f}, parentOffset + position + glm::vec3(getAnchorPosition(), 1));
-		// const auto parentRotation = parent? parent->GetRotation() : glm::quat{};
-		// fontRenderObject.Transform *= glm::mat4_cast(glm::normalize(parentRotation * rotation));
-		// const auto parentScale = parent? parent->GetScale() : glm::vec3{1.f};
-		// fontRenderObject.Transform = glm::scale(fontRenderObject.Transform, parentScale * scale);
-
-		builtPosition = GetPosition();
-		builtScale = GetScale();
-		builtRotation = GetRotation();
+		// offset the transform by the anchor position
+        fontRenderObject.Transform = GetWorldTransform();
+		const auto& anchorPosition = getAnchorPosition();
+		fontRenderObject.Transform = glm::translate(fontRenderObject.Transform, glm::vec3{anchorPosition.x, anchorPosition.y, 0.f});
 	}
 
 	void TextLabel::updateRectBounds() {

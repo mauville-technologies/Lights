@@ -52,6 +52,8 @@ namespace OZZ::game::objects {
 		void updateTextLabel() const;
 
 		void SetFocused(bool focused);
+		[[nodiscard]] bool GetFocused() const { return isFocused; }
+		bool TryClick(const glm::vec2& worldPos);
 
 	protected:
 		void onPositionChanged() override;

@@ -18,7 +18,6 @@ namespace OZZ::game::objects {
 			params.FontPath, params.FontSize, currentString, params.TextColor, params.TextAnchorPoint);
 
 		label.second->SetParent(this);
-
 		label.second->SetRectBounds({params.Size.x, params.Size.y});
 
 		// let's build a quad of the correct size
@@ -169,18 +168,28 @@ namespace OZZ::game::objects {
 		}
 	}
 
+	bool TextInput::TryClick(const glm::vec2& worldPos) {
+		const auto& inputPos = GetWorldPosition();
+		const auto& inputSize = params.Size;
+
+		// Check if click is within input bounds
+		if (worldPos.x >= inputPos.x - inputSize.x/2 && 
+			worldPos.x <= inputPos.x + inputSize.x/2 &&
+			worldPos.y >= inputPos.y - inputSize.y/2 && 
+			worldPos.y <= inputPos.y + inputSize.y/2) {
+;
+			// TODO: If we are focused, we should try and move the cursor to the clicked position
+			return true;
+		}
+		return false;
+	}
+
 	void TextInput::onPositionChanged() {
 		GameObject::onPositionChanged();
-		const auto &position = GetPosition();
-		const auto &scale = GetScale();
-		const auto &rotation = GetRotation();
-		// update the transform of the background box
-		auto transform = glm::mat4{1.f};
-		transform = glm::translate(transform, position);
-		transform *= glm::mat4_cast(rotation);
-		transform = glm::scale(transform, scale);
 
+		// update the transform of the background box
 		backgroundBox.Transform = GetWorldTransform();
+
 		if (label.second) {
 			auto textPosition = glm::vec3{0.f};
 			switch (params.TextAnchorPoint) {
@@ -204,12 +213,12 @@ namespace OZZ::game::objects {
 				case AnchorPoint::LeftTop:
 				case AnchorPoint::RightTop:
 				case AnchorPoint::CenterTop:
-					textPosition.y = -params.Size.y / 2;
+					textPosition.y = params.Size.y / 2;
 					break;
 				case AnchorPoint::LeftBottom:
 				case AnchorPoint::RightBottom:
 				case AnchorPoint::CenterBottom:
-					textPosition.y = params.Size.y / 2;
+					textPosition.y = -params.Size.y / 2;
 					break;
 				case AnchorPoint::LeftMiddle:
 				case AnchorPoint::RightMiddle:
@@ -217,9 +226,6 @@ namespace OZZ::game::objects {
 					break;
 			}
 
-			if (params.bIsPassword) {
-				textPosition.y -= label.second->GetCharacterSize().y / 2;
-			}
 			label.second->SetPosition(textPosition);
 		}
 	}

@@ -143,4 +143,23 @@ namespace OZZ::game::objects {
 
 		backgroundBox.Transform = GetWorldTransform();
 	}
+
+	bool Button::TryClick(const glm::vec2& worldPos) {
+		const auto& buttonPos = GetWorldPosition();
+		const auto& buttonSize = GetSize();
+		
+		// Check if click is within button bounds
+		if (worldPos.x >= buttonPos.x - buttonSize.x/2 && 
+			worldPos.x <= buttonPos.x + buttonSize.x/2 &&
+			worldPos.y >= buttonPos.y - buttonSize.y/2 && 
+			worldPos.y <= buttonPos.y + buttonSize.y/2) {
+			
+			// If we have a callback, trigger it
+			if (params.OnClick) {
+				params.OnClick();
+			}
+			return true;
+		}
+		return false;
+	}
 }

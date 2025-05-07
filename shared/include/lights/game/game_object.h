@@ -29,7 +29,29 @@ namespace OZZ {
         [[nodiscard]] glm::quat GetRotation() const { return rotation; }
         void SetRotation(const glm::quat& inRotation) { rotation = inRotation; updateTransform(); onRotationChanged(); }
 
-        [[nodiscard]] glm::mat4 GetWorldTransform() const { return transform; }
+        [[nodiscard]] glm::mat4 GetWorldTransform() const;
+
+        [[nodiscard]] glm::vec3 GetWorldPosition() const {
+            return glm::vec3(transform[3]);
+        }
+
+        [[nodiscard]] glm::vec3 GetWorldScale() const {
+            return glm::vec3(
+                glm::length(glm::vec3(transform[0])),
+                glm::length(glm::vec3(transform[1])),
+                glm::length(glm::vec3(transform[2]))
+            );
+        }
+
+        [[nodiscard]] glm::quat GetWorldRotation() const {
+            glm::vec3 scale = GetWorldScale();
+            glm::mat3 rotMat(
+                glm::vec3(transform[0]) / scale.x,
+                glm::vec3(transform[1]) / scale.y,
+                glm::vec3(transform[2]) / scale.z
+            );
+            return glm::quat_cast(rotMat);
+        }
 
         void SetParent(GameObject* inParent) { parent = inParent; onParentChanged(); }
         [[nodiscard]] OzzWorld2D* GetWorld() const { return physicsWorld.get(); }
