@@ -126,9 +126,9 @@ void MMOTitleScreen::Init() {
 	focusedBox = 0;
 
 	titleLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		fontPath, 64, "Lights", glm::vec3(1.f, 0.f, 0.f));
+		fontPath, 128, "Lights", glm::vec3(1.f, 0.f, 0.f));
 	titleLabel.second->SetPosition({0.f, 100, 0.f});
-	titleLabel.second->SetScale(glm::vec3{1.f, 1.f, 1.f});
+	titleLabel.second->SetScale(glm::vec3{1.5f, 1.5f, 1.f});
 
 	usernameLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
 		fontPath, 32, "Username", glm::vec3(1.f, 0.f, 0.f));

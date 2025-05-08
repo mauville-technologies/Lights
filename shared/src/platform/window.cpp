@@ -181,4 +181,41 @@ namespace OZZ {
     void *Window::GetWindowHandle() const {
         return window;
     }
+
+    void Window::SetFullscreen(bool bFullscreen) {
+        if (bFullscreen) {
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            
+            // Store the current window position and size before going fullscreen
+            int xpos, ypos, width, height;
+            glfwGetWindowPos(window, &xpos, &ypos);
+            glfwGetWindowSize(window, &width, &height);
+            
+            // Remove window decorations
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+            
+            // Set the window to cover the entire monitor
+            glfwSetWindowPos(window, 0, 0);
+            glfwSetWindowSize(window, mode->width, mode->height);
+        } else {
+            // Restore window decorations
+            glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+            
+            // Restore to windowed mode with the last known windowed size
+            glfwSetWindowMonitor(window, nullptr, 100, 100, 800, 600, 0);
+        }
+    }
+
+    void Window::SetWindowedSize(glm::ivec2 size) {
+        if (!glfwGetWindowMonitor(window)) {  // Only set size if we're in windowed mode
+            glfwSetWindowSize(window, size.x, size.y);
+            // Center the window on the screen
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            int xpos = (mode->width - size.x) / 2;
+            int ypos = (mode->height - size.y) / 2;
+            glfwSetWindowPos(window, xpos, ypos);
+        }
+    }
 } // OZZ

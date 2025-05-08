@@ -14,10 +14,22 @@
 #include "application_state.h"
 
 namespace OZZ::game {
+    enum class WindowMode {
+        Windowed,
+        BorderlessFullscreen
+    };
+
+    struct GameParameters {
+        float FPS{120.f};
+        WindowMode WindowMode{WindowMode::Windowed};
+        glm::ivec2 WindowSize{1280, 720};  // Only used in Windowed mode
+        // Add more parameters here as needed
+    };
+
     template<typename SceneType>
     class ClientGame {
     public:
-        ClientGame() = default;
+        explicit ClientGame(const GameParameters& InParams = {}) : params(InParams) {}
 
         ~ClientGame() {
             client->Stop();
@@ -42,8 +54,7 @@ namespace OZZ::game {
 
             auto lastTickTime = std::chrono::high_resolution_clock::now();
             auto lastRenderTime = std::chrono::high_resolution_clock::now();
-            const auto FPS = 120.f;
-            const auto renderRate = std::chrono::duration<float>(1.0f / FPS);
+            const auto renderRate = std::chrono::duration<float>(1.0f / params.FPS);
 
             while (bRunning) {
                 {
@@ -69,6 +80,14 @@ namespace OZZ::game {
     private:
         void initWindow() {
             window = std::make_shared<Window>();
+            
+            if (params.WindowMode == WindowMode::BorderlessFullscreen) {
+                window->SetFullscreen(true);
+            } else {
+                window->SetFullscreen(false);
+                window->SetWindowedSize(params.WindowSize);
+            }
+
             window->OnWindowClose = [this]() {
                 bRunning = false;
             };
@@ -176,6 +195,7 @@ namespace OZZ::game {
 
     private:
         bool bRunning{false};
+        GameParameters params;
 
         ApplicationState appState;
 

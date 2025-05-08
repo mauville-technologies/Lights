@@ -14,10 +14,13 @@ int main() {
     // Print library version
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
 
-
-
      // OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
-    OZZ::game::ClientGame<MMOScene> game {};
+    OZZ::game::ClientGame<MMOScene> game {OZZ::game::GameParameters{
+    	.FPS = 120.f,
+    	.WindowMode = OZZ::game::WindowMode::Windowed,
+        .WindowSize = {800, 900}
+    }};
+
     game.Run();
 
     return 0;

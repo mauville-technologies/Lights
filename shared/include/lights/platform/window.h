@@ -38,6 +38,9 @@ namespace OZZ {
         [[nodiscard]] const auto& GetKeyStates() const { return keyStates; }
         [[nodiscard]] const auto& GetControllerState() const { return controllerState; }
 
+        void SetFullscreen(bool bFullscreen);
+        void SetWindowedSize(glm::ivec2 size);
+
     private:
         void initWindow();
         void initControllers();
