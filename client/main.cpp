@@ -15,11 +15,9 @@ int main() {
     spdlog::info("Lights version: {}.{}", (int)VERSION_MAJOR, (int)VERSION_MINOR);
 
      // OZZ::game::ClientGame<OZZ::game::scene::PhysicsTestingScene> game {};
-    OZZ::game::ClientGame<MMOScene> game {OZZ::game::GameParameters{
-    	.FPS = 120.f,
-    	.WindowMode = OZZ::game::WindowMode::Windowed,
-        .WindowSize = {800, 900}
-    }};
+    std::filesystem::path configFilePath = std::filesystem::current_path() / "clientConfig.toml";
+    spdlog::info("Config file path: {}", configFilePath.string());
+    OZZ::game::ClientGame<MMOScene> game {configFilePath};
 
     game.Run();
 

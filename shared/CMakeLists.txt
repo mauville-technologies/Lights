@@ -10,7 +10,6 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
-
         src/game/2D/sprite.cpp
         src/game/game_object.cpp
         src/game/tiled_map.cpp

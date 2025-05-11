@@ -5,31 +5,58 @@
 #pragma once
 
 #include <memory>
+#include <toml.hpp>
+
 #include "lights/platform/window.h"
 #include "lights/rendering/renderer.h"
 #include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
 #include "lights/ui/user_interface.h"
+#include "lights/util/configuration.h"
 #include "network/client.h"
 #include "application_state.h"
 
 namespace OZZ::game {
-    enum class WindowMode {
+    enum class EWindowMode {
         Windowed,
         BorderlessFullscreen
     };
 
     struct GameParameters {
+        // Engine header
         float FPS{120.f};
-        WindowMode WindowMode{WindowMode::Windowed};
+
+        //  Window header
+        EWindowMode WindowMode{EWindowMode::Windowed};
         glm::ivec2 WindowSize{1280, 720};  // Only used in Windowed mode
         // Add more parameters here as needed
+
+        bool fromToml(toml::basic_value<toml::type_config> data) {
+            try {
+                FPS = static_cast<float>(data.at("Engine").at("FPS").as_floating());
+                WindowMode = static_cast<EWindowMode>(data.at("Window").at("Mode").as_integer());
+                WindowSize.x = static_cast<int>(data.at("Window").at("Size").at(0).as_integer());
+                WindowSize.y = static_cast<int>(data.at("Window").at("Size").at(1).as_integer());
+            } catch (...) {
+                return false;
+            }
+            return true;
+        }
+
+        [[nodiscard]] toml::basic_value<toml::type_config> toToml() const {
+            toml::basic_value<toml::type_config> value;
+            value["Engine"]["FPS"] = FPS;
+            value["Window"]["Mode"] = static_cast<int>(WindowMode);
+            value["Window"]["Size"] = std::vector<int>{WindowSize.x, WindowSize.y};
+            return value;
+        }
     };
 
     template<typename SceneType>
     class ClientGame {
     public:
-        explicit ClientGame(const GameParameters& InParams = {}) : params(InParams) {}
+        explicit ClientGame(const std::filesystem::path& configFilePath) : params(configFilePath) {
+        }
 
         ~ClientGame() {
             client->Stop();
@@ -54,7 +81,7 @@ namespace OZZ::game {
 
             auto lastTickTime = std::chrono::high_resolution_clock::now();
             auto lastRenderTime = std::chrono::high_resolution_clock::now();
-            const auto renderRate = std::chrono::duration<float>(1.0f / params.FPS);
+            const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
             while (bRunning) {
                 {
@@ -81,11 +108,11 @@ namespace OZZ::game {
         void initWindow() {
             window = std::make_shared<Window>();
             
-            if (params.WindowMode == WindowMode::BorderlessFullscreen) {
+            if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);
             } else {
                 window->SetFullscreen(false);
-                window->SetWindowedSize(params.WindowSize);
+                window->SetWindowedSize(params.Config.WindowSize);
             }
 
             window->OnWindowClose = [this]() {
@@ -195,7 +222,7 @@ namespace OZZ::game {
 
     private:
         bool bRunning{false};
-        GameParameters params;
+        OZZ::Configuration<GameParameters> params;
 
         ApplicationState appState;
 

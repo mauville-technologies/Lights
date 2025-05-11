@@ -7,6 +7,7 @@
 #include <stb_image_write.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
+#include <lights/util/configuration.h>
 
 namespace OZZ {
     std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>> Image::MergeImages(const std::vector<std::unique_ptr<Image>>& images) {
