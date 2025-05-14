@@ -7,7 +7,12 @@ set(BUILD_SHARED_LIBS FALSE)
 
 set (SOURCES
 )
-add_library(${PROJECT_NAME} INTERFACE)
+
+file(GLOB_RECURSE HEADERS
+   "include/*.h"
+)
+
+add_library(${PROJECT_NAME} INTERFACE ${HEADERS})
 
 target_include_directories(${PROJECT_NAME}
         INTERFACE

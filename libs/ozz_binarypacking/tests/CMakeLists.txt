@@ -16,6 +16,7 @@ enable_testing()
 
 set (SOURCES
         empty.cpp
+        integer_tests.cpp
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
 
