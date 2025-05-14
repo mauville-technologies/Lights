@@ -11,7 +11,7 @@
 #include <cstdint>
 
 namespace OZZ {
-    enum class EDeviceID : uint8_t {
+    enum class EDeviceID : int8_t {
         Unknown = -3,
         Mouse = -2,
         Keyboard = -1,

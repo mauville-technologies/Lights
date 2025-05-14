@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <glm\glm.hpp>
-
 inline glm::ivec2 CenteredMousePosition(glm::ivec2 pos, glm::ivec2 windowSize) {
   return glm::ivec2 {
       pos.x - windowSize.x / 2,

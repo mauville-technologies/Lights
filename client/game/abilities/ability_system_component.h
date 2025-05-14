@@ -10,10 +10,10 @@
 #include "ability.h"
 
 namespace OZZ::game::abilities {
-	using OnAbilityGranted = std::function<void(const std::string& AbilityName)>;
-	using OnAbilityRevoked = std::function<void(const std::string& AbilityName)>;
-	using OnAbilityActivated = std::function<void(const std::string& AbilityName)>;
-	using OnAbilityActivationFailed = std::function<void(const std::string& AbilityName, const std::string& Reason)>;
+	using OnAbilityGrantedFunction = std::function<void(const std::string& AbilityName)>;
+	using OnAbilityRevokedFunction = std::function<void(const std::string& AbilityName)>;
+	using OnAbilityActivatedFunction = std::function<void(const std::string& AbilityName)>;
+	using OnAbilityActivationFailedFunction = std::function<void(const std::string& AbilityName, const std::string& Reason)>;
 
 	class AbilitySystemComponent {
 	public:
@@ -39,10 +39,10 @@ namespace OZZ::game::abilities {
 		void Tick(float DeltaTime);
 
 	public:
-		OnAbilityGranted OnAbilityGranted;
-		OnAbilityRevoked OnAbilityRevoked;
-		OnAbilityActivated OnAbilityActivated;
-		OnAbilityActivationFailed OnAbilityActivationFailed;
+		OnAbilityGrantedFunction OnAbilityGranted;
+		OnAbilityRevokedFunction OnAbilityRevoked;
+		OnAbilityActivatedFunction OnAbilityActivated;
+		OnAbilityActivationFailedFunction OnAbilityActivationFailed;
 
 	private:
 		std::unordered_map<std::string, std::unique_ptr<Ability>> Abilities;

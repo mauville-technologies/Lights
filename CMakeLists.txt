@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.29)
 project(Lights)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(OZZ_OUTPUT_BASE_DIR ${CMAKE_SOURCE_DIR}/dist/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE})
 
 ## function for setting base directory

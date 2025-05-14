@@ -13,6 +13,14 @@ namespace OZZ::game::objects {
 	class TextLabel;
 }
 
+// concept focuseable
+// template <typename ...Args>
+// concept Focuseable = requires(Args... t) {
+// 	// { std::get<0>(std::forward_as_tuple(t...)).second->SetFocused(true) -> std::same_as<void> };
+// 	// { std::get<0>(std::forward_as_tuple(t...)).second->SetFocused(false) -> std::same_as<void> };
+// 	// { std::get<0>(std::forward_as_tuple(t...)).second->IsFocused() -> std::same_as<bool> };
+// };
+
 class MMOTitleScreen : public OZZ::scene::SceneLayer {
 public:
 	explicit MMOTitleScreen(OZZ::GameWorld* inWorld);
@@ -54,4 +62,3 @@ private:
 	int height { 1080 };
 	bool bShiftPressed { false };
 };
-

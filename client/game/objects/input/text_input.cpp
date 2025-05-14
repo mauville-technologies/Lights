@@ -10,7 +10,7 @@
 
 namespace OZZ::game::objects {
 	TextInput::TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld,
-	                     const TextInputParams &inParams)
+	                     const TextInputParams& inParams)
 		: GameObject(inGameWorld, std::move(inPhysicsWorld)), params(inParams) {
 		currentString = "";
 		// create a text label

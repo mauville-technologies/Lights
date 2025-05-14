@@ -40,6 +40,18 @@ namespace OZZ::game::objects {
 			AnchorPoint TextAnchorPoint {AnchorPoint::LeftMiddle};
 
 			bool bIsPassword {false};
+
+			TextInputParams() :
+				FontSize(32),
+				FontPath(""),
+				Size(200.f, 50.f),
+				BackgroundColor(0.2f, 0.2f, 0.2f, 1.f),
+				CursorColor(1.f, 1.f, 1.f),
+				TextColor(1.f, 1.f, 0.f),
+				FocusedColor(1.f, 0.f, 0.5f, 1.f),
+				FocusedThickness(5.f),
+				TextAnchorPoint(AnchorPoint::LeftMiddle),
+				bIsPassword(false) {}
 		};
 
         explicit TextInput(GameWorld *inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextInputParams &inParams = {});

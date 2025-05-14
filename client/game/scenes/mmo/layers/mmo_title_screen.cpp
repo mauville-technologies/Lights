@@ -202,9 +202,9 @@ void MMOTitleScreen::selectNextInputBox(int direction) {
 	}
 	focusedBox += direction;
 
-	// if we're at the end of the list plus one, no selection
 	if (direction > 0 && focusedBox > inputBoxes.size() - 1) {
 		focusedBox = 0;
+		loginButton.second->SetFocused(true);
 	} else {
 		if (focusedBox < 0) {
 			focusedBox = inputBoxes.size() - 1;

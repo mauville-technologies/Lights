@@ -37,9 +37,9 @@ namespace OZZ::scene {
 	}
 
 	SceneLayer * SceneLayerManager::GetLayer(const std::string &LayerName) {
-		for (const auto& [name, layer] : std::ranges::views::zip(LayerNames, Layers)) {
+		for (const auto& [index, name] : LayerNames | std::ranges::views::enumerate) {
 			if (name == LayerName) {
-				return layer.get();
+				return Layers[index].get();
 			}
 		}
 		return nullptr;
