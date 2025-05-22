@@ -22,8 +22,6 @@ set (SOURCES
 
         game/scenes/physics_testing/physics_testing_scene.cpp
         game/scenes/physics_testing/layers/physics_testing_layer.cpp
-
-        game/ui/debug_window.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

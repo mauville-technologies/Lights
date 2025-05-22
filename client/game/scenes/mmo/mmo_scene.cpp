@@ -8,8 +8,8 @@
 #include "layers/mmo_title_screen.h"
 #include "layers/mmo_game.h"
 
-void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput, std::shared_ptr<OZZ::UserInterface> inUI) {
-	Scene::Init(inInput, inUI);
+void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput) {
+	Scene::Init(inInput);
 	Params.ClearColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	auto* TitleScreen = layerManager->LoadLayer<MMOTitleScreen>("TitleScreen", GetWorld());

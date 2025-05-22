@@ -7,8 +7,8 @@
 #include "layers/physics_testing_layer.h"
 
 namespace OZZ::game::scene {
-    void PhysicsTestingScene::Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) {
-        Scene::Init(inInput, inUI);
+    void PhysicsTestingScene::Init(std::shared_ptr<InputSubsystem> inInput) {
+        Scene::Init(inInput);
 
         mainLayer = layerManager->LoadLayer<PhysicsTestingLayer>("MainLayer", GetWorld());
         mainLayer->SetInputSubsystem(inInput);

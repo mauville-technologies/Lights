@@ -11,7 +11,6 @@
 #include "lights/rendering/renderer.h"
 #include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
-#include "lights/ui/user_interface.h"
 #include "lights/util/configuration.h"
 #include "network/client.h"
 #include "application_state.h"
@@ -63,8 +62,6 @@ namespace OZZ::game {
             if (networkThread.joinable()) {
                 networkThread.join();
             }
-            ui->Shutdown();
-            ui.reset();
             scene.reset();
             window.reset();
         }
@@ -153,7 +150,7 @@ namespace OZZ::game {
 
         void initScene() {
             scene = std::make_unique<SceneType>();
-            scene->Init(input, ui);
+            scene->Init(input);
             scene->WindowResized(window->GetSize());
         }
 
@@ -162,8 +159,7 @@ namespace OZZ::game {
         }
 
         void initUI() {
-            ui = std::make_shared<UserInterface>();
-            ui->Init(window->GetWindowHandle());
+            //TODO: UI abstraction will probably exist at some point
         }
 
         void initNetwork() {
@@ -214,7 +210,6 @@ namespace OZZ::game {
 
         void drawScene(OZZ::scene::Scene *scene) {
             renderer->RenderScene(scene);
-            ui->Render();
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
             }
@@ -228,7 +223,6 @@ namespace OZZ::game {
 
         std::shared_ptr<Window> window { nullptr };
         std::shared_ptr<InputSubsystem> input { nullptr };
-        std::shared_ptr<UserInterface> ui { nullptr };
 
         std::unique_ptr<OZZ::scene::Scene> scene { nullptr };
         std::unique_ptr<Renderer> renderer { nullptr };

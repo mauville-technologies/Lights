@@ -12,7 +12,7 @@ namespace OZZ::game::scene {
 namespace OZZ::game::scene {
     class PhysicsTestingScene : public OZZ::scene::Scene {
     public:
-        void Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) override;
+        void Init(std::shared_ptr<InputSubsystem> inInput) override;
 
     private:
         PhysicsTestingLayer* mainLayer { nullptr };

@@ -10,7 +10,6 @@
 
 #include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
-#include <lights/ui/user_interface.h>
 #include <lights/scene/constants.h>
 #include <lights/scene/scene_layer.h>
 #include <lights/scene/scene_layer_manager.h>
@@ -34,8 +33,7 @@ namespace OZZ::scene {
         };
 
         // Should be called at the end of the derived class Init function
-        virtual void Init(std::shared_ptr<InputSubsystem> inInput, std::shared_ptr<UserInterface> inUI) {
-            ui = std::move(inUI);
+        virtual void Init(std::shared_ptr<InputSubsystem> inInput) {
             input = std::move(inInput);
             layerManager = std::make_unique<SceneLayerManager>();
 
@@ -88,7 +86,6 @@ namespace OZZ::scene {
 
     protected:
         std::unique_ptr<SceneLayerManager> layerManager;
-        std::shared_ptr<UserInterface> ui;
         std::shared_ptr<InputSubsystem> input;
 
     private:

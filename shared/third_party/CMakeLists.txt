@@ -65,6 +65,6 @@ add_subdirectory(imgui)
 add_subdirectory(tileson)
 
 add_library(third_party INTERFACE)
-target_link_libraries(third_party INTERFACE asio spdlog mongocxx_static asio spdlog mongocxx_static cryptopp glfw glad glm stb clay imgui tileson freetype toml11)
+target_link_libraries(third_party INTERFACE asio spdlog mongocxx_static asio spdlog mongocxx_static cryptopp glfw glad glm stb clay tileson freetype toml11)
 set_target_properties(third_party PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:third_party,INTERFACE_INCLUDE_DIRECTORIES>)
 target_compile_options(third_party INTERFACE "-w")

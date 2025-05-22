@@ -18,6 +18,7 @@ namespace OZZ::binary {
         Double = 0x09,
         String = 0x0A,
         Boolean = 0x0B,
+        Array = 0x0C,
         Packet = 0x0C,
     };
 }

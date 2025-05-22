@@ -37,6 +37,7 @@ add_subdirectory(shared)
 
 add_subdirectory(libs/ozz_binarypacking)
 add_subdirectory(libs/ozz_collision)
+add_subdirectory(libs/ozz_typegen)
 add_subdirectory(server)
 add_subdirectory(client)
 

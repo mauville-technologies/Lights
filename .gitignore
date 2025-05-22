@@ -2,3 +2,4 @@ cmake-build-*
 build/
 dist/
 .idea/
+.vs
