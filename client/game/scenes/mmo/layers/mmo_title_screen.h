@@ -13,17 +13,13 @@ namespace OZZ::game::objects {
 	class TextLabel;
 }
 
-// concept focuseable
-// template <typename ...Args>
-// concept Focuseable = requires(Args... t) {
-// 	// { std::get<0>(std::forward_as_tuple(t...)).second->SetFocused(true) -> std::same_as<void> };
-// 	// { std::get<0>(std::forward_as_tuple(t...)).second->SetFocused(false) -> std::same_as<void> };
-// 	// { std::get<0>(std::forward_as_tuple(t...)).second->IsFocused() -> std::same_as<bool> };
-// };
+namespace OZZ::lights::library::layers {
+	class UILayer;
+}
 
 class MMOTitleScreen : public OZZ::scene::SceneLayer {
 public:
-	explicit MMOTitleScreen(OZZ::GameWorld* inWorld);
+	explicit MMOTitleScreen(OZZ::GameWorld* inWorld, OZZ::lights::library::layers::UILayer* inUILayer);
 	~MMOTitleScreen() override = default;
 
 	void SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem>& inInput);
@@ -40,6 +36,8 @@ private:
 
 private:
 	std::filesystem::path fontPath { "assets/fonts/MineMouseRegular.ttf" };
+	OZZ::lights::library::layers::UILayer* uiLayer { nullptr };
+
 	std::unique_ptr<OZZ::FontLoader> fontLoader { nullptr };
 
 	// Keep the things under here

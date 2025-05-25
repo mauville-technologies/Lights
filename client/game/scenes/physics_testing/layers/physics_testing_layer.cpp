@@ -4,7 +4,7 @@
 
 #include "physics_testing_layer.h"
 
-#include <game/objects/player/player.h>
+#include <game/library/objects/player/player.h>
 
 #include "lights/game/game_object.h"
 

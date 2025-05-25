@@ -1,19 +1,21 @@
 project(Lights_Client)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 set (SOURCES
         main.cpp
         network/client.cpp
 
-        game/abilities/ability_system_component.cpp
-        game/abilities/ability/jump_ability.cpp
+        game/library/abilities/ability_system_component.cpp
+        game/library/abilities/ability/jump_ability.cpp
 
-        game/objects/input/button.cpp
-        game/objects/input/text_input.cpp
-        game/objects/player/player.cpp
-        game/objects/text/text_label.cpp
-        game/objects/tilemap.cpp
+        game/library/layers/ui_layer.cpp
+
+        game/library/objects/ui/input/button.cpp
+        game/library/objects/ui/input/text_input.cpp
+        game/library/objects/player/player.cpp
+        game/library/objects/ui/text/text_label.cpp
+        game/library/objects/tilemap.cpp
 
         game/scenes/mmo/mmo_scene.cpp
         game/scenes/mmo/layers/mmo_character_select.cpp

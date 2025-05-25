@@ -5,14 +5,14 @@
 #include "mmo_title_screen.h"
 
 #include <ranges>
-#include <game/objects/input/button.h>
-#include <game/objects/input/text_input.h>
+#include <game/library/layers/ui_layer.h>
+#include <game/library/objects/ui/input/button.h>
+#include <game/library/objects/ui/input/text_input.h>
+#include <game/library/objects/ui/text/text_label.h>
 #include <lights/rendering/shapes.h>
-#include <game/objects/text/text_label.h>
 #include <game/utils/mouse_utils.h>
 
-MMOTitleScreen::MMOTitleScreen(OZZ::GameWorld *inWorld) : gameWorld(inWorld) {
-}
+MMOTitleScreen::MMOTitleScreen(OZZ::GameWorld *inWorld, OZZ::lights::library::layers::UILayer* inUILayer) : gameWorld(inWorld), uiLayer(inUILayer) {}
 
 void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
 	input = inInput;
@@ -51,15 +51,15 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 		.Callbacks = {
 			.OnPressed = [this]() {
 				const auto mousePosition = CenteredMousePosition(input->GetMousePosition(), {width, height});
-				const auto worldPosition = ScreenToWorldPosition(input->GetMousePosition(), {width, height}, 
-					LayerCamera.ProjectionMatrix, LayerCamera.ViewMatrix);
-				spdlog::info("Mouse pressed at screen: ({}, {}), world: ({}, {})!", 
-					mousePosition.x, mousePosition.y, worldPosition.x, worldPosition.y);
-				
+				const auto worldPosition = ScreenToWorldPosition(input->GetMousePosition(), {width, height},
+				                                                 LayerCamera.ProjectionMatrix, LayerCamera.ViewMatrix);
+				spdlog::info("Mouse pressed at screen: ({}, {}), world: ({}, {})!",
+				             mousePosition.x, mousePosition.y, worldPosition.x, worldPosition.y);
+
 				// Try to click the login button
 				if (loginButton.second->TryClick(worldPosition)) {
 					// remove focus from all input boxes
-					for (auto& box : inputBoxes) {
+					for (auto &box: inputBoxes) {
 						box.second->SetFocused(false);
 						focusedBox = INT_MAX;
 					}
@@ -69,7 +69,7 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 				// Try to click any of the input boxes
 				// loop through input boxes, i need the value and the index
 				for (int i = 0; i < inputBoxes.size(); i++) {
-					auto& box = inputBoxes[i];
+					auto &box = inputBoxes[i];
 					if (box.second->TryClick(worldPosition)) {
 						if (!box.second->GetFocused()) {
 							if (focusedBox != INT_MAX) {
@@ -83,7 +83,7 @@ void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem
 				}
 
 				// unfocus all input boxes
-				for (auto& box : inputBoxes) {
+				for (auto &box: inputBoxes) {
 					box.second->SetFocused(false);
 					focusedBox = INT_MAX;
 				}
@@ -111,10 +111,10 @@ void MMOTitleScreen::Init() {
 	textInputParams.FocusedColor = {1.f, 0.2f, 1.f, 1.f};
 	textInputParams.FocusedThickness = glm::vec4{5.f};
 
-	inputBoxes.emplace_back(gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams));
-	inputBoxes.back().second->SetupInput(input.get());
-	inputBoxes.back().second->SetFocused(true);
-	inputBoxes.back().second->SetPosition({-0.f, -75.f, 0.f});
+	const auto UsernameBox = uiLayer->AddComponent<OZZ::game::objects::TextInput>("UsernameBox", textInputParams);
+	UsernameBox.second->SetupInput(input.get());
+	UsernameBox.second->SetFocused(true);
+	UsernameBox.second->SetPosition({-0.f, -75.f, 0.f});
 
 	textInputParams.bIsPassword = true;
 	textInputParams.FontSize = 24;
@@ -126,15 +126,30 @@ void MMOTitleScreen::Init() {
 	focusedBox = 0;
 
 	titleLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		fontPath, 128, "Lights", glm::vec3(1.f, 0.f, 0.f));
+		OZZ::game::objects::TextLabel::ParamsType{
+			.FontPath = fontPath,
+			.FontSize = 128,
+			.Text = "Lights",
+			.Color = {1.f, 0.f, 0.f}
+		});
 	titleLabel.second->SetPosition({0.f, 100, 0.f});
 	titleLabel.second->SetScale(glm::vec3{1.5f, 1.5f, 1.f});
 
 	usernameLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		fontPath, 32, "Username", glm::vec3(1.f, 0.f, 0.f));
+		OZZ::game::objects::TextLabel::ParamsType{
+			.FontPath = fontPath,
+			.FontSize = 32,
+			.Text = "Username",
+			.Color = {1.f, 0.f, 0.f}
+		});
 	usernameLabel.second->SetPosition({-220.f, -25.f, 0.f});
 	passwordLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		fontPath, 32, "Password", glm::vec3(1.f, 0.f, 0.f));
+		OZZ::game::objects::TextLabel::ParamsType{
+			.FontPath = fontPath,
+			.FontSize = 32,
+			.Text = "Password",
+			.Color = {1.f, 0.f, 0.f}
+		});
 	passwordLabel.second->SetPosition({-220.f, -125.f, 0.f});
 
 	// login button
@@ -189,9 +204,9 @@ std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
 		titleScreenObjects += val->GetSceneObjects();
 	}
 	titleScreenObjects += titleLabel.second->GetSceneObjects()
-		+ usernameLabel.second->GetSceneObjects()
-		+ passwordLabel.second->GetSceneObjects()
-		+ loginButton.second->GetSceneObjects();
+			+ usernameLabel.second->GetSceneObjects()
+			+ passwordLabel.second->GetSceneObjects()
+			+ loginButton.second->GetSceneObjects();
 	return titleScreenObjects;
 }
 

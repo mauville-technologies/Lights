@@ -4,6 +4,8 @@
 
 #include "mmo_scene.h"
 
+#include <game/library/layers/ui_layer.h>
+
 #include "layers/mmo_character_select.h"
 #include "layers/mmo_title_screen.h"
 #include "layers/mmo_game.h"
@@ -12,8 +14,14 @@ void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput) {
 	Scene::Init(inInput);
 	Params.ClearColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	auto* TitleScreen = layerManager->LoadLayer<MMOTitleScreen>("TitleScreen", GetWorld());
+	// load the UI layer
+	auto* ui = layerManager->LoadLayer<OZZ::lights::library::layers::UILayer>("UILayer", GetWorld());
+
+	auto* TitleScreen = layerManager->LoadLayer<MMOTitleScreen>("TitleScreen", GetWorld(), ui);
 	TitleScreen->SetInputSubsystem(inInput);
+
+	// we want the UI layer to always be on top
+	layerManager->SetLayerActive("UILayer", true);
 	layerManager->SetLayerActive("TitleScreen", true);
 	layerManager->LoadLayer<MMOCharacterSelect>("CharacterSelect");
 	layerManager->SetLayerActive("CharacterSelect", false);
