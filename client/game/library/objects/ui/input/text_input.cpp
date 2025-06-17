@@ -118,7 +118,7 @@ namespace OZZ::game::objects {
 		inputSubsystem->RegisterTextListener({
 			.Name = inputSID,
 			.Callback = [this](const char character) {
-				if (!isFocused) return;
+				if (!IsFocused()) return;
 				appendCharacter(character);
 			},
 		});
@@ -135,7 +135,7 @@ namespace OZZ::game::objects {
 			},
 			.Callbacks = {
 				.OnPressed = [this]() {
-					if (!isFocused) return;
+					if (!IsFocused()) return;
 					removeCharacter();
 				}
 			}
@@ -159,26 +159,10 @@ namespace OZZ::game::objects {
 		}
 	}
 
-	void TextInput::SetFocused(bool focused) {
-		isFocused = focused;
-
-		if (auto backgroundMaterial = backgroundBox.Mat) {
-			backgroundMaterial->AddUniformSetting({
-				.Name = "borderColor",
-				.Value = params.FocusedColor,
-			});
-			backgroundMaterial->AddUniformSetting({
-				.Name = "borderThickness",
-				.Value = focused ? params.FocusedThickness : glm::vec4{0},
-			});
-		}
-	}
-
-	bool TextInput::TryClick(const glm::vec2 &worldPos) {
+	bool TextInput::IsMouseOver(const glm::vec2 &worldPos) {
 		const auto &inputPos = GetWorldPosition();
 		const auto &inputSize = params.Size;
 
-		// Check if click is within input bounds
 		if (worldPos.x >= inputPos.x - inputSize.x / 2 &&
 		    worldPos.x <= inputPos.x + inputSize.x / 2 &&
 		    worldPos.y >= inputPos.y - inputSize.y / 2 &&
@@ -188,6 +172,22 @@ namespace OZZ::game::objects {
 			return true;
 		}
 		return false;
+	}
+
+	void TextInput::Clicked() {
+	}
+
+	void TextInput::onFocusChanged() {
+		if (auto backgroundMaterial = backgroundBox.Mat) {
+			backgroundMaterial->AddUniformSetting({
+				.Name = "borderColor",
+				.Value = params.FocusedColor,
+			});
+			backgroundMaterial->AddUniformSetting({
+				.Name = "borderThickness",
+				.Value = IsFocused() ? params.FocusedThickness : glm::vec4{0},
+			});
+		}
 	}
 
 	void TextInput::onPositionChanged() {

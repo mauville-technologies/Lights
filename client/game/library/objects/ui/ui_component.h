@@ -11,6 +11,27 @@ namespace OZZ::game::objects {
         UIComponent(GameWorld *inWorld, const std::shared_ptr<OzzWorld2D> &ozz_world_2d)
             : GameObject(inWorld, ozz_world_2d) {
         }
+
+        virtual bool IsMouseOver(const glm::vec2 &mousePosition) { return false; }
+        virtual void Clicked() {};
+		// virtual void SetupInput(InputSubsystem* inInputSubsystem);
+
+        void SetFocused(bool isFocused) {
+            if (focused == isFocused) {
+                return;
+            }
+            focused = isFocused;
+            onFocusChanged();
+        }
+
+        [[nodiscard]] bool IsFocused() const {
+            return focused;
+        }
+    protected:
+        virtual void onFocusChanged() {};
+
+    private:
+        bool focused { false };
     };
 }
 

@@ -32,7 +32,6 @@ public:
     std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
 private:
-	void selectNextInputBox(int direction);
 
 private:
 	std::filesystem::path fontPath { "assets/fonts/MineMouseRegular.ttf" };
@@ -42,21 +41,11 @@ private:
 
 	// Keep the things under here
 	OZZ::GameWorld* gameWorld;
-	std::pair<uint64_t, OZZ::game::objects::TextLabel*> titleScreenText { UINT64_MAX, nullptr };
-	std::pair<uint64_t, OZZ::game::objects::TextInput*> UsernameInputBox { UINT64_MAX, nullptr };
 
 	std::shared_ptr<OZZ::InputSubsystem> input;
 
-	std::vector<OZZ::GameObjectContainer<OZZ::game::objects::TextInput>> inputBoxes;
 	OZZ::GameObjectContainer<OZZ::game::objects::TextLabel> titleLabel;
-	OZZ::GameObjectContainer<OZZ::game::objects::TextLabel> usernameLabel;
-	OZZ::GameObjectContainer<OZZ::game::objects::TextLabel> passwordLabel;
 
-	// Login Button
-	OZZ::GameObjectContainer<OZZ::game::objects::Button> loginButton;
-
-	int focusedBox { INT_MAX };
 	int width { 1920 };
 	int height { 1080 };
-	bool bShiftPressed { false };
 };

@@ -61,11 +61,14 @@ namespace OZZ::game::objects {
         std::vector<scene::SceneObject> GetSceneObjects() override;
 
         void SetupInput(InputSubsystem* inInputSubsystem);
-        void SetFocused(bool focused);
         glm::vec2 GetSize() const { return params.Size; }
-        bool TryClick(const glm::vec2& worldPos);
+
+        bool IsMouseOver(const glm::vec2& worldPos) override;
+        void Clicked() override;
 
     protected:
+        void onFocusChanged() override;
+
         void onPositionChanged() override;
 
     private:
@@ -82,6 +85,5 @@ namespace OZZ::game::objects {
 
         scene::SceneObject backgroundBox {};
         scene::SceneObject cursor {};
-        bool isFocused { false };
     };
 }

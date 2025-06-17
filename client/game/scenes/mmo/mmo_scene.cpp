@@ -16,6 +16,7 @@ void MMOScene::Init(std::shared_ptr<OZZ::InputSubsystem> inInput) {
 
 	// load the UI layer
 	auto* ui = layerManager->LoadLayer<OZZ::lights::library::layers::UILayer>("UILayer", GetWorld());
+	ui->SetInputSubsystem(inInput);
 
 	auto* TitleScreen = layerManager->LoadLayer<MMOTitleScreen>("TitleScreen", GetWorld(), ui);
 	TitleScreen->SetInputSubsystem(inInput);

@@ -122,6 +122,28 @@ namespace OZZ::game::objects {
 		}
 	}
 
+	bool Button::IsMouseOver(const glm::vec2 &worldPos) {
+		const auto &buttonPos = GetWorldPosition();
+		const auto &buttonSize = GetSize();
+
+		// Check if click is within button bounds
+		if (worldPos.x >= buttonPos.x - buttonSize.x / 2 &&
+		    worldPos.x <= buttonPos.x + buttonSize.x / 2 &&
+		    worldPos.y >= buttonPos.y - buttonSize.y / 2 &&
+		    worldPos.y <= buttonPos.y + buttonSize.y / 2) {
+			return true;
+		}
+		return false;
+
+	}
+
+	void Button::Clicked() {
+		// If we have a callback, trigger it
+		if (params.OnClick) {
+			params.OnClick();
+		}
+	}
+
 	void Button::updateTextLabel() const {
 		label.second->SetText(currentString);
 	}
@@ -131,9 +153,13 @@ namespace OZZ::game::objects {
 		updateTextLabel();
 	}
 
-	void Button::SetFocused(const bool focused) {
-		isFocused = focused;
+	void Button::onPositionChanged() {
+		GameObject::onPositionChanged();
 
+		backgroundBox.Transform = GetWorldTransform();
+	}
+
+	void Button::onFocusChanged() {
 		if (const auto backgroundMaterial = backgroundBox.Mat) {
 			backgroundMaterial->AddUniformSetting({
 				.Name = "borderColor",
@@ -141,32 +167,9 @@ namespace OZZ::game::objects {
 			});
 			backgroundMaterial->AddUniformSetting({
 				.Name = "borderThickness",
-				.Value = focused ? params.FocusedThickness : glm::vec4{0},
+				.Value = IsFocused() ? params.FocusedThickness : glm::vec4{0},
 			});
 		}
 	}
 
-	void Button::onPositionChanged() {
-		GameObject::onPositionChanged();
-
-		backgroundBox.Transform = GetWorldTransform();
-	}
-
-	bool Button::TryClick(const glm::vec2 &worldPos) {
-		const auto &buttonPos = GetWorldPosition();
-		const auto &buttonSize = GetSize();
-
-		// Check if click is within button bounds
-		if (worldPos.x >= buttonPos.x - buttonSize.x / 2 &&
-		    worldPos.x <= buttonPos.x + buttonSize.x / 2 &&
-		    worldPos.y >= buttonPos.y - buttonSize.y / 2 &&
-		    worldPos.y <= buttonPos.y + buttonSize.y / 2) {
-			// If we have a callback, trigger it
-			if (params.OnClick) {
-				params.OnClick();
-			}
-			return true;
-		}
-		return false;
-	}
 }

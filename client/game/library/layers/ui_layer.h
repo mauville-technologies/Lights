@@ -11,12 +11,18 @@
 
 #include "game/library/objects/ui/ui_component.h"
 
+namespace OZZ {
+    class InputSubsystem;
+}
+
 namespace OZZ::lights::library::layers {
     class UILayer: public OZZ::scene::SceneLayer {
     public:
 
         explicit UILayer(GameWorld* inGameWorld) : SceneLayer(), gameWorld(inGameWorld) {};
         ~UILayer() override = default;
+
+        void SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem>& inInput);
 
         // Override the Init function to initialize the components
         void Init() override;
@@ -27,15 +33,21 @@ namespace OZZ::lights::library::layers {
 
         template <typename ComponentType>
         requires IsUIComponent<ComponentType>
-        OZZ::GameObjectContainer<ComponentType> AddComponent(const std::string& name, const typename ComponentType::ParamsType& inParams) {
+        OZZ::GameObjectContainer<ComponentType> AddComponent(const std::string& name, const typename ComponentType::ParamsType& inParams, bool bCanFocus = false) {
             RemoveComponent(name);
 
             auto newObject = gameWorld->CreateGameObject<ComponentType>(inParams);
             components[name] = {newObject.first, static_cast<game::objects::UIComponent*>(newObject.second)};
+
+            if (bCanFocus) {
+                if (std::ranges::find(focusOrder, name) == focusOrder.end()) {
+                    focusOrder.push_back(name);
+                }
+            }
+
             return newObject;
         }
 
-        // remove component
         void RemoveComponent(const std::string& name);
 
         template <typename ComponentType>
@@ -51,7 +63,9 @@ namespace OZZ::lights::library::layers {
         }
 
         void SetFocusOrder( const std::vector<std::string>& inFocusOrder);
+        void CycleFocus(bool bForward = true);
 
+        void Clear();
     private:
         void setFocus(const std::string& name);
         void setFocus(size_t index);
@@ -62,5 +76,10 @@ namespace OZZ::lights::library::layers {
 
         uint32_t currentFocusIndex { 0 };
         std::vector<std::string> focusOrder {};
+
+        int width { 1920 };
+        int height { 1080 };
+        bool bShiftPressed { false };
+        std::shared_ptr<OZZ::InputSubsystem> input { nullptr };
     };
 } // OZZ

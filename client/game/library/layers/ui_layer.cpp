@@ -5,9 +5,70 @@
 #include "ui_layer.h"
 
 #include <ranges>
+#include <game/utils/mouse_utils.h>
 #include <lights/scene/scene.h>
 
 namespace OZZ::lights::library::layers {
+    void UILayer::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
+        input = inInput;
+        // listen to TAB to switch input boxes
+        input->RegisterInputMapping(OZZ::InputMapping{
+            .Action = "SelectNextInputBox",
+            .Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::Tab}}}},
+            .Callbacks = {
+                .OnPressed = [this]() {
+                    CycleFocus(!bShiftPressed);
+                },
+            }
+        });
+
+        input->RegisterInputMapping(OZZ::InputMapping{
+            .Action = "PreviousInputBox",
+            .Chords = {
+                OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::LShift}}},
+                OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::RShift}}}
+            },
+            .Callbacks = {
+                .OnPressed = [this]() {
+                    bShiftPressed = true;
+                },
+                .OnReleased = [this]() {
+                    bShiftPressed = false;
+                }
+            }
+        });
+
+        // let's look for mouse input
+        input->RegisterInputMapping(OZZ::InputMapping{
+            .Action = "MouseInput",
+            .Chords = {OZZ::InputChord{.Keys = {{OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Left}}}},
+            .Callbacks = {
+                .OnPressed = [this]() {
+                    const auto mousePosition = CenteredMousePosition(input->GetMousePosition(), {width, height});
+                    const auto worldPosition = ScreenToWorldPosition(input->GetMousePosition(), {width, height},
+                                                                     LayerCamera.ProjectionMatrix,
+                                                                     LayerCamera.ViewMatrix);
+                    spdlog::info("Mouse pressed at screen: ({}, {}), world: ({}, {})!",
+                                 mousePosition.x, mousePosition.y, worldPosition.x, worldPosition.y);
+
+                    // check if any component is under the mouse
+                    std::string focusedComponentName;
+                    for (const auto &[name, component]: components) {
+                        if (component.second->IsMouseOver(mousePosition)) {
+                            component.second->Clicked();
+                            focusedComponentName = name;
+                        }
+                    }
+
+                    setFocus(focusedComponentName);
+                },
+                .OnReleased = [this]() {
+                    spdlog::info("Mouse released!");
+                }
+            }
+        });
+    }
+
     void UILayer::Init() {
         SceneLayer::Init();
 
@@ -29,8 +90,8 @@ namespace OZZ::lights::library::layers {
     }
 
     void UILayer::RenderTargetResized(glm::ivec2 size) {
-        const int width = size.x;
-        const int height = size.y;
+        width = size.x;
+        height = size.y;
 
         LayerCamera.ProjectionMatrix = glm::ortho(-width / 2.f, width / 2.f, -height / 2.f, height / 2.f, 0.001f,
                                                   1000.f);
@@ -44,7 +105,7 @@ namespace OZZ::lights::library::layers {
         return sceneObjects;
     }
 
-    void UILayer::RemoveComponent(const std::string &name)  {
+    void UILayer::RemoveComponent(const std::string &name) {
         if (components.contains(name)) {
             gameWorld->RemoveObject(components[name].first);
             components.erase(name);
@@ -67,24 +128,51 @@ namespace OZZ::lights::library::layers {
         }
     }
 
+    void UILayer::CycleFocus(bool bForward) {
+        if (focusOrder.empty()) {
+            spdlog::warn("Focus order is empty, cannot cycle focus.");
+            return;
+        }
 
-    void UILayer::setFocus(const std::string& name) {
+        auto nextIndex = currentFocusIndex;
+        if (bForward) {
+            nextIndex = (currentFocusIndex + 1) % focusOrder.size();
+        } else {
+            nextIndex = (currentFocusIndex == 0) ? focusOrder.size() - 1 : currentFocusIndex - 1;
+        }
+
+        setFocus(nextIndex);
+    }
+
+
+    void UILayer::setFocus(const std::string &name) {
         // find in focus order
+        spdlog::info("Setting focus to component with name: {}", name);
         auto it = std::ranges::find(focusOrder, name);
         if (it != focusOrder.end()) {
             const size_t index = std::distance(focusOrder.begin(), it);
             setFocus(index);
-
         } else {
-            spdlog::warn("Component with name {} does not exist in focus order.", name);
+            setFocus(std::numeric_limits<size_t>::max());
         }
     }
 
     void UILayer::setFocus(const size_t index) {
+        if (focusOrder.empty() || index == std::numeric_limits<size_t>::max()) {
+            currentFocusIndex = std::numeric_limits<size_t>::max();
+
+            // unfocus all components
+            for (const auto &[id, ptr]: components | std::views::values) {
+                ptr->SetFocused(false);
+            }
+            return;
+        }
+
         // remove focus from current component
         if (index != currentFocusIndex && currentFocusIndex < focusOrder.size()) {
             const auto &[id, ptr] = components[focusOrder[currentFocusIndex]];
             // TODO: call component focus method
+            ptr->SetFocused(false);
         }
 
         if (index >= focusOrder.size()) {
@@ -99,9 +187,10 @@ namespace OZZ::lights::library::layers {
         const auto &[id, ptr] = components[focusOrder[index]];
         //TODO: call component focus method
         currentFocusIndex = index;
+        ptr->SetFocused(true);
     }
 
-    void UILayer::removeFromFocusOrder(const std::string& name) {
+    void UILayer::removeFromFocusOrder(const std::string &name) {
         auto it = std::find(focusOrder.begin(), focusOrder.end(), name);
         if (it != focusOrder.end()) {
             size_t index = std::distance(focusOrder.begin(), it);

@@ -62,16 +62,15 @@ namespace OZZ::game::objects {
 
 		void SetupInput(InputSubsystem* inInputSubsystem);
 
-		void updateTextLabel() const;
-
-		void SetFocused(bool focused);
-		[[nodiscard]] bool GetFocused() const { return isFocused; }
-		bool TryClick(const glm::vec2& worldPos);
+		bool IsMouseOver(const glm::vec2 &worldPos) override;
+        void Clicked() override;
 
 	protected:
+		void onFocusChanged() override;
 		void onPositionChanged() override;
 
 	private:
+		void updateTextLabel() const;
 		void appendCharacter(char character);
 		void removeCharacter();
 
@@ -85,6 +84,5 @@ namespace OZZ::game::objects {
 
         scene::SceneObject backgroundBox {};
 		scene::SceneObject cursor {};
-		bool isFocused { false };
 	};
 }

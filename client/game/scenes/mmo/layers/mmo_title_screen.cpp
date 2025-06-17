@@ -16,83 +16,6 @@ MMOTitleScreen::MMOTitleScreen(OZZ::GameWorld *inWorld, OZZ::lights::library::la
 
 void MMOTitleScreen::SetInputSubsystem(const std::shared_ptr<OZZ::InputSubsystem> &inInput) {
 	input = inInput;
-
-	// listen to TAB to switch input boxes
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "SelectNextInputBox",
-		.Chords = {OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::Tab}}}},
-		.Callbacks = {
-			.OnPressed = [this]() {
-				selectNextInputBox(bShiftPressed ? -1 : 1);
-			},
-		}
-	});
-
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "PreviousInputBox",
-		.Chords = {
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::LShift}}},
-			OZZ::InputChord{.Keys = std::vector<OZZ::InputKey>{{OZZ::EDeviceID::Keyboard, OZZ::EKey::RShift}}}
-		},
-		.Callbacks = {
-			.OnPressed = [this]() {
-				bShiftPressed = true;
-			},
-			.OnReleased = [this]() {
-				bShiftPressed = false;
-			}
-		}
-	});
-
-	// let's look for mouse input
-	input->RegisterInputMapping(OZZ::InputMapping{
-		.Action = "MouseInput",
-		.Chords = {OZZ::InputChord{.Keys = {{OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Left}}}},
-		.Callbacks = {
-			.OnPressed = [this]() {
-				const auto mousePosition = CenteredMousePosition(input->GetMousePosition(), {width, height});
-				const auto worldPosition = ScreenToWorldPosition(input->GetMousePosition(), {width, height},
-				                                                 LayerCamera.ProjectionMatrix, LayerCamera.ViewMatrix);
-				spdlog::info("Mouse pressed at screen: ({}, {}), world: ({}, {})!",
-				             mousePosition.x, mousePosition.y, worldPosition.x, worldPosition.y);
-
-				// Try to click the login button
-				if (loginButton.second->TryClick(worldPosition)) {
-					// remove focus from all input boxes
-					for (auto &box: inputBoxes) {
-						box.second->SetFocused(false);
-						focusedBox = INT_MAX;
-					}
-					return;
-				}
-
-				// Try to click any of the input boxes
-				// loop through input boxes, i need the value and the index
-				for (int i = 0; i < inputBoxes.size(); i++) {
-					auto &box = inputBoxes[i];
-					if (box.second->TryClick(worldPosition)) {
-						if (!box.second->GetFocused()) {
-							if (focusedBox != INT_MAX) {
-								inputBoxes[focusedBox].second->SetFocused(false);
-							}
-							focusedBox = i;
-							box.second->SetFocused(true);
-						}
-						return;
-					}
-				}
-
-				// unfocus all input boxes
-				for (auto &box: inputBoxes) {
-					box.second->SetFocused(false);
-					focusedBox = INT_MAX;
-				}
-			},
-			.OnReleased = [this]() {
-				spdlog::info("Mouse released!");
-			}
-		}
-	});
 }
 
 void MMOTitleScreen::Init() {
@@ -111,7 +34,7 @@ void MMOTitleScreen::Init() {
 	textInputParams.FocusedColor = {1.f, 0.2f, 1.f, 1.f};
 	textInputParams.FocusedThickness = glm::vec4{5.f};
 
-	const auto UsernameBox = uiLayer->AddComponent<OZZ::game::objects::TextInput>("UsernameBox", textInputParams);
+	const auto UsernameBox = uiLayer->AddComponent<OZZ::game::objects::TextInput>("UsernameBox", textInputParams, true);
 	UsernameBox.second->SetupInput(input.get());
 	UsernameBox.second->SetFocused(true);
 	UsernameBox.second->SetPosition({-0.f, -75.f, 0.f});
@@ -119,38 +42,40 @@ void MMOTitleScreen::Init() {
 	textInputParams.bIsPassword = true;
 	textInputParams.FontSize = 24;
 	textInputParams.TextAnchorPoint = AnchorPoint::LeftMiddle;
-	inputBoxes.emplace_back(gameWorld->CreateGameObject<OZZ::game::objects::TextInput>(textInputParams));
-	inputBoxes.back().second->SetupInput(input.get());
-	inputBoxes.back().second->SetFocused(false);
-	inputBoxes.back().second->SetPosition({-0.f, -175.f, 0.f});
-	focusedBox = 0;
 
-	titleLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		OZZ::game::objects::TextLabel::ParamsType{
-			.FontPath = fontPath,
-			.FontSize = 128,
-			.Text = "Lights",
-			.Color = {1.f, 0.f, 0.f}
-		});
+	const auto PasswordBox = uiLayer->AddComponent<OZZ::game::objects::TextInput>("PasswordBox", textInputParams, true);
+	PasswordBox.second->SetupInput(input.get());
+	PasswordBox.second->SetFocused(false);
+	PasswordBox.second->SetPosition({-0.f, -175.f, 0.f});
+
+	titleLabel = uiLayer->AddComponent<OZZ::game::objects::TextLabel>("TitleLabel",
+        OZZ::game::objects::TextLabel::ParamsType{
+            .FontPath = fontPath,
+            .FontSize = 128,
+            .Text = "Lights",
+            .Color = {1.f, 0.f, 0.f}
+        });
+
 	titleLabel.second->SetPosition({0.f, 100, 0.f});
 	titleLabel.second->SetScale(glm::vec3{1.5f, 1.5f, 1.f});
 
-	usernameLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		OZZ::game::objects::TextLabel::ParamsType{
-			.FontPath = fontPath,
-			.FontSize = 32,
-			.Text = "Username",
-			.Color = {1.f, 0.f, 0.f}
-		});
-	usernameLabel.second->SetPosition({-220.f, -25.f, 0.f});
-	passwordLabel = gameWorld->CreateGameObject<OZZ::game::objects::TextLabel>(
-		OZZ::game::objects::TextLabel::ParamsType{
-			.FontPath = fontPath,
-			.FontSize = 32,
-			.Text = "Password",
-			.Color = {1.f, 0.f, 0.f}
-		});
-	passwordLabel.second->SetPosition({-220.f, -125.f, 0.f});
+	const auto UsernameLabel = uiLayer->AddComponent<OZZ::game::objects::TextLabel>("UsernameLabel",
+        OZZ::game::objects::TextLabel::ParamsType{
+            .FontPath = fontPath,
+            .FontSize = 32,
+            .Text = "Username",
+            .Color = {1.f, 0.f, 0.f}
+        });
+	UsernameLabel.second->SetPosition({-220.f, -25.f, 0.f});
+
+	const auto PasswordLabel = uiLayer->AddComponent<OZZ::game::objects::TextLabel>("PasswordLabel",
+        OZZ::game::objects::TextLabel::ParamsType{
+            .FontPath = fontPath,
+            .FontSize = 32,
+            .Text = "Password",
+            .Color = {1.f, 0.f, 0.f}
+        });
+	PasswordLabel.second->SetPosition({-220.f, -125.f, 0.f});
 
 	// login button
 	OZZ::game::objects::Button::ButtonParams buttonParams = {};
@@ -163,8 +88,8 @@ void MMOTitleScreen::Init() {
 		spdlog::info("Login button clicked!");
 	};
 
-	loginButton = gameWorld->CreateGameObject<OZZ::game::objects::Button>(buttonParams);
-	loginButton.second->SetPosition({-0.f, -325.f, 0.f});
+	const auto LoginButton = uiLayer->AddComponent<OZZ::game::objects::Button>("LoginButton", buttonParams, true);
+	LoginButton.second->SetPosition({-0.f, -325.f, 0.f});
 }
 
 void MMOTitleScreen::PhysicsTick(float DeltaTime) {
@@ -199,35 +124,5 @@ void MMOTitleScreen::RenderTargetResized(glm::ivec2 size) {
 }
 
 std::vector<OZZ::scene::SceneObject> MMOTitleScreen::GetSceneObjects() {
-	auto titleScreenObjects = std::vector<OZZ::scene::SceneObject>();
-	for (const auto val: inputBoxes | std::views::values) {
-		titleScreenObjects += val->GetSceneObjects();
-	}
-	titleScreenObjects += titleLabel.second->GetSceneObjects()
-			+ usernameLabel.second->GetSceneObjects()
-			+ passwordLabel.second->GetSceneObjects()
-			+ loginButton.second->GetSceneObjects();
-	return titleScreenObjects;
-}
-
-void MMOTitleScreen::selectNextInputBox(int direction) {
-	// delesect the current box
-	if (focusedBox < inputBoxes.size()) {
-		inputBoxes[focusedBox].second->SetFocused(false);
-	}
-	focusedBox += direction;
-
-	if (direction > 0 && focusedBox > inputBoxes.size() - 1) {
-		focusedBox = 0;
-		loginButton.second->SetFocused(true);
-	} else {
-		if (focusedBox < 0) {
-			focusedBox = inputBoxes.size() - 1;
-		}
-	}
-
-	spdlog::info("Selected box: {}", focusedBox);
-	if (focusedBox < inputBoxes.size()) {
-		inputBoxes[focusedBox].second->SetFocused(true);
-	}
+	return {};
 }
