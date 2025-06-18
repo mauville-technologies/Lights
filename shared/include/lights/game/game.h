@@ -98,7 +98,30 @@ namespace OZZ::game {
 
     private:
         void initWindow() {
-            window = std::make_shared<Window>();
+            OZZ::platform::WindowCallbacks callbacks {
+                .OnWindowClose = [this]() {
+                    bRunning = false;
+                },
+                .OnWindowResized = [this](glm::ivec2 size) {
+                    updateViewport(size);
+                    if (scene) {
+                        scene->WindowResized(size);
+                        drawScene(scene.get());
+                    }
+                },
+                .OnKeyPressed = [this](InputKey key, EKeyState state) {
+                    input->NotifyInputEvent({key, state});
+                },
+                .OnTextEvent = [this](unsigned int unicode) {
+                    // convert unicode to char
+                    char character = static_cast<char>(unicode);
+                    input->NotifyTextEvent(character);
+                },
+                .OnMouseMove = [this](const glm::vec2 pos) {
+                    input->NotifyMouseMove(pos);
+                }
+            };
+            window = std::make_shared<Window>(std::move(callbacks));
             
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);
@@ -106,31 +129,6 @@ namespace OZZ::game {
                 window->SetFullscreen(false);
                 window->SetWindowedSize(params.Config.WindowSize);
             }
-
-            window->OnWindowClose = [this]() {
-                bRunning = false;
-            };
-            window->OnWindowResized = [this](glm::ivec2 size) {
-                updateViewport(size);
-                if (scene) {
-                    scene->WindowResized(size);
-                    drawScene(scene.get());
-                }
-            };
-
-            window->OnKeyPressed = [this](InputKey key, EKeyState state) {
-                input->NotifyInputEvent({key, state});
-            };
-
-            window->OnTextEvent = [this](unsigned int unicode) {
-                // convert unicode to char
-                char character = static_cast<char>(unicode);
-                input->NotifyTextEvent(character);
-            };
-
-            window->OnMouseMove = [this](const glm::vec2 pos) {
-                input->NotifyMouseMove(pos);
-            };
         }
 
         void initGL() {
@@ -140,6 +138,7 @@ namespace OZZ::game {
         }
 
         void initInput() {
+
             input = std::make_shared<InputSubsystem>();
         }
 
