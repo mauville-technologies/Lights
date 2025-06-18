@@ -1,7 +1,15 @@
-add_executable(ozz_typegen main.cpp)
-#set_target_properties(ozz_typegen properties
-#    runtime_output_directory ${cmake_runtime_output_directory}/${project_name}
-#)
+
+set (SOURCES
+    main.cpp
+    generator.cpp
+)
+add_executable(ozz_typegen ${SOURCES})
+
+target_link_libraries(ozz_typegen
+    PRIVATE
+        ozz_binarypacking
+)
+
 # TODO: This is kind of dirty. I'm having a tough time trying to make these things work better
 if (COMMAND set_base_dir)
     set_base_dir(ozz_typegen)

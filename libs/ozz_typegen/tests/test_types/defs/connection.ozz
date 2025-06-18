@@ -1,0 +1,24 @@
+// I can put comments up here if I want to
+// I only support a single line comment
+// and not end of line comments
+
+
+struct LoginRequest {
+    string Username
+    string Password
+}
+
+enum ConnectionStatus {
+    Connected
+    Disconnected
+    Connecting
+    Error
+}
+
+struct ConnectionState {
+    ConnectionStatus Status
+    string ErrorMessage
+    string array Players
+}
+
+// Cool this is kind of working

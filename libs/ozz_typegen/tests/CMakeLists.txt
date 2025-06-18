@@ -33,7 +33,7 @@ add_dependencies(generate_sources ozz_typegen)
 # Exec stuff
 add_executable(ozz_typegen_tests example.cpp ${GENERATED_SOURCES})
 add_dependencies(ozz_typegen_tests generate_sources)
-target_link_libraries(ozz_typegen_tests gtest gtest_main)
+target_link_libraries(ozz_typegen_tests PRIVATE gtest gtest_main ozz_binarypacking)
 
 include(GoogleTest)
 gtest_discover_tests(ozz_typegen_tests)

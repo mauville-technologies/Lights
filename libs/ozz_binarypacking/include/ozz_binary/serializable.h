@@ -9,9 +9,6 @@
 
 namespace OZZ::binary {
     template <typename T>
-    concept BinaryArrayType = std::same_as<T, std::span<uint8_t>> ;
-
-    template <typename T>
     concept SerializableType  = requires (T v) {
         {v} -> std::convertible_to<std::span<uint8_t>>;
     };
