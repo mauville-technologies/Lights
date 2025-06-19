@@ -97,7 +97,6 @@ elseif(OZZ_WINDOWING_SYSTEM STREQUAL "SDL3")
             GIT_TAG release-3.2.16
     )
     FetchContent_MakeAvailable(SDL_Lib)
-    set(SDL_STATIC ON CACHE BOOL "Build SDL3 as a static library" FORCE)
     list(APPEND LIBS SDL3::SDL3)
     list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
 endif()

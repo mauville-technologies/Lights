@@ -7,19 +7,26 @@
 #ifdef OZZ_SDL3
 
 #include "lights/platform/platform_window.h"
+#include <SDL3/SDL.h>
 
 namespace OZZ::platform::SDL3 {
     class SDLWindow final : public IPlatformWindow {
     public:
         void CreateWindow(const std::string &title, int width, int height) override;
         void * GetProcAddress() override;
-        void InitInput(InputCallbacks &&callbacks) override;
+        void InitInput(WindowCallbacks &&inCallbacks) override;
         void Poll() override;
         void MakeContextCurrent() override;
         void Present() override;
         [[nodiscard]] glm::ivec2 GetSize() const override;
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
+
+    private:
+        SDL_Window* window { nullptr };
+        SDL_GLContext glContext { nullptr };
+
+        WindowCallbacks callbacks;
     };
 } // OZZ
 
