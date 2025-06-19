@@ -4,6 +4,8 @@
 
 #include "sdl_window.h"
 
+#include "sdl_keys.h"
+
 #ifdef OZZ_SDL3
 
 #include <spdlog/spdlog.h>
@@ -61,6 +63,37 @@ namespace OZZ::platform::SDL3 {
                 case SDL_EVENT_WINDOW_RESIZED: {
                     if (callbacks.OnWindowResized) {
                         callbacks.OnWindowResized({event.window.data1, event.window.data2});
+                    }
+                    break;
+                }
+                case SDL_EVENT_KEY_DOWN:
+                case SDL_EVENT_KEY_UP: {
+                    const sdl3::SDLKey sdlKey(event.key.key);
+                    const sdl3::SDLKeyState newKeyState(event.type);
+                    auto oldKeyState = keyStates[sdlKey];
+                    if (oldKeyState != newKeyState) {
+                        keyStates[sdlKey] = newKeyState;
+                        if (callbacks.OnKeyPressed) {
+                            callbacks.OnKeyPressed({EDeviceID::Keyboard, sdlKey}, newKeyState);
+                        }
+                    }
+                }
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                case SDL_EVENT_MOUSE_BUTTON_UP: {
+                    const sdl3::SDLMouseButton sdlMouseButton(event.button.button);
+                    const sdl3::SDLKeyState newMouseState(event.type);
+                    auto oldMouseState = keyStates[sdlMouseButton];
+                    if (oldMouseState != newMouseState) {
+                        keyStates[sdlMouseButton] = newMouseState;
+                        if (callbacks.OnKeyPressed) {
+                            callbacks.OnKeyPressed({EDeviceID::Mouse, sdlMouseButton}, newMouseState);
+                        }
+                    }
+                }
+                case SDL_EVENT_MOUSE_MOTION: {
+                    if (callbacks.OnMouseMove) {
+                        const auto mousePos = glm::vec2(event.motion.x, event.motion.y);
+                        callbacks.OnMouseMove(mousePos);
                     }
                     break;
                 }

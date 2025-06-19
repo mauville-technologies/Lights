@@ -18,6 +18,7 @@ set(SOURCES
         src/platform/GLFW/glfw_keys.cpp
         src/platform/GLFW/glfw_window.cpp
 
+        src/platform/SDL3/sdl_keys.cpp
         src/platform/SDL3/sdl_window.cpp
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp

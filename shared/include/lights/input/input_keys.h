@@ -169,7 +169,8 @@ namespace OZZ {
         Forward,
         Extra0,
         Extra1,
-        Extra2
+        Extra2,
+        ButtonCount
     };
 
     constexpr int operator+(const EKey &key) {
@@ -192,7 +193,7 @@ namespace OZZ {
         return static_cast<int>(deviceId);
     }
 
-    using KeyStateArrayType = std::array<float, +EKey::KeyCount>;
+    using KeyStateArrayType = std::array<int, +EKey::KeyCount>;
     using ControllerStateArrayType = std::array<float, +EControllerButton::ButtonCount>;
     using ControllerStateMap = std::unordered_map<EDeviceID, ControllerStateArrayType>;
 
