@@ -23,6 +23,7 @@ namespace OZZ::platform::glfw {
         [[nodiscard]] glm::ivec2 GetSize() const override;
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
+        void SetTextMode(bool bIsTextMode) override;
     private:
         void addController(int index);
         void removeController(int index);

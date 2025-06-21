@@ -132,13 +132,114 @@ namespace OZZ::platform::sdl3 {
         }
     }
 
+    SDLGamepadButton::SDLGamepadButton(SDL_GamepadButton sdlGamepadButton) {
+        switch (sdlGamepadButton) {
+            case SDL_GAMEPAD_BUTTON_SOUTH: {
+                button = EControllerButton::A;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_EAST: {
+                button = EControllerButton::B;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_WEST: {
+                button = EControllerButton::X;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_NORTH: {
+                button = EControllerButton::Y;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_BACK: {
+                button = EControllerButton::Back;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_GUIDE: {
+                button = EControllerButton::Guide;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_START: {
+                button = EControllerButton::Start;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_LEFT_STICK: {
+                button = EControllerButton::LeftStick;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_RIGHT_STICK: {
+                button = EControllerButton::RightStick;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: {
+                button = EControllerButton::LeftShoulder;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: {
+                button = EControllerButton::RightShoulder;
+                break;
+            }
+                // dpad buttons
+            case SDL_GAMEPAD_BUTTON_DPAD_UP: {
+                button = EControllerButton::DPadUp;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
+                button = EControllerButton::DPadDown;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_DPAD_LEFT: {
+                button = EControllerButton::DPadLeft;
+                break;
+            }
+            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: {
+                button = EControllerButton::DPadRight;
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    SDLGamepadButton::SDLGamepadButton(SDL_GamepadAxis sdlAxis) {
+        switch (sdlAxis) {
+            case SDL_GAMEPAD_AXIS_LEFTX: {
+                button = EControllerButton::LeftStickX;
+                break;
+            }
+            case SDL_GAMEPAD_AXIS_LEFTY: {
+                button = EControllerButton::LeftStickY;
+                break;
+            }
+            case SDL_GAMEPAD_AXIS_RIGHTX: {
+                button = EControllerButton::RightStickX;
+                break;
+            }
+            case SDL_GAMEPAD_AXIS_RIGHTY: {
+                button = EControllerButton::RightStickY;
+                break;
+            }
+            case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: {
+                button = EControllerButton::LeftTrigger;
+                break;
+            }
+            case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: {
+                button = EControllerButton::RightTrigger;
+                break;
+            }
+            default:
+                button = EControllerButton::ButtonCount; // Unknown axis
+        }
+    }
+
     SDLKeyState::SDLKeyState(int sdlKeyState) {
         switch (sdlKeyState) {
+            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
             case SDL_EVENT_KEY_DOWN: {
                 state = EKeyState::KeyPressed;
                 break;
             }
+            case SDL_EVENT_GAMEPAD_BUTTON_UP:
             case SDL_EVENT_MOUSE_BUTTON_UP:
             case SDL_EVENT_KEY_UP: {
                 state = EKeyState::KeyReleased;

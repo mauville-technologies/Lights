@@ -6,6 +6,7 @@
 
 #ifdef OZZ_SDL3
 #include <lights/input/input_keys.h>
+#include <SDL3/SDL_gamepad.h>
 
 namespace OZZ::platform::sdl3 {
     class SDLKey {
@@ -34,13 +35,27 @@ namespace OZZ::platform::sdl3 {
         EMouseButton button;
     };
 
+    class SDLGamepadButton {
+    private:
+        SDLGamepadButton() : button(EControllerButton::ButtonCount) {};
+    public:
+        SDLGamepadButton(SDL_GamepadButton sdlGamepadButton);
+        SDLGamepadButton(SDL_GamepadAxis sdlAxis);
+
+        operator EControllerButton() const { return button; }
+        operator int() const { return +button; }
+
+    private:
+        EControllerButton button;
+    };
+
     class SDLKeyState {
     public:
         SDLKeyState() : state(EKeyState::KeyReleased) {};
         explicit SDLKeyState(int sdlKeyState);
 
         operator EKeyState() const { return state; }
-        operator float() const {
+        operator int() const {
             switch (state) {
                 case EKeyState::KeyPressed:
                     return 1.f;

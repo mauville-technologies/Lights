@@ -21,12 +21,19 @@ namespace OZZ::platform::SDL3 {
         [[nodiscard]] glm::ivec2 GetSize() const override;
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
+        void SetTextMode(bool bIsTextMode) override;
 
+    private:
+        void addGamepad(int sdlIndex);
+        void clearGamepad(int sdlIndex);
     private:
         SDL_Window* window { nullptr };
         SDL_GLContext glContext { nullptr };
 
         WindowCallbacks callbacks;
+
+        std::unordered_map<EDeviceID, SDL_Gamepad*> gamepads {};
+        std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> gamepadIDs { -1 };
     };
 } // OZZ
 

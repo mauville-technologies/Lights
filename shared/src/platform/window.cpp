@@ -71,4 +71,10 @@ namespace OZZ {
     void Window::SetWindowedSize(glm::ivec2 size) {
         window->SetSize(size.x, size.y);
     }
+
+    void Window::SetTextMode(bool bIsTextMode) {
+        if (window) {
+            window->SetTextMode(bIsTextMode);
+        }
+    }
 } // OZZ

@@ -122,6 +122,9 @@ namespace OZZ::game {
                 }
             };
             window = std::make_shared<Window>(std::move(callbacks));
+            input->SetTextModeFunc ([this](bool bIsTextMode) {
+                window->SetTextMode(bIsTextMode);
+            });
             
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);

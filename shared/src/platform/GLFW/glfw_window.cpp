@@ -197,6 +197,9 @@ namespace OZZ::platform::glfw {
         }
     }
 
+    void GLFWWindow::SetTextMode(bool bIsTextMode) {
+    }
+
     void GLFWWindow::addController(int index) {
         spdlog::info("Controller {} connected", index);
         controllerState[static_cast<EDeviceID>(index)] = {};

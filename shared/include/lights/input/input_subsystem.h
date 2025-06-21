@@ -67,6 +67,8 @@ namespace OZZ {
         std::function<void(char)> Callback;
     };
 
+    using TextModeFunc = std::function<void(bool)>;
+
     class InputSubsystem {
     public:
         InputSubsystem();
@@ -85,6 +87,21 @@ namespace OZZ {
 
         void Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates);
 
+        void SetTextModeFunc(TextModeFunc&& InTextModeDelegate) {
+            TextModeDelegate = std::move(InTextModeDelegate);
+        }
+
+        void SetTextMode(const bool bIsTextMode) const {
+            if (TextModeDelegate) {
+                TextModeDelegate(bIsTextMode);
+            }
+        }
+
+        [[nodiscard]] const std::vector<InputMapping>& GetMappings() const { return mappings; }
+        [[nodiscard]] const std::vector<AxisMapping>& GetAxisMappings() const { return axisMappings; }
+        [[nodiscard]] const std::vector<TextListenerMapping>& GetTextMappings() const { return textMappings; }
+
+        [[nodiscard]] EKeyState GetKeyState(const InputKey& Key) const;
         [[nodiscard]] float GetAxisValue(const std::string& Action) const;
         [[nodiscard]] const glm::vec2& GetMousePosition() const;
 
@@ -94,8 +111,9 @@ namespace OZZ {
         void Initialize();
         void Shutdown();
 
-
     private:
+        TextModeFunc TextModeDelegate;
+
         std::vector<AxisMapping> axisMappings {};
         std::vector<InputMapping> mappings {};
         std::vector<TextListenerMapping> textMappings {};

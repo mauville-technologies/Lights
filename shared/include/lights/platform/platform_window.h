@@ -42,11 +42,16 @@ namespace OZZ::platform {
         [[nodiscard]] virtual glm::ivec2 GetSize() const = 0;
         virtual void SetSize(int width, int height) = 0;
         virtual void SetFullscreen(bool fullscreen) = 0;
+        virtual void SetTextMode(bool bIsTextMode) = 0;
+
         [[nodiscard]] const auto& GetKeyStates() const { return keyStates; }
         [[nodiscard]] const auto& GetControllerState() const { return controllerState; }
+        [[nodiscard]] const auto& GetMouseButtonStates() const { return mouseButtonStates; }
+
 
     protected:
         KeyStateArrayType keyStates {};
+        MouseButtonStateArrayType mouseButtonStates {};
         ControllerStateMap controllerState;
     };
 }

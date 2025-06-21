@@ -29,6 +29,7 @@ namespace OZZ {
 
         void SetFullscreen(bool bFullscreen);
         void SetWindowedSize(glm::ivec2 size);
+        void SetTextMode(bool bIsTextMode);
 
     private:
         void initWindow(platform::WindowCallbacks&& inCallbacks);

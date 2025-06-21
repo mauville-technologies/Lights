@@ -24,6 +24,7 @@ namespace OZZ {
         GamePad6,
         GamePad7,
         GamePad8,
+        NumberOfGamePads = 9,
     };
     enum class EKeyState : uint8_t {
         KeyReleased,
@@ -194,6 +195,7 @@ namespace OZZ {
     }
 
     using KeyStateArrayType = std::array<int, +EKey::KeyCount>;
+    using MouseButtonStateArrayType = std::array<int, +EMouseButton::ButtonCount>;
     using ControllerStateArrayType = std::array<float, +EControllerButton::ButtonCount>;
     using ControllerStateMap = std::unordered_map<EDeviceID, ControllerStateArrayType>;
 
