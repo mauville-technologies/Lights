@@ -15,7 +15,11 @@ set(SOURCES
         src/game/tiled_map.cpp
         src/game/game_world.cpp
 
-        src/input/glfw_keys.cpp
+        src/platform/GLFW/glfw_keys.cpp
+        src/platform/GLFW/glfw_window.cpp
+
+        src/platform/SDL3/sdl_keys.cpp
+        src/platform/SDL3/sdl_window.cpp
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
 
@@ -43,6 +47,11 @@ if (DEFINED set_base_dir)
 endif ()
 
 
-target_include_directories(${PROJECT_NAME} PUBLIC include ${Tileson_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            include ${Tileson_INCLUDE_DIR}
+        PRIVATE
+            src
+)
 target_link_libraries(Lights_Shared_Lib PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
 

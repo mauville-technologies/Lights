@@ -188,6 +188,12 @@ namespace OZZ::game::objects {
 				.Value = IsFocused() ? params.FocusedThickness : glm::vec4{0},
 			});
 		}
+
+		if (IsFocused()) {
+			inputSubsystem->SetTextMode(true);
+		} else {
+			inputSubsystem->SetTextMode(false);
+		}
 	}
 
 	void TextInput::onPositionChanged() {

@@ -83,6 +83,8 @@ namespace OZZ::game::objects {
 				{{EDeviceID::Keyboard, EKey::Right}, 1.f},
 				{{EDeviceID::Keyboard, EKey::A}, -1.f},
 				{{EDeviceID::Keyboard, EKey::D}, 1.f},
+				{{EDeviceID::GamePad0, EControllerButton::DPadLeft}, -1.f},
+				{{EDeviceID::GamePad0, EControllerButton::DPadRight}, 1.f},
 				{{EDeviceID::GamePad0, EControllerButton::LeftStickX}, 1.f},
 			},
 		});

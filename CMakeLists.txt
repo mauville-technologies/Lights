@@ -8,7 +8,6 @@ function(set_base_dir target)
     message(STATUS "Setting base directory for ${target} to ${OZZ_OUTPUT_BASE_DIR}/${target}")
     set_target_properties(${target} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
-            LIBRARY_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
             ARCHIVE_OUTPUT_DIRECTORY ${OZZ_OUTPUT_BASE_DIR}/${target}
     )
 endfunction()

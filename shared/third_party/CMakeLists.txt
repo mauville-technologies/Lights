@@ -2,6 +2,8 @@ include(FetchContent)
 
 set(GLFW_BUILD_WAYLAND FALSE)
 
+set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: GLFW, SDL3")
+
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -28,17 +30,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cryptopp_cmake)
 
 FetchContent_Declare(
-    glfwlib
-    GIT_REPOSITORY git@github.com:glfw/glfw.git
-    GIT_TAG 3.4
-)
-
-FetchContent_MakeAvailable(glfwlib)
-
-FetchContent_Declare(
-    glmlib
-    GIT_REPOSITORY git@github.com:g-truc/glm.git
-    GIT_TAG 1.0.1
+        glmlib
+        GIT_REPOSITORY git@github.com:g-truc/glm.git
+        GIT_TAG 1.0.1
 )
 
 FetchContent_MakeAvailable(glmlib)
@@ -57,6 +51,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(toml11_lib)
 
+
 add_subdirectory(asio)
 add_subdirectory(glad)
 add_subdirectory(clay)
@@ -65,6 +60,48 @@ add_subdirectory(imgui)
 add_subdirectory(tileson)
 
 add_library(third_party INTERFACE)
-target_link_libraries(third_party INTERFACE asio spdlog mongocxx_static asio spdlog mongocxx_static cryptopp glfw glad glm stb clay tileson freetype toml11)
+
+set (LIBS
+    asio
+    spdlog
+    mongocxx_static
+    cryptopp
+    glad
+    glm
+    stb
+    clay
+    tileson
+    freetype
+    toml11
+)
+
+set (THIRD_PARTY_COMPILE_DEFS "")
+# if window system is GLFW, add glfw
+if(OZZ_WINDOWING_SYSTEM STREQUAL "GLFW")
+    FetchContent_Declare(
+            glfwlib
+            GIT_REPOSITORY git@github.com:glfw/glfw.git
+            GIT_TAG 3.4
+    )
+
+    FetchContent_MakeAvailable(glfwlib)
+    list(APPEND LIBS glfw)
+    list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_GLFW)
+
+elseif(OZZ_WINDOWING_SYSTEM STREQUAL "SDL3")
+    # not implemented error
+#    message(FATAL_ERROR "SDL3 windowing system is not implemented yet.")
+    FetchContent_Declare(
+            SDL_Lib
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+            GIT_TAG release-3.2.16
+    )
+    FetchContent_MakeAvailable(SDL_Lib)
+    list(APPEND LIBS SDL3::SDL3)
+    list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
+endif()
+
+target_link_libraries(third_party INTERFACE ${LIBS})
 set_target_properties(third_party PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:third_party,INTERFACE_INCLUDE_DIRECTORIES>)
 target_compile_options(third_party INTERFACE "-w")
+target_compile_definitions(third_party INTERFACE ${THIRD_PARTY_COMPILE_DEFS})
