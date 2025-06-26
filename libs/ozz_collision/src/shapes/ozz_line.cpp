@@ -13,9 +13,9 @@ namespace OZZ::collision::shapes {
 
     OzzCollisionResult OzzLine::IsColliding(const OzzPoint &other) const {
         // get length of the line
-        const float lineLength = glm::length(End - Start);
+        const float lineLength = glm::length(End - Position);
         // get the distance from the start of the line to the point
-        const float startDistance = glm::length(other.Position - Start);
+        const float startDistance = glm::length(other.Position - Position);
         // get the distance from the end of the line to the point
         const float endDistance = glm::length(other.Position - End);
 
@@ -38,7 +38,7 @@ namespace OZZ::collision::shapes {
 
     OzzCollisionResult OzzLine::IsColliding(const OzzCircle &other) const {
         // are either of the endpoints of the line inside the circle?
-        if (const auto endPointInside = other.IsColliding(OzzPoint{.Position = Start}); endPointInside.bCollided) {
+        if (const auto endPointInside = other.IsColliding(OzzPoint{.Position = Position}); endPointInside.bCollided) {
             return endPointInside;
         }
         if (const auto startPointInside = other.IsColliding(OzzPoint{.Position = End}); startPointInside.bCollided) {
@@ -46,10 +46,10 @@ namespace OZZ::collision::shapes {
         }
 
         // Get closest point on the line to the circle center
-        const glm::vec2 lineVector = End - Start;
-        const glm::vec2 lineToCircle = other.Position - Start;
+        const glm::vec2 lineVector = End - Position;
+        const glm::vec2 lineToCircle = other.Position - Position;
         const float dot = glm::dot(lineToCircle, lineVector) / glm::dot(lineVector, lineVector);
-        const auto closest = Start + (dot * lineVector);
+        const auto closest = Position + (dot * lineVector);
 
         const auto bIsOnLine = IsColliding(OzzPoint{.Position = closest});
         if (!bIsOnLine.bCollided) {

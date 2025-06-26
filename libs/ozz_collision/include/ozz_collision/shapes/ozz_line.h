@@ -12,7 +12,7 @@ namespace OZZ::collision::shapes {
     struct OzzPoint;
 
     struct OzzLine {
-        glm::vec2 Start;
+        glm::vec2 Position;
         glm::vec2 End;
 
         //Line on Line
