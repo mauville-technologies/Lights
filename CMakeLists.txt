@@ -33,11 +33,8 @@ endif()
 
 # The shared library is built first as it exposes functionality and third party libs to be used by other things
 add_subdirectory(shared)
-
 add_subdirectory(libs/ozz_binarypacking)
 add_subdirectory(libs/ozz_collision)
 add_subdirectory(libs/ozz_typegen)
-add_subdirectory(server)
-add_subdirectory(client)
 
 add_subdirectory(cli_tool)

@@ -7,6 +7,7 @@
 #include <ozz_collision/shapes/ozz_circle.h>
 #include <ozz_collision/shapes/ozz_rectangle.h>
 #include <ozz_collision/shapes/ozz_point.h>
+#include <ozz_collision/shapes/ozz_line.h>
 
 
 namespace OZZ::collision::shapes {
@@ -17,8 +18,9 @@ namespace OZZ::collision::shapes {
         Point,
         Rectangle,
         Circle,
+        Line
     };
 
-    using OzzShapeData = std::variant<OzzPoint, OzzRectangle, OzzCircle>;
+    using OzzShapeData = std::variant<OzzPoint, OzzRectangle, OzzCircle, OzzLine>;
 
 }

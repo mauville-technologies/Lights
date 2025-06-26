@@ -1,4 +1,4 @@
-project(Lights_Shared_Lib)
+project(lights_engine)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -39,7 +39,7 @@ set(SOURCES
         src/util/image.cpp
 )
 
-add_library(Lights_Shared_Lib STATIC ${SOURCES})
+add_library(lights_engine STATIC ${SOURCES})
 
 # if set_base_dir(target) is defined, call it
 if (DEFINED set_base_dir)
@@ -53,5 +53,5 @@ target_include_directories(${PROJECT_NAME}
         PRIVATE
             src
 )
-target_link_libraries(Lights_Shared_Lib PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
+target_link_libraries(lights_engine PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
 

@@ -9,6 +9,7 @@
 namespace OZZ::collision::shapes {
     struct OzzCircle;
     struct OzzRectangle;
+    struct OzzLine;
 
     struct OzzPoint {
         glm::vec2 Position;
@@ -24,5 +25,8 @@ namespace OZZ::collision::shapes {
 
         // Point on Rectangle
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzRectangle &other) const;
+
+        // Point on Line
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine &other) const;
     };
 }
