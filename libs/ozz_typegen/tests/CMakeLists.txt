@@ -38,5 +38,5 @@ target_link_libraries(ozz_typegen_tests PRIVATE gtest gtest_main ozz_binarypacki
 include(GoogleTest)
 gtest_discover_tests(ozz_typegen_tests)
 if (COMMAND set_base_dir)
-    set_base_dir(ozz_typegen_tests)
+    set_base_dir(ozz_typegen_tests ${CMAKE_SOURCE_DIR})
 endif()

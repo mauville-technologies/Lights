@@ -9,6 +9,7 @@
 namespace OZZ::collision::shapes {
     struct OzzCircle;
     struct OzzPoint;
+    struct OzzLine;
 
     struct OzzRectangle {
         struct Extents {
@@ -33,6 +34,9 @@ namespace OZZ::collision::shapes {
 
         // Rectangle on Rectangle
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzRectangle &other) const;
+
+        // Rectange on Line
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine &other) const;
 
         [[nodiscard]] Extents GetExtents() const;
     };

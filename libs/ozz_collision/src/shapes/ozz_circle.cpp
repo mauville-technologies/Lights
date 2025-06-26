@@ -3,6 +3,8 @@
 //
 
 #include "ozz_collision/shapes/ozz_circle.h"
+
+#include "ozz_collision/shapes/ozz_line.h"
 #include "ozz_collision/shapes/ozz_point.h"
 #include "ozz_collision/shapes/ozz_rectangle.h"
 
@@ -47,5 +49,9 @@ namespace OZZ::collision::shapes {
             };
         }
         return OzzCollisionResult::NoCollision();
+    }
+
+    OzzCollisionResult OzzCircle::IsColliding(const OzzLine &other) const {
+        return other.IsColliding(*this);
     }
 }
