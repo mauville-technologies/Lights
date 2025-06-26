@@ -12,7 +12,7 @@ target_link_libraries(ozz_typegen
 
 # TODO: This is kind of dirty. I'm having a tough time trying to make these things work better
 if (COMMAND set_base_dir)
-    set_base_dir(ozz_typegen)
+    set_base_dir(ozz_typegen ${CMAKE_SOURCE_DIR})
 endif()
 
 function(generate_ozz_source INPUT_FILE OUTPUT_FILE)

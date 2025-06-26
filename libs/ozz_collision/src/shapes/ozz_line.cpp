@@ -9,6 +9,7 @@
 
 namespace OZZ::collision::shapes {
     OzzCollisionResult OzzLine::IsColliding(const OzzLine &other) const {
+        return OzzCollisionResult::NoCollision();
     }
 
     OzzCollisionResult OzzLine::IsColliding(const OzzPoint &other) const {
@@ -22,6 +23,7 @@ namespace OZZ::collision::shapes {
         // if the sum of the distances is less than or equal to the length of the line, then the point is on the line
         // TODO: We might want to use an adjustable tolerance here
         constexpr float tolerance = 0.001f;
+        const auto lineVector = End - Position;
         if (startDistance + endDistance <= lineLength + tolerance && startDistance + endDistance >= lineLength - tolerance) {
             // calculate the normal of the line
             // TODO: This is a simple normal, but it might not be the best for all cases
@@ -34,6 +36,7 @@ namespace OZZ::collision::shapes {
                 .CollisionNormal = lineNormal
             };
         }
+        return OzzCollisionResult::NoCollision();
     }
 
     OzzCollisionResult OzzLine::IsColliding(const OzzCircle &other) const {
@@ -62,5 +65,6 @@ namespace OZZ::collision::shapes {
     }
 
     OzzCollisionResult OzzLine::IsColliding(const OzzRectangle &other) const {
+        return OzzCollisionResult::NoCollision();
     }
 }
