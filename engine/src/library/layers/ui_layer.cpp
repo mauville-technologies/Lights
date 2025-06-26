@@ -5,7 +5,7 @@
 #include "lights/library/layers/ui_layer.h"
 
 #include <ranges>
-#include <game/utils/mouse_utils.h>
+#include <lights/util/mouse_utils.h>
 #include <lights/scene/scene.h>
 
 namespace OZZ::lights::library::layers {

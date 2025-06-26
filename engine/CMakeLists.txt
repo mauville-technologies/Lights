@@ -15,15 +15,20 @@ set(SOURCES
         src/game/tiled_map.cpp
         src/game/game_world.cpp
 
-        src/platform/GLFW/glfw_keys.cpp
-        src/platform/GLFW/glfw_window.cpp
-
-        src/platform/SDL3/sdl_keys.cpp
-        src/platform/SDL3/sdl_window.cpp
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
 
+        src/library/layers/ui_layer.cpp
+        src/library/objects/tilemap.cpp
+        src/library/objects/ui/input/button.cpp
+        src/library/objects/ui/input/text_input.cpp
+        src/library/objects/ui/text/text_label.cpp
+
         src/platform/window.cpp
+        src/platform/GLFW/glfw_keys.cpp
+        src/platform/GLFW/glfw_window.cpp
+        src/platform/SDL3/sdl_keys.cpp
+        src/platform/SDL3/sdl_window.cpp
 
         src/rendering/buffer.cpp
         src/rendering/material.cpp
