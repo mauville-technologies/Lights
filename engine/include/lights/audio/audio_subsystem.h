@@ -10,18 +10,20 @@
 
 #include "RtAudio.h"
 
-namespace OZZ::lights::audio
-{
-    enum class EAudioDeviceType {
-        Unknown,
-        Input,
-        Output,
-    };
-
+namespace OZZ::lights::audio {
     struct AudioDevice {
         std::string Name;
-        EAudioDeviceType Type;
-        std::string ID;
+        uint32_t ID;
+        uint8_t InputChannels{0};
+        uint8_t OutputChannels{0};
+
+        [[nodiscard]] bool CanInput() const {
+            return InputChannels > 0;
+        }
+
+        [[nodiscard]] bool CanOutput() const {
+            return OutputChannels > 0;
+        }
     };
 
     class AudioSubsystem {
@@ -33,7 +35,7 @@ namespace OZZ::lights::audio
         void detectAudioDevices();
 
     private:
-        std::unique_ptr<RtAudio> rtAudio {nullptr};
+        std::unique_ptr<RtAudio> rtAudio{nullptr};
         std::vector<AudioDevice> audioDevices;
     };
 }
