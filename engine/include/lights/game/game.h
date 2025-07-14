@@ -7,6 +7,7 @@
 #include <memory>
 #include <toml.hpp>
 
+#include "lights/audio/audio_subsystem.h"
 #include "lights/platform/window.h"
 #include "lights/rendering/renderer.h"
 #include "lights/input/input_subsystem.h"
@@ -26,7 +27,7 @@ namespace OZZ::game {
 
         //  Window header
         EWindowMode WindowMode{EWindowMode::Windowed};
-        glm::ivec2 WindowSize{1280, 720};  // Only used in Windowed mode
+        glm::ivec2 WindowSize{1280, 720}; // Only used in Windowed mode
         // Add more parameters here as needed
 
         bool fromToml(toml::basic_value<toml::type_config> data) {
@@ -35,7 +36,8 @@ namespace OZZ::game {
                 WindowMode = static_cast<EWindowMode>(data.at("Window").at("Mode").as_integer());
                 WindowSize.x = static_cast<int>(data.at("Window").at("Size").at(0).as_integer());
                 WindowSize.y = static_cast<int>(data.at("Window").at("Size").at(1).as_integer());
-            } catch (...) {
+            }
+            catch (...) {
                 return false;
             }
             return true;
@@ -50,11 +52,10 @@ namespace OZZ::game {
         }
     };
 
-    template<typename SceneType>
+    template <typename SceneType>
     class LightsGame {
     public:
-        explicit LightsGame(const std::filesystem::path& configFilePath) : params(configFilePath) {
-        }
+        explicit LightsGame(const std::filesystem::path& configFilePath) : params(configFilePath) {}
 
         ~LightsGame() {
             scene.reset();
@@ -67,6 +68,7 @@ namespace OZZ::game {
             bRunning = true;
             initInput();
             initWindow();
+            initAudio();
             initGL();
             initRenderer();
             initScene();
@@ -98,7 +100,7 @@ namespace OZZ::game {
 
     private:
         void initWindow() {
-            OZZ::platform::WindowCallbacks callbacks {
+            OZZ::platform::WindowCallbacks callbacks{
                 .OnWindowClose = [this]() {
                     bRunning = false;
                 },
@@ -122,16 +124,22 @@ namespace OZZ::game {
                 }
             };
             window = std::make_shared<Window>(std::move(callbacks));
-            input->SetTextModeFunc ([this](bool bIsTextMode) {
+            input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
-            
+
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);
-            } else {
+            }
+            else {
                 window->SetFullscreen(false);
                 window->SetWindowedSize(params.Config.WindowSize);
             }
+        }
+
+        void initAudio() {
+            audio = std::make_shared<lights::audio::AudioSubsystem>();
+            audio->Init();
         }
 
         void initGL() {
@@ -141,7 +149,6 @@ namespace OZZ::game {
         }
 
         void initInput() {
-
             input = std::make_shared<InputSubsystem>();
         }
 
@@ -160,7 +167,7 @@ namespace OZZ::game {
             glViewport(0, 0, size.x, size.y);
         }
 
-        void drawScene(OZZ::scene::Scene *scene) {
+        void drawScene(OZZ::scene::Scene* scene) {
             renderer->RenderScene(scene);
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
@@ -171,10 +178,11 @@ namespace OZZ::game {
         bool bRunning{false};
         OZZ::Configuration<GameParameters> params;
 
-        std::shared_ptr<Window> window { nullptr };
-        std::shared_ptr<InputSubsystem> input { nullptr };
+        std::shared_ptr<Window> window{nullptr};
+        std::shared_ptr<InputSubsystem> input{nullptr};
+        std::shared_ptr<lights::audio::AudioSubsystem> audio{nullptr};
 
-        std::unique_ptr<OZZ::scene::Scene> scene { nullptr };
-        std::unique_ptr<Renderer> renderer { nullptr };
+        std::unique_ptr<OZZ::scene::Scene> scene{nullptr};
+        std::unique_ptr<Renderer> renderer{nullptr};
     };
 } // OZZ
