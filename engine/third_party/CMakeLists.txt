@@ -12,14 +12,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(spdlog)
 
+set(ENABLE_UNINSTALL OFF CACHE BOOL "Disable uninstall target for mongocxx" FORCE)
 FetchContent_Declare(
-    mongocxx
-    GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver.git
-    GIT_TAG        r4.0.0
+        mongocxx
+        GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver.git
+        GIT_TAG        r4.0.0
 )
 
 FetchContent_MakeAvailable(mongocxx)
-
 
 FetchContent_Declare(
     cryptopp_cmake
@@ -51,6 +51,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(toml11_lib)
 
+set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "The RTAUDIO uninstall target name" FORCE)
+FetchContent_Declare(
+    rtaudio_lib
+    GIT_REPOSITORY git@github.com:thestk/rtaudio.git
+    GIT_TAG 6.0.1
+)
+FetchContent_MakeAvailable(rtaudio_lib)
+
 
 add_subdirectory(asio)
 add_subdirectory(glad)
@@ -73,6 +81,7 @@ set (LIBS
     tileson
     freetype
     toml11
+    rtaudio
 )
 
 set (THIRD_PARTY_COMPILE_DEFS "")

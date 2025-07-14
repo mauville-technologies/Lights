@@ -9,4 +9,4 @@ if (COMMAND set_base_dir)
     set_base_dir(${PROJECT_NAME} ${CMAKE_SOURCE_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} Lights_Shared_Lib)
+target_link_libraries(${PROJECT_NAME} lights_engine)
