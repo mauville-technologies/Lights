@@ -8,7 +8,7 @@
 
 namespace OZZ::lights::audio {
     void AudioSubsystem::Init() {
-        spdlog::info("Initializing Audio Subsystem...");
+        spdlog::info("Initializing Audio Subsystem testing update...");
         rtAudio = std::make_unique<RtAudio>(RtAudio::Api::UNSPECIFIED,
                                             [this](auto ErrorType, const auto& ErrorMessage) {
                                                 spdlog::error("RtAudio Error: {} - {}", static_cast<int>(ErrorType),
