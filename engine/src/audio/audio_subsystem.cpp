@@ -30,6 +30,55 @@ namespace OZZ::lights::audio {
         }
     }
 
+    void AudioSubsystem::SelectOutputAudioDevice(const bool bUseDefault, const uint32_t deviceID) {
+        const auto device = GetAudioDevice(bUseDefault ? rtAudio->getDefaultOutputDevice() : deviceID);
+        if (!device) {
+            spdlog::error("Audio device with ID {} not found.", deviceID);
+            return;
+        }
+
+        auto BufferSize = 256U; // Default buffer size
+        RtAudio::StreamParameters OutParameters;
+        OutParameters.deviceId = device->ID;
+        OutParameters.nChannels = device->OutputChannels;
+        OutParameters.firstChannel = 0;
+        spdlog::info("Selected Output Device: {} (ID: {}, Channels: {})",
+                     device->Name, device->ID, device->OutputChannels);
+
+        rtAudio->openStream(
+            nullptr, // No input
+            &OutParameters, // Output device ID
+            RTAUDIO_SINT16, // Sample format
+            44100, // Sample rate
+            &BufferSize, // Buffer size
+            [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
+               RtAudioStreamStatus status, void* userData) {
+                // This is where you would process the audio data
+                // For now, we just fill the output buffer with silence
+                spdlog::debug("Audio callback called with {} frames", nFrames);
+                // std::fill_n(static_cast<int16_t*>(outputBuffer), nFrames * 2, 0);
+
+                // let's do a saw wave for testing
+                static float phase = 0.0f;
+                const float frequency = 277.18; // C# note
+                const float sampleRate = 44100.0f;
+                constexpr float M_PI = 3.14159265358979323846f;
+                for (unsigned int i = 0; i < nFrames; ++i) {
+                    float sample = 0.5f * (2.0f * (phase / (2.0f * M_PI)) - 1.0f); // Saw wave formula
+                    static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(sample * 32767); // Left channel
+                    static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(sample * 32767);
+                    // Right channel
+                    phase += (2.0f * M_PI * frequency) / sampleRate;
+                    if (phase >= 2.0f * M_PI) phase -= 2.0f * M_PI;
+                }
+
+                return 0; // Return 0 to indicate no error
+            },
+            this // No user data
+        );
+        rtAudio->startStream();
+    }
+
     void AudioSubsystem::detectAudioDevices() {
         if (!rtAudio) {
             spdlog::error("RtAudio is not initialized. Cannot detect audio devices.");

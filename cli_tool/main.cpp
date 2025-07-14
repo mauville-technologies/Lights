@@ -55,7 +55,7 @@ int main() {
     std::unique_ptr<OZZ::lights::audio::AudioSubsystem> audioSubsystem = std::make_unique<
         OZZ::lights::audio::AudioSubsystem>();
     audioSubsystem->Init();
-
+    audioSubsystem->SelectOutputAudioDevice();
 
     // // wait for user input before exiting
     spdlog::info("Press Enter to exit...");
