@@ -9,33 +9,30 @@
 namespace OZZ::lights::audio {
     void AudioSubsystem::Init() {
         spdlog::info("Initializing Audio Subsystem...");
-        rtAudio = std::make_unique<RtAudio>(RtAudio::Api::UNSPECIFIED,
-                                            [this](auto ErrorType, const auto& ErrorMessage) {
-                                                spdlog::error("RtAudio Error: {} - {}", static_cast<int>(ErrorType),
-                                                              ErrorMessage);
-                                            });
-
-        detectAudioDevices();
+        initializeRtAudio();
+        initializeMainMix();
     }
 
     void AudioSubsystem::Shutdown() {
         spdlog::info("Shutting down Audio Subsystem...");
-        if (rtAudio) {
-            if (rtAudio->isStreamOpen()) {
-                spdlog::warn("Audio stream is still open. Closing it before shutdown.");
-                rtAudio->closeStream();
-            }
-            rtAudio.reset();
-            spdlog::info("Audio Subsystem shut down successfully.");
-        }
+        shutdownMainMix();
+        shutdownRtAudio();
     }
 
     void AudioSubsystem::SelectOutputAudioDevice(const bool bUseDefault, const uint32_t deviceID) {
-        const auto device = GetAudioDevice(bUseDefault ? rtAudio->getDefaultOutputDevice() : deviceID);
+        const auto* device = GetAudioDevice(bUseDefault ? rtAudio->getDefaultOutputDevice() : deviceID);
         if (!device) {
             spdlog::error("Audio device with ID {} not found.", deviceID);
             return;
         }
+
+        if (device == currentOutputDevice) {
+            spdlog::info("Output device {} is already selected.", device->Name);
+            return;
+        }
+
+        closeOpenStream();
+        currentOutputDevice = nullptr;
 
         auto BufferSize = 256U; // Default buffer size
         RtAudio::StreamParameters OutParameters;
@@ -53,30 +50,13 @@ namespace OZZ::lights::audio {
             &BufferSize, // Buffer size
             [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
                RtAudioStreamStatus status, void* userData) {
-                // This is where you would process the audio data
-                // For now, we just fill the output buffer with silence
-                spdlog::debug("Audio callback called with {} frames", nFrames);
-                // std::fill_n(static_cast<int16_t*>(outputBuffer), nFrames * 2, 0);
-
-                // let's do a saw wave for testing
-                static float phase = 0.0f;
-                const float frequency = 277.18; // C# note
-                const float sampleRate = 44100.0f;
-                constexpr float M_PI = 3.14159265358979323846f;
-                for (unsigned int i = 0; i < nFrames; ++i) {
-                    float sample = 0.5f * (2.0f * (phase / (2.0f * M_PI)) - 1.0f); // Saw wave formula
-                    static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(sample * 32767); // Left channel
-                    static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(sample * 32767);
-                    // Right channel
-                    phase += (2.0f * M_PI * frequency) / sampleRate;
-                    if (phase >= 2.0f * M_PI) phase -= 2.0f * M_PI;
-                }
-
-                return 0; // Return 0 to indicate no error
+                const auto* audioSubsystem = static_cast<AudioSubsystem*>(userData);
+                return audioSubsystem->renderAudio(outputBuffer, inputBuffer, nFrames, streamTime, status);
             },
-            this // No user data
+            this
         );
         rtAudio->startStream();
+        currentOutputDevice = device;
     }
 
     void AudioSubsystem::detectAudioDevices() {
@@ -101,6 +81,71 @@ namespace OZZ::lights::audio {
                 device.OutputChannels = deviceInfo.outputChannels;
                 audioDevices.push_back(device);
             }
+        }
+    }
+
+    bool AudioSubsystem::initializeRtAudio() {
+        rtAudio = std::make_unique<RtAudio>(RtAudio::Api::UNSPECIFIED,
+                                            [this](auto ErrorType, const auto& ErrorMessage) {
+                                                spdlog::error("RtAudio Error: {} - {}", static_cast<int>(ErrorType),
+                                                              ErrorMessage);
+                                            });
+
+        detectAudioDevices();
+        SelectOutputAudioDevice(); // Default to the first available output device
+        return true;
+    }
+
+    bool AudioSubsystem::initializeMainMix() {
+        return false;
+    }
+
+    int AudioSubsystem::renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
+                                    RtAudioStreamStatus status) const {
+        if (status == RTAUDIO_OUTPUT_UNDERFLOW) {
+            spdlog::warn("Audio output underflow detected. This may cause audio glitches.");
+        }
+        if (status == RTAUDIO_INPUT_OVERFLOW) {
+            spdlog::warn("Audio input overflow detected. This may cause audio glitches.");
+        }
+
+        // let's do a saw wave for testing
+        static float phase = 0.0f;
+        const float frequency = 277.18; // C# note
+        const float sampleRate = 44100.0f;
+        constexpr float M_PI = 3.14159265358979323846f;
+        for (unsigned int i = 0; i < nFrames; ++i) {
+            float sample = 0.5f * (2.0f * (phase / (2.0f * M_PI)) - 1.0f); // Saw wave formula
+            static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(sample * 32767); // Left channel
+            static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(sample * 32767);
+            // Right channel
+            phase += (2.0f * M_PI * frequency) / sampleRate;
+            if (phase >= 2.0f * M_PI) phase -= 2.0f * M_PI;
+        }
+        return 0;
+    }
+
+    void AudioSubsystem::shutdownMainMix() {
+        if (mainMix) {
+            mainMix.reset();
+        }
+    }
+
+    void AudioSubsystem::closeOpenStream() {
+        if (rtAudio) {
+            if (rtAudio->isStreamOpen()) {
+                rtAudio->closeStream();
+            }
+        }
+    }
+
+    void AudioSubsystem::shutdownRtAudio() {
+        audioDevices.clear();
+
+        closeOpenStream();
+        if (rtAudio) {
+            rtAudio.reset();
+            spdlog::info("Audio Subsystem shut down successfully.");
         }
     }
 }

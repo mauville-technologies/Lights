@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include <any>
 #include <string>
 #include <vector>
 #include <memory>
+#include <ranges>
+#include <algorithm>
+#include <RtAudio.h>
 
-#include "RtAudio.h"
+#include "audio_submix.h"
 
 namespace OZZ::lights::audio {
     struct AudioDevice {
@@ -36,6 +38,23 @@ namespace OZZ::lights::audio {
             return audioDevices;
         }
 
+        [[nodiscard]] auto GetOutputDevices() const {
+            return audioDevices | std::views::filter([](const AudioDevice& device) {
+                return device.CanOutput();
+            });
+        }
+
+        [[nodiscard]] auto GetCurrentInputDevice() const {
+            return audioDevices | std::views::filter([](const AudioDevice& device) {
+                return device.CanInput();
+            });
+        }
+
+        [[nodiscard]] const AudioDevice* GetCurrentOutputDevice() const {
+            return currentOutputDevice;
+        }
+
+
         [[nodiscard]] bool IsInitialized() const {
             return rtAudio != nullptr;
         }
@@ -47,7 +66,7 @@ namespace OZZ::lights::audio {
         }
 
         [[nodiscard]] const AudioDevice* GetAudioDevice(const uint32_t deviceID) const {
-            auto device = std::ranges::find_if(audioDevices, [deviceID](const AudioDevice& device) {
+            const auto device = std::ranges::find_if(audioDevices, [deviceID](const AudioDevice& device) {
                 return device.ID == deviceID;
             });
             if (device != audioDevices.end()) {
@@ -61,8 +80,20 @@ namespace OZZ::lights::audio {
     private:
         void detectAudioDevices();
 
+        bool initializeRtAudio();
+        bool initializeMainMix();
+
+        int renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
+                        RtAudioStreamStatus status) const;
+
+        void shutdownMainMix();
+        void closeOpenStream();
+        void shutdownRtAudio();
+
     private:
         std::unique_ptr<RtAudio> rtAudio{nullptr};
-        std::vector<AudioDevice> audioDevices;
+        const AudioDevice* currentOutputDevice{nullptr};
+        std::vector<AudioDevice> audioDevices{};
+        std::unique_ptr<AudioSubmix> mainMix{nullptr};
     };
 }
