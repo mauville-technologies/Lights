@@ -10,6 +10,9 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
+        src/audio/audio_subsystem.cpp
+        src/audio/audio_submix.cpp
+
         src/game/2D/sprite.cpp
         src/game/game_object.cpp
         src/game/tiled_map.cpp
@@ -52,11 +55,24 @@ if (DEFINED set_base_dir)
 endif ()
 
 
+# Compile definitions
+set(COMPILE_DEFINITIONS "")
+
+# if on windows
+if (WIN32)
+    list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_WINDOWS)
+elseif (APPLE)
+    list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_MACOS)
+else ()
+    list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_LINUX)
+endif ()
+
 target_include_directories(${PROJECT_NAME}
         PUBLIC
-            include ${Tileson_INCLUDE_DIR}
+        include ${Tileson_INCLUDE_DIR}
         PRIVATE
-            src
+        src
 )
+target_compile_definitions(lights_engine PUBLIC ${COMPILE_DEFINITIONS})
 target_link_libraries(lights_engine PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
 

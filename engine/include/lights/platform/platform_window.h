@@ -9,6 +9,10 @@
 #include <functional>
 #include <glm/glm.hpp>
 
+#if OZZ_PLATFORM_WINDOWS
+#undef CreateWindow
+#endif
+
 namespace OZZ::platform {
     using OnWindowCloseCallback = std::function<void()>;
     using OnWindowResizedCallback = std::function<void(glm::ivec2)>;
