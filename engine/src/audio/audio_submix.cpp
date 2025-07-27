@@ -5,7 +5,7 @@
 #include <ranges>
 #include <lights/audio/audio_submix.h>
 
-#include "lights/audio/filters/audio_filter.h"
+#include "lights/audio/filters/audio_processor.h"
 #include "spdlog/spdlog.h"
 
 namespace OZZ::lights::audio {
@@ -48,6 +48,35 @@ namespace OZZ::lights::audio {
         return mixedAudio;
     }
 
+    std::weak_ptr<AudioSubmix> AudioSubmix::GetSubmix(const std::string& name) {
+        const auto it = std::ranges::find_if(submixes,
+                                             [&name](const auto& submix) {
+                                                 return submix && submix->GetName() == name;
+                                             });
+
+        if (it != submixes.end()) {
+            return *it; // Return the existing submix
+        }
+        return std::weak_ptr<AudioSubmix>{};
+    }
+
+    std::weak_ptr<AudioSubmix> AudioSubmix::GetOrCreateSubmix(const std::string& name, AudioParams&& inParams) {
+        if (auto existingSubmix = GetSubmix(name); !existingSubmix.expired()) {
+            return existingSubmix; // Return the existing submix if it exists
+        }
+
+        auto* newSubmix = new AudioSubmix(std::move(inParams));
+        return submixes.emplace_back(newSubmix);
+    }
+
+    bool AudioSubmix::RemoveSubmix(const std::string& name) {
+        const auto removeIt = std::erase_if(submixes, [&name](const auto& submix) {
+            return submix && submix->GetName() == name;
+        });
+
+        return removeIt > 0;
+    }
+
     bool AudioSubmix::RemovePreProcessor(const std::string& name) {
         return std::erase_if(preProcessors, [&name](const auto& processor) {
             return processor->GetName() == name;
@@ -59,4 +88,10 @@ namespace OZZ::lights::audio {
             return processor->GetName() == name;
         }) > 0;
     }
+
+    std::weak_ptr<AudioSubmix> AudioSubmix::operator[](const std::string& name) {
+        return GetSubmix(name);
+    }
+
+    AudioSubmix::AudioSubmix(AudioParams&& inParams) : params(inParams) {}
 }

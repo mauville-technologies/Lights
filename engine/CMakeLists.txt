@@ -10,6 +10,7 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
+        src/audio/audio_cue.cpp
         src/audio/audio_subsystem.cpp
         src/audio/audio_submix.cpp
 
