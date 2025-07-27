@@ -4,6 +4,7 @@
 
 #include <spdlog/spdlog.h>
 #include <lights/util/configuration.h>
+#include <lights/algo/graphs/node.h>
 #include <filesystem>
 
 #include "lights/audio/audio_subsystem.h"
@@ -56,6 +57,33 @@ int main() {
         OZZ::lights::audio::AudioSubsystem>();
     audioSubsystem->Init();
     audioSubsystem->SelectOutputAudioDevice(false, 130);
+
+    using NodeType = std::shared_ptr<OZZ::lights::algo::Node<std::string>>;
+    NodeType Effects = std::make_shared<OZZ::lights::algo::Node<std::string>>();
+    Effects->Data = std::make_unique<std::string>("Effects");
+    NodeType Music = std::make_shared<OZZ::lights::algo::Node<std::string>>();
+    Music->Data = std::make_unique<std::string>("Music");
+    NodeType MainMix = std::make_shared<OZZ::lights::algo::Node<std::string>>();
+    MainMix->Data = std::make_unique<std::string>("MainMix");
+    NodeType Sound = std::make_shared<OZZ::lights::algo::Node<std::string>>();
+    Sound->Data = std::make_unique<std::string>("Sound");
+
+    OZZ::lights::algo::Node<std::string>::Connect(Effects, Music);
+    OZZ::lights::algo::Node<std::string>::Connect(Music, MainMix);
+    OZZ::lights::algo::Node<std::string>::Connect(Sound, MainMix);
+
+    auto flattened = OZZ::lights::algo::Flatten(MainMix);
+    for (const auto& node : flattened) {
+        spdlog::info("Flattened Node: {}", *node->Data);
+    }
+
+    auto list = OZZ::lights::algo::Kahns(MainMix);
+    //
+    if (list) {
+        for (const auto& node : list.value()) {
+            spdlog::info("Node: {}", *node);
+        }
+    }
 
     // // wait for user input before exiting
     spdlog::info("Press Enter to exit...");

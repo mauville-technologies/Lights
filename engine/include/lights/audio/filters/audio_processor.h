@@ -30,4 +30,7 @@ namespace OZZ::lights::audio {
     private:
         std::string name;
     };
+
+    template <typename T>
+    concept IsAudioProcessor = std::derived_from<T, AudioProcessor>;
 }

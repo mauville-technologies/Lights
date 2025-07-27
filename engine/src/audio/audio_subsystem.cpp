@@ -109,19 +109,26 @@ namespace OZZ::lights::audio {
             spdlog::warn("Audio input overflow detected. This may cause audio glitches.");
         }
 
-        // let's do a saw wave for testing
-        static float phase = 0.0f;
-        const float frequency = 277.18; // C# note
-        const float sampleRate = 44100.0f;
-        constexpr float M_PI = 3.14159265358979323846f;
-        for (unsigned int i = 0; i < nFrames; ++i) {
-            float sample = 0.5f * (2.0f * (phase / (2.0f * M_PI)) - 1.0f); // Saw wave formula
-            static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(sample * 32767); // Left channel
-            static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(sample * 32767);
-            // Right channel
-            phase += (2.0f * M_PI * frequency) / sampleRate;
-            if (phase >= 2.0f * M_PI) phase -= 2.0f * M_PI;
+
+        auto mix = mainMix ? mainMix->MixAudio() : std::vector<float>(nFrames, 0.0f);
+
+        // Ensure the output buffer is large enough
+        if (outputBuffer == nullptr || nFrames == 0) {
+            spdlog::error("Output buffer is null or nFrames is zero. Cannot render audio.");
+            return 0;
         }
+        if (mix.size() < nFrames) {
+            spdlog::warn("Mix size is smaller than nFrames. Padding with zeros.");
+            mix.resize(nFrames, 0.0f);
+        }
+
+        // TODO: @paulm - Handle different channel counts properly
+        for (unsigned int i = 0; i < nFrames; ++i) {
+            // Convert float to int16_t and write to output buffer
+            static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(mix[i] * 32767); // Left channel
+            static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(mix[i] * 32767); // Right channel
+        }
+
         return 0;
     }
 
