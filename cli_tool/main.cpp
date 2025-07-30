@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include "lights/audio/audio_subsystem.h"
+#include "lights/audio/nodes/saw_tooth_node.h"
 
 struct CommandLineArguments {
     std::string SampleConfigValueOne;
@@ -52,40 +53,45 @@ void TestConfig() {
     spdlog::info("Configuration saved: {}", config.ToString());
 }
 
+constexpr OZZ::lights::audio::Note Notes[] = {
+    OZZ::lights::audio::Note::C, OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::F,
+    OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::C,
+    OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::C, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
+};
+
 int main() {
     std::unique_ptr<OZZ::lights::audio::AudioSubsystem> audioSubsystem = std::make_unique<
         OZZ::lights::audio::AudioSubsystem>();
     audioSubsystem->Init();
-    audioSubsystem->SelectOutputAudioDevice(false, 130);
+    audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 
-    using NodeType = std::shared_ptr<OZZ::lights::algo::Node<std::string>>;
-    NodeType Effects = std::make_shared<OZZ::lights::algo::Node<std::string>>();
-    Effects->Data = std::make_unique<std::string>("Effects");
-    NodeType Music = std::make_shared<OZZ::lights::algo::Node<std::string>>();
-    Music->Data = std::make_unique<std::string>("Music");
-    NodeType MainMix = std::make_shared<OZZ::lights::algo::Node<std::string>>();
-    MainMix->Data = std::make_unique<std::string>("MainMix");
-    NodeType Sound = std::make_shared<OZZ::lights::algo::Node<std::string>>();
-    Sound->Data = std::make_unique<std::string>("Sound");
+    // Create a new sawtooth node
+    const auto Saw = std::make_shared<OZZ::lights::audio::AudioGraphNodeType<OZZ::lights::audio::SawToothNode>>();
+    // connect to main mix
+    audioSubsystem->ConnectToMainMixNode(Saw);
 
-    OZZ::lights::algo::Node<std::string>::Connect(Effects, Music);
-    OZZ::lights::algo::Node<std::string>::Connect(Music, MainMix);
-    OZZ::lights::algo::Node<std::string>::Connect(Sound, MainMix);
+    static auto timeElapsed = 0.f;
+    static auto lastTickTime = std::chrono::high_resolution_clock::now();
+    static const float changeInterval = 0.5f; // Change note every 5 seconds
+    static auto currentNoteIndex = 0;
+    Saw->Data.SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
 
-    auto flattened = OZZ::lights::algo::Flatten(MainMix);
-    for (const auto& node : flattened) {
-        spdlog::info("Flattened Node: {}", *node->Data);
-    }
+    // every 5 seconds, change the note on the sawtooth node
+    while (true) {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
+        lastTickTime = currentTime;
+        timeElapsed += deltaTime;
 
-    auto list = OZZ::lights::algo::Kahns(MainMix);
-    //
-    if (list) {
-        for (const auto& node : list.value()) {
-            spdlog::info("Node: {}", *node);
+        if (timeElapsed >= changeInterval) {
+            currentNoteIndex = (currentNoteIndex + 1) % std::size(Notes);
+            // Change the note on the sawtooth node
+            Saw->Data.SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
+            timeElapsed = 0.f;
         }
     }
-
-    // // wait for user input before exiting
     spdlog::info("Press Enter to exit...");
     std::cin.get();
     audioSubsystem->Shutdown();
