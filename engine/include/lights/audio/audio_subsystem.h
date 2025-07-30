@@ -11,7 +11,8 @@
 #include <algorithm>
 #include <RtAudio.h>
 
-#include "audio_submix.h"
+#include "audio_graph.h"
+#include "nodes/audio_fan_in_mixer_node.h"
 
 namespace OZZ::lights::audio {
     struct AudioDevice {
@@ -33,6 +34,11 @@ namespace OZZ::lights::audio {
     public:
         void Init();
         void Shutdown();
+
+        template <typename T>
+        void ConnectToMainMixNode(AudioGraphNodePtr<T> node) {
+            AudioGraphNodeType<T>::Connect(node, mainMixNode);
+        }
 
         [[nodiscard]] const std::vector<AudioDevice>& GetAudioDevices() const {
             return audioDevices;
@@ -75,7 +81,11 @@ namespace OZZ::lights::audio {
             return nullptr;
         }
 
-        void SelectOutputAudioDevice(bool bUseDefault = true, const uint32_t deviceID = 0);
+        [[nodiscard]] uint32_t GetDefaultOutputDeviceID() const {
+            return rtAudio->getDefaultOutputDevice();
+        }
+
+        void SelectOutputAudioDevice(uint32_t deviceID = 0);
 
     private:
         void detectAudioDevices();
@@ -91,9 +101,10 @@ namespace OZZ::lights::audio {
         void shutdownRtAudio();
 
     private:
+        AudioGraphNodePtr<AudioFanInMixerNode> mainMixNode{nullptr};
+
         std::unique_ptr<RtAudio> rtAudio{nullptr};
         const AudioDevice* currentOutputDevice{nullptr};
         std::vector<AudioDevice> audioDevices{};
-        std::unique_ptr<AudioSubmix> mainMix{nullptr};
     };
 }

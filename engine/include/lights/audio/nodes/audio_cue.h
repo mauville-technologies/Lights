@@ -4,6 +4,9 @@
 
 #pragma once
 #include <filesystem>
+#include <lights/audio/audio_params.h>
+
+#include "lights/audio/audio_graph.h"
 
 namespace OZZ::lights::audio {
     enum class AudioCueContainerType {
@@ -43,18 +46,27 @@ namespace OZZ::lights::audio {
 
     struct AudioCueAudioData {
         // It's assumed that the audio data is in normalized float format
-        std::vector<float> Samples;
+        std::vector<float> Data;
         uint32_t SampleRate{44100};
         uint8_t BitDepth{2};
         size_t PlayHead{0};
+        std::string FileName;
 
         [[nodiscard]] bool IsValid() const {
-            return !Samples.empty() && SampleRate > 0 && BitDepth > 0;
+            return !Data.empty() && SampleRate > 0 && BitDepth > 0;
         }
     };
 
-    class AudioCue {
+    class AudioCue : public AudioGraphNode {
     public:
+        ~AudioCue() override;
+
+        // Interface functions
+        [[nodiscard]] std::string GetName() const override;
+        bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
+        [[nodiscard]] std::vector<float> GetRenderedAudio() const override;
+        [[nodiscard]] std::string GetDescription() const override;
+
         void Load(const std::filesystem::path& filePath);
 
         [[nodiscard]] bool IsValid() const {
@@ -73,7 +85,7 @@ namespace OZZ::lights::audio {
     private:
         void loadWav(const std::filesystem::path& filePath);
 
-    public :
+    public:
         AudioCueParams Params;
 
     private:

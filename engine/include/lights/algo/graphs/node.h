@@ -10,26 +10,18 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ::lights::algo {
-    /**
-     * A generic node class for graph algorithms.
-     * For now:
-     * Nodes can have one outgoing edge to another node. (Outdegree <= 1)
-     * Nodes can have multiple incoming edges from other nodes -- with a maximum of 255 (Indegree >= 0 && Indegree <= 255)
-     * Essentially, this is a directed graph
-     * @tparam DataType The data the node will hold
-     */
-    template <typename DataType>
-    struct Node {
-        std::unique_ptr<DataType> Data{};
-        std::shared_ptr<Node> NextNode{nullptr};
-        std::vector<std::shared_ptr<Node>> PreviousNodes{nullptr};
+    struct NodeBase : std::enable_shared_from_this<NodeBase> {
+        virtual ~NodeBase() = default;
+        std::shared_ptr<NodeBase> NextNode{nullptr};
+        std::vector<std::shared_ptr<NodeBase>> PreviousNodes{};
 
         /**
          * Points this node to OtherNode
          * @param ThisNode the node which will do the pointing
          * @param OtherNode The node to which will be pointed
          */
-        static void Connect(std::shared_ptr<Node> ThisNode, std::shared_ptr<Node> OtherNode) {
+        static void Connect(const std::shared_ptr<NodeBase>& ThisNode,
+                            const std::shared_ptr<NodeBase>& OtherNode) {
             if (!ThisNode || !OtherNode) {
                 spdlog::warn("Node::Connect Invalid nodes");
                 return;
@@ -47,30 +39,52 @@ namespace OZZ::lights::algo {
          * Disconnects the node from its next node
          * @param ThisNode The node which will disconnect
          */
-        static void Disconnect(std::shared_ptr<Node> ThisNode) {
+        static void Disconnect(const std::shared_ptr<NodeBase>& ThisNode) {
             if (!ThisNode) {
                 spdlog::warn("Node::Disconnect Invalid node");
                 return;
             }
             if (ThisNode->NextNode != nullptr) {
-                std::ranges::remove_if(ThisNode->NextNode->PreviousNodes,
-                                       [ThisNode](const std::shared_ptr<Node>& NodePtr) {
-                                           return NodePtr.get() == ThisNode.get();
-                                       });
+                std::erase_if(ThisNode->NextNode->PreviousNodes,
+                              [ThisNode](const std::shared_ptr<NodeBase>& NodePtr) {
+                                  return NodePtr.get() == ThisNode.get();
+                              });
                 ThisNode->NextNode = nullptr;
             }
         }
     };
 
+    /**
+     * A generic node class for graph algorithms.
+     * For now:
+     * Nodes can have one outgoing edge to another node. (Outdegree <= 1)
+     * Nodes can have multiple incoming edges from other nodes -- with a maximum of 255 (Indegree >= 0 && Indegree <= 255)
+     * Essentially, this is a directed graph
+     * @tparam DataType The data the node will hold
+     */
     template <typename DataType>
-    std::vector<Node<DataType>*> Flatten(std::shared_ptr<Node<DataType>> RootNode) {
-        std::vector<Node<DataType>*> FlattenedNodes;
+    struct Node final : public NodeBase {
+        DataType Data{};
+    };
 
-        auto hasBeenVisited = [&FlattenedNodes](std::shared_ptr<Node<DataType>> NodePtr) {
+    template <typename DataType>
+    std::shared_ptr<Node<DataType>> AsNode(const std::shared_ptr<NodeBase>& node) {
+        return std::dynamic_pointer_cast<Node<DataType>>(node);
+    }
+
+    template <typename DataType>
+    Node<DataType>* AsNode(NodeBase* node) {
+        return reinterpret_cast<Node<DataType>*>(node);
+    }
+
+    inline std::vector<NodeBase*> Flatten(const std::shared_ptr<NodeBase>& RootNode) {
+        std::vector<NodeBase*> FlattenedNodes;
+
+        auto hasBeenVisited = [&FlattenedNodes](const std::shared_ptr<NodeBase>& NodePtr) {
             return std::ranges::find(FlattenedNodes, NodePtr.get()) != FlattenedNodes.end();
         };
 
-        std::function<void(std::shared_ptr<Node<DataType>>)> VisitNode = [&](std::shared_ptr<Node<DataType>> NodePtr) {
+        std::function<void(std::shared_ptr<NodeBase>)> VisitNode = [&](const std::shared_ptr<NodeBase>& NodePtr) {
             if (!NodePtr) return;
             // we assume if we've made it this far, the node hasn't been visited
             FlattenedNodes.push_back(NodePtr.get());
@@ -93,8 +107,7 @@ namespace OZZ::lights::algo {
         return FlattenedNodes;
     }
 
-    template <typename DataType>
-    std::optional<std::vector<DataType*>> Kahns(std::shared_ptr<Node<DataType>> RootNode) {
+    inline std::optional<std::vector<NodeBase*>> Kahns(const std::shared_ptr<NodeBase>& RootNode) {
         auto FlattenedNodes = Flatten(RootNode);
         auto InDegreeMap = std::vector<size_t>(FlattenedNodes.size(), 0);
 
@@ -110,18 +123,13 @@ namespace OZZ::lights::algo {
             }
         }
 
-        // print the in-degree map for debugging
-        spdlog::debug("In-Degree Map:");
-        for (size_t i = 0; i < InDegreeMap.size(); ++i) {
-            spdlog::info("Node {}: {}", i, InDegreeMap[i]);
-        }
-
-        std::vector<DataType*> Result;
-        auto processNode = [&FlattenedNodes, &InDegreeMap](size_t Index, std::vector<DataType*>& Result) -> size_t {
+        std::vector<NodeBase*> Result;
+        auto processNode = [&FlattenedNodes, &InDegreeMap, &Result
+            ](size_t Index) -> size_t {
             size_t processCount = 0;
             for (auto i = 0; i < FlattenedNodes.size(); i++) {
                 if (InDegreeMap[i] == 0) {
-                    Result.push_back(FlattenedNodes[i]->Data.get());
+                    Result.push_back(FlattenedNodes[i]);
 
                     // process the node
                     InDegreeMap[i] = std::numeric_limits<size_t>::max(); // mark as processed
@@ -129,12 +137,10 @@ namespace OZZ::lights::algo {
 
                     if (const auto* NodePtr = FlattenedNodes[i]; NodePtr->NextNode) {
                         auto NextIndex = std::ranges::find_if(FlattenedNodes,
-                                                              [&NodePtr](const Node<DataType>* Node) {
+                                                              [&NodePtr](const NodeBase* Node) {
                                                                   return Node == NodePtr->NextNode.get();
                                                               });
                         if (NextIndex != FlattenedNodes.end()) {
-                            spdlog::info("Processing node {} with next node {}", i,
-                                         std::distance(FlattenedNodes.begin(), NextIndex));
                             InDegreeMap[std::distance(FlattenedNodes.begin(), NextIndex)] -= 1;
                         }
                     }
@@ -143,9 +149,9 @@ namespace OZZ::lights::algo {
             return processCount;
         };
 
-        auto processCount = 0;
+        auto processCount = 0u;
         while (processCount < FlattenedNodes.size()) {
-            auto processed = processNode(processCount, Result);
+            const auto processed = processNode(processCount);
             processCount += processed;
 
             // if processCount is too big, we have a cycle

@@ -19,8 +19,8 @@ namespace OZZ::lights::audio {
         shutdownRtAudio();
     }
 
-    void AudioSubsystem::SelectOutputAudioDevice(const bool bUseDefault, const uint32_t deviceID) {
-        const auto* device = GetAudioDevice(bUseDefault ? rtAudio->getDefaultOutputDevice() : deviceID);
+    void AudioSubsystem::SelectOutputAudioDevice(const uint32_t deviceID) {
+        const auto* device = GetAudioDevice(deviceID);
         if (!device) {
             spdlog::error("Audio device with ID {} not found.", deviceID);
             return;
@@ -45,7 +45,7 @@ namespace OZZ::lights::audio {
         rtAudio->openStream(
             nullptr, // No input
             &OutParameters, // Output device ID
-            RTAUDIO_SINT16, // Sample format
+            RTAUDIO_FLOAT32, // Sample format
             44100, // Sample rate
             &BufferSize, // Buffer size
             [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
@@ -55,6 +55,9 @@ namespace OZZ::lights::audio {
             },
             this
         );
+
+        spdlog::info("Opening audio stream with buffer size: {}, sample rate: {}", BufferSize,
+                     rtAudio->getStreamSampleRate());
         rtAudio->startStream();
         currentOutputDevice = device;
     }
@@ -97,11 +100,15 @@ namespace OZZ::lights::audio {
     }
 
     bool AudioSubsystem::initializeMainMix() {
-        return false;
+        mainMixNode = std::make_shared<AudioGraphNodeType<AudioFanInMixerNode>>();
+        return true;
     }
 
     int AudioSubsystem::renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
                                     RtAudioStreamStatus status) const {
+        constexpr auto numChannels = 2;
+        const auto bufferSize = nFrames * numChannels;
+
         if (status == RTAUDIO_OUTPUT_UNDERFLOW) {
             spdlog::warn("Audio output underflow detected. This may cause audio glitches.");
         }
@@ -110,33 +117,63 @@ namespace OZZ::lights::audio {
         }
 
 
-        auto mix = mainMix ? mainMix->MixAudio() : std::vector<float>(nFrames, 0.0f);
-
         // Ensure the output buffer is large enough
         if (outputBuffer == nullptr || nFrames == 0) {
             spdlog::error("Output buffer is null or nFrames is zero. Cannot render audio.");
             return 0;
         }
-        if (mix.size() < nFrames) {
-            spdlog::warn("Mix size is smaller than nFrames. Padding with zeros.");
-            mix.resize(nFrames, 0.0f);
+
+        // Flatten the main mix node to get dependency graph
+        const auto sortedNodes = OZZ::lights::algo::Kahns(mainMixNode);
+        if (!sortedNodes) {
+            spdlog::error("Failed to flatten audio graph. Cycle detected or empty graph.");
+            return 0;
+        }
+
+        for (auto& node : *sortedNodes) {
+            auto CurrentNode = AsNode<AudioGraphNode>(node);
+            // build input
+            auto inputs = std::vector<AudioGraphNode*>();
+            for (const auto& previousNode : node->PreviousNodes) {
+                if (previousNode) {
+                    inputs.push_back(&AsNode<AudioGraphNode>(previousNode.get())->Data);
+                }
+            }
+
+            if (!CurrentNode->Data.Render(nFrames, inputs)) {
+                spdlog::warn("Node {} failed to render audio.", CurrentNode->Data.GetName());
+            }
+        }
+
+
+        // we can then grab the rendered audio from the main mix node
+        // TODO: @paulm - i should probably be using views here instead of copying the data
+        auto mix = mainMixNode->Data.GetRenderedAudio();
+        if (mix.empty()) {
+            spdlog::warn("Main mix node rendered no audio data. Returning silence.");
+            mix = std::vector<float>(bufferSize, 0.0f);
+        }
+        else if (mix.size() > bufferSize) {
+            spdlog::warn("Main mix node rendered more audio data than requested. Truncating.");
+            // Truncate the mix if it's longer than nFrames
+            mix.resize(bufferSize);
+        }
+        else if (mix.size() < nFrames) {
+            // pad with silence if the mix is shorter than nFrames
+            mix.resize(bufferSize, 0.0f);
         }
 
         // TODO: @paulm - Handle different channel counts properly
         for (unsigned int i = 0; i < nFrames; ++i) {
             // Convert float to int16_t and write to output buffer
-            static_cast<int16_t*>(outputBuffer)[i * 2] = static_cast<int16_t>(mix[i] * 32767); // Left channel
-            static_cast<int16_t*>(outputBuffer)[i * 2 + 1] = static_cast<int16_t>(mix[i] * 32767); // Right channel
+            static_cast<float*>(outputBuffer)[i * 2] = mix[i * 2];
+            static_cast<float*>(outputBuffer)[i * 2 + 1] = mix[i * 2 + 1];
         }
 
         return 0;
     }
 
-    void AudioSubsystem::shutdownMainMix() {
-        if (mainMix) {
-            mainMix.reset();
-        }
-    }
+    void AudioSubsystem::shutdownMainMix() {}
 
     void AudioSubsystem::closeOpenStream() {
         if (rtAudio) {
