@@ -53,6 +53,7 @@ namespace OZZ::lights::audio {
             }
             auto node = std::make_shared<AudioGraphNodeType<T>>();
             node->Data.SetSampleRate(settings.SampleRate);
+            node->Data.SetChannels(settings.AudioChannels);
             return node;
         }
 
