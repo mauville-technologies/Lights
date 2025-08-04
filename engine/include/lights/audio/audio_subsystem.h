@@ -15,6 +15,11 @@
 #include "nodes/audio_fan_in_mixer_node.h"
 
 namespace OZZ::lights::audio {
+    struct AudioSubsystemSettings {
+        uint32_t SampleRate{44100};
+        uint8_t AudioChannels{2};
+    };
+
     struct AudioDevice {
         std::string Name;
         uint32_t ID;
@@ -32,7 +37,7 @@ namespace OZZ::lights::audio {
 
     class AudioSubsystem {
     public:
-        void Init();
+        void Init(AudioSubsystemSettings&& inSettings= {});
         void Shutdown();
 
         template <typename T>
@@ -103,6 +108,7 @@ namespace OZZ::lights::audio {
     private:
         AudioGraphNodePtr<AudioFanInMixerNode> mainMixNode{nullptr};
 
+        AudioSubsystemSettings settings{};
         std::unique_ptr<RtAudio> rtAudio{nullptr};
         const AudioDevice* currentOutputDevice{nullptr};
         std::vector<AudioDevice> audioDevices{};
