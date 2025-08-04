@@ -77,5 +77,5 @@ target_include_directories(${PROJECT_NAME}
         src
 )
 target_compile_definitions(lights_engine PUBLIC ${COMPILE_DEFINITIONS})
-target_link_libraries(lights_engine PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision)
+target_link_libraries(lights_engine PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision ozz_audio)
 

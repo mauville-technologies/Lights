@@ -23,19 +23,20 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
         set(CMAKE_CXX_FLAGS_RELEASE "/O2 /GL /Gy /DNDEBUG")
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF /DEBUG:NONE")
         set(CMAKE_C_FLAGS_RELEASE "/O2 /GL /Gy /DNDEBUG")
-    endif()
-endif()
+    endif ()
+endif ()
 
 # if debug build define OZZ_DEBUG, it needs to affect ifdefs in the code
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DOZZ_DEBUG)
-endif()
+endif ()
 
 
 # The shared library is built first as it exposes functionality and third party libs to be used by other things
-add_subdirectory(engine)
 add_subdirectory(libs/ozz_binarypacking)
 add_subdirectory(libs/ozz_collision)
 add_subdirectory(libs/ozz_typegen)
+add_subdirectory(libs/ozz_audio)
+add_subdirectory(engine)
 
 add_subdirectory(cli_tool)

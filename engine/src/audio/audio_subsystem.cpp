@@ -175,10 +175,10 @@ namespace OZZ::lights::audio {
 
             // first we'll copy the mix to a temporary buffer
             const auto inMix = mix;
-            const uint16_t inMixFrameCount = inMix.size() / settings.AudioChannels;
+            const long inMixFrameCount = static_cast<long>(inMix.size() / settings.AudioChannels);
 
             // we'll then resize mix to the new sample rate
-            const uint16_t outMixFrameCount = static_cast<size_t>(nFrames);
+            const auto outMixFrameCount = static_cast<long>(nFrames);
             mix.resize(outMixFrameCount * deviceChannels);
             SRC_DATA srcData{
                 .data_in = inMix.data(),

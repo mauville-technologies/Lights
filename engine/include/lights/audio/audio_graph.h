@@ -18,6 +18,14 @@ namespace OZZ::lights::audio {
             return sampleRate;
         }
 
+        void SetChannels(const uint8_t channels) {
+            this->channels = channels;
+        }
+
+        [[nodiscard]] uint8_t GetChannels() const {
+            return channels;
+        }
+
         [[nodiscard]] virtual std::string GetName() const {
             return "Base AudioGraphNode";
         }
@@ -36,6 +44,7 @@ namespace OZZ::lights::audio {
 
     private:
         uint16_t sampleRate{44100};
+        uint8_t channels{2};
     };
 
     template <typename T>
