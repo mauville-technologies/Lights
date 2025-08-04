@@ -95,7 +95,7 @@ namespace OZZ::lights::audio {
                                             });
 
         detectAudioDevices();
-        SelectOutputAudioDevice(); // Default to the first available output device
+        SelectOutputAudioDevice(GetDefaultOutputDeviceID()); // Default to the first available output device
         return true;
     }
 

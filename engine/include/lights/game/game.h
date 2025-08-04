@@ -28,14 +28,41 @@ namespace OZZ::game {
         //  Window header
         EWindowMode WindowMode{EWindowMode::Windowed};
         glm::ivec2 WindowSize{1280, 720}; // Only used in Windowed mode
-        // Add more parameters here as needed
+
+        uint32_t SampleRate{44100};
+        uint8_t AudioChannels{2};
 
         bool fromToml(toml::basic_value<toml::type_config> data) {
             try {
-                FPS = static_cast<float>(data.at("Engine").at("FPS").as_floating());
-                WindowMode = static_cast<EWindowMode>(data.at("Window").at("Mode").as_integer());
-                WindowSize.x = static_cast<int>(data.at("Window").at("Size").at(0).as_integer());
-                WindowSize.y = static_cast<int>(data.at("Window").at("Size").at(1).as_integer());
+                if (const auto EngineSection = data.at("Engine"); data.contains("Engine") && EngineSection.is_table()) {
+                    if (EngineSection.contains("FPS") && EngineSection.at("FPS").is_floating()) {
+                        FPS = static_cast<float>(EngineSection.at("FPS").as_floating());
+                    }
+                }
+
+                if (const auto WindowSection = data.at("Window"); WindowSection.is_table()) {
+                    if (WindowSection.contains("Mode") && WindowSection.at("Mode").is_integer()) {
+                        WindowMode = static_cast<EWindowMode>(WindowSection.at("Mode").as_integer());
+                    }
+                    if (WindowSection.contains("Size") && WindowSection.at("Size").is_array()) {
+                        const auto& sizeArray = WindowSection.at("Size");
+                        if (sizeArray.size() == 2 && sizeArray[0].is_integer() && sizeArray[1].is_integer()) {
+                            WindowSize.x = static_cast<int>(sizeArray[0].as_integer());
+                            WindowSize.y = static_cast<int>(sizeArray[1].as_integer());
+                        }
+                    }
+                }
+
+                if (data.contains("Audio")) {
+                    const auto AudioSection = data.at("Audio");
+                    if (AudioSection.contains("SampleRate") && AudioSection.at("SampleRate").is_integer()) {
+                        SampleRate = static_cast<uint32_t>(AudioSection.at("SampleRate").as_integer());
+                    }
+                    if (AudioSection.contains("Channels") && AudioSection.at("Channels").is_integer()) {
+                        AudioChannels = static_cast<uint8_t>(AudioSection.at("Channels").as_integer());
+                    }
+                }
+
             }
             catch (...) {
                 return false;
@@ -48,6 +75,8 @@ namespace OZZ::game {
             value["Engine"]["FPS"] = FPS;
             value["Window"]["Mode"] = static_cast<int>(WindowMode);
             value["Window"]["Size"] = std::vector<int>{WindowSize.x, WindowSize.y};
+            value["Audio"]["SampleRate"] = SampleRate;
+            value["Audio"]["Channels"] = AudioChannels;
             return value;
         }
     };
