@@ -65,14 +65,14 @@ int main() {
     auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
 
     audioSubsystem->Init({
-        .SampleRate = 44100,
+        .SampleRate = 48000,
         .AudioChannels = 2
     });
 
     audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 
     // Create a new sawtooth node
-    const auto Saw = std::make_shared<OZZ::lights::audio::AudioGraphNodeType<OZZ::lights::audio::SawToothNode>>();
+    const auto Saw = audioSubsystem->CreateAudioNode<OZZ::lights::audio::SawToothNode>();
     // connect to main mix
     audioSubsystem->ConnectToMainMixNode(Saw);
 

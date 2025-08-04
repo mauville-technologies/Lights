@@ -43,7 +43,6 @@ namespace OZZ::lights::audio {
         std::vector<float> renderedAudio;
         float phase = 0.0f;
         float frequency = 440.0f; // A4 note by default
-        float sampleRate = 44100.0f;
         Note currentNote = Note::A;
         Octave currentOctave = Octave::Oct4;
 

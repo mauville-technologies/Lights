@@ -10,6 +10,14 @@ namespace OZZ::lights::audio {
     public:
         virtual ~AudioGraphNode() = default;
 
+        void SetSampleRate(uint16_t sampleRate) {
+            this->sampleRate = sampleRate;
+        }
+
+        [[nodiscard]] uint16_t GetSampleRate() const {
+            return sampleRate;
+        }
+
         [[nodiscard]] virtual std::string GetName() const {
             return "Base AudioGraphNode";
         }
@@ -25,6 +33,9 @@ namespace OZZ::lights::audio {
         [[nodiscard]] virtual std::string GetDescription() const {
             return "This node shouldn't be used directly";
         };
+
+    private:
+        uint16_t sampleRate{44100};
     };
 
     template <typename T>
