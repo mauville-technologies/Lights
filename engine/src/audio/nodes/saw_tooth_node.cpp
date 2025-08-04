@@ -14,7 +14,7 @@ namespace OZZ::lights::audio {
         renderedAudio.resize(renderedAudioSize);
 
         // Calculate phase increment per sample
-        const float phaseIncrement = frequency / sampleRate;
+        const float phaseIncrement = frequency / static_cast<float>(GetSampleRate());
 
         // Generate sawtooth wave
         for (int i = 0; i < nFrames; ++i) {

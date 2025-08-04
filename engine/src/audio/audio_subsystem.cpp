@@ -14,6 +14,17 @@ namespace OZZ::lights::audio {
         settings = std::move(inSettings);
         initializeRtAudio();
         initializeMainMix();
+        if (!rtAudio) {
+            spdlog::error("Failed to initialize RtAudio. Audio subsystem will not function.");
+            return;
+        }
+        if (!mainMixNode) {
+            spdlog::error("Failed to initialize main mix node. Audio subsystem will not function.");
+            return;
+        }
+        spdlog::info("Audio Subsystem initialized with sample rate: {}, channels: {}",
+                     settings.SampleRate, settings.AudioChannels);
+        bInitialized = true;
     }
 
     void AudioSubsystem::Shutdown() {
