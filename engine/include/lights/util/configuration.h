@@ -30,6 +30,8 @@ namespace OZZ {
         explicit Configuration(std::filesystem::path  inConfigPath, const bool bSaveIfNew = true) : ConfigPath(std::move(inConfigPath)) {
             if (std::filesystem::exists(ConfigPath)) {
                 assert(Config.fromToml(toml::parse(ConfigPath)) && "Failed to load configuration from file");
+                // We're going to put a save here -- this will make sure that the config is upgraded to the latest version (if missing fields)
+                SaveConfig();
             } else if (bSaveIfNew) {
                 SaveConfig();
             }
