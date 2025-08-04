@@ -4,11 +4,14 @@
 
 #include <lights/audio/audio_subsystem.h>
 
+#include <samplerate.h>
 #include "spdlog/spdlog.h"
 
 namespace OZZ::lights::audio {
-    void AudioSubsystem::Init() {
+    void AudioSubsystem::Init(AudioSubsystemSettings&& inSettings) {
         spdlog::info("Initializing Audio Subsystem...");
+
+        settings = std::move(inSettings);
         initializeRtAudio();
         initializeMainMix();
     }
@@ -46,10 +49,10 @@ namespace OZZ::lights::audio {
             nullptr, // No input
             &OutParameters, // Output device ID
             RTAUDIO_FLOAT32, // Sample format
-            44100, // Sample rate
+            settings.SampleRate, // Sample rate
             &BufferSize, // Buffer size
             [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-               RtAudioStreamStatus status, void* userData) {
+            RtAudioStreamStatus status, void* userData) {
                 const auto* audioSubsystem = static_cast<AudioSubsystem*>(userData);
                 return audioSubsystem->renderAudio(outputBuffer, inputBuffer, nFrames, streamTime, status);
             },
@@ -105,9 +108,14 @@ namespace OZZ::lights::audio {
     }
 
     int AudioSubsystem::renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-                                    RtAudioStreamStatus status) const {
-        constexpr auto numChannels = 2;
-        const auto bufferSize = nFrames * numChannels;
+        RtAudioStreamStatus status) const {
+        const auto deviceSampleRate = rtAudio->getStreamSampleRate();
+        const auto deviceChannels = rtAudio->getDeviceInfo(currentOutputDevice->ID).outputChannels;
+
+        // We need to ensure to render enough audio to fill the output buffer after resampling.
+        const auto conversionRatio = deviceSampleRate / static_cast<double>(settings.SampleRate);
+        const auto requiredFrames = static_cast<unsigned int>(nFrames / conversionRatio);
+        const auto bufferSize = nFrames * deviceChannels;
 
         if (status == RTAUDIO_OUTPUT_UNDERFLOW) {
             spdlog::warn("Audio output underflow detected. This may cause audio glitches.");
@@ -118,7 +126,7 @@ namespace OZZ::lights::audio {
 
 
         // Ensure the output buffer is large enough
-        if (outputBuffer == nullptr || nFrames == 0) {
+        if (outputBuffer == nullptr || requiredFrames == 0) {
             spdlog::error("Output buffer is null or nFrames is zero. Cannot render audio.");
             return 0;
         }
@@ -140,15 +148,41 @@ namespace OZZ::lights::audio {
                 }
             }
 
-            if (!CurrentNode->Data.Render(nFrames, inputs)) {
+            if (!CurrentNode->Data.Render(requiredFrames, inputs)) {
                 spdlog::warn("Node {} failed to render audio.", CurrentNode->Data.GetName());
             }
         }
 
-
         // we can then grab the rendered audio from the main mix node
         // TODO: @paulm - i should probably be using views here instead of copying the data
         auto mix = mainMixNode->Data.GetRenderedAudio();
+
+        if (!mix.empty() && deviceSampleRate != settings.SampleRate) {
+            // resample the audio to match the device sample rate
+            spdlog::warn("Resampling audio from {} Hz to {} Hz. This may cause quality loss.",
+                         settings.SampleRate, deviceSampleRate);
+
+            // first we'll copy the mix to a temporary buffer
+            const auto inMix = mix;
+            const uint16_t inMixFrameCount = inMix.size() / settings.AudioChannels;
+
+            // we'll then resize mix to the new sample rate
+            const uint16_t outMixFrameCount = static_cast<size_t>(nFrames);
+            mix.resize(outMixFrameCount * deviceChannels);
+            SRC_DATA srcData{
+                .data_in = inMix.data(),
+                .data_out = mix.data(),
+                .input_frames = inMixFrameCount,
+                .output_frames = outMixFrameCount,
+                .src_ratio = conversionRatio,
+            };
+
+            if (const auto error = src_simple(&srcData, SRC_SINC_BEST_QUALITY, deviceChannels); error != 0) {
+                spdlog::error("Error resampling audio: {}", src_strerror(error));
+                return -1; // Return an error code
+            }
+        }
+
         if (mix.empty()) {
             spdlog::warn("Main mix node rendered no audio data. Returning silence.");
             mix = std::vector<float>(bufferSize, 0.0f);
@@ -158,7 +192,7 @@ namespace OZZ::lights::audio {
             // Truncate the mix if it's longer than nFrames
             mix.resize(bufferSize);
         }
-        else if (mix.size() < nFrames) {
+        else if (mix.size() < bufferSize) {
             // pad with silence if the mix is shorter than nFrames
             mix.resize(bufferSize, 0.0f);
         }

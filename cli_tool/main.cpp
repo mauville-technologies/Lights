@@ -62,9 +62,13 @@ constexpr OZZ::lights::audio::Note Notes[] = {
 };
 
 int main() {
-    std::unique_ptr<OZZ::lights::audio::AudioSubsystem> audioSubsystem = std::make_unique<
-        OZZ::lights::audio::AudioSubsystem>();
-    audioSubsystem->Init();
+    auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
+
+    audioSubsystem->Init({
+        .SampleRate = 44100,
+        .AudioChannels = 2
+    });
+
     audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 
     // Create a new sawtooth node
