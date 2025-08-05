@@ -16,14 +16,9 @@ namespace OZZ::lights::audio {
 
         bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
 
-        [[nodiscard]] std::vector<float> GetRenderedAudio() const override;
-
         [[nodiscard]] std::string GetDescription() const override {
             return "Mixes multiple audio inputs into a single output stream.";
         }
-
-    private:
-        std::vector<float> renderedAudio;
     };
 } // OZZ
 

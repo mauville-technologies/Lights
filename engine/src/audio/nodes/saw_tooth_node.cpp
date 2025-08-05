@@ -36,10 +36,6 @@ namespace OZZ::lights::audio {
         return true;
     }
 
-    std::vector<float> SawToothNode::GetRenderedAudio() const {
-        return renderedAudio;
-    }
-
     void SawToothNode::SetNote(Note note, Octave octave) {
         currentNote = note;
         currentOctave = octave;

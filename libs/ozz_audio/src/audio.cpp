@@ -4,17 +4,17 @@
 
 #include <ozz_audio/audio.h>
 #include <fstream>
+#include <iostream>
 #include <samplerate.h>
 
 namespace OZZ::audio {
     std::pair<AudioContext, std::vector<float>> Loader::LoadAudioFile(
         const std::filesystem::path& filePath) {
-        const auto fileData = readFile(filePath);
-
+        std::vector<uint8_t> fileData;
+        readFile(filePath, fileData);
         if (fileData.empty()) {
             return {{}, std::vector<float>()};
         }
-
         return parseFile(fileData);
     }
 
@@ -43,37 +43,37 @@ namespace OZZ::audio {
             .src_ratio = conversionRatio
         };
 
-        if (const auto error = src_simple(&srcData, SRC_SINC_BEST_QUALITY, targetContext.Channels); error != 0) {
+        if (const auto error = src_simple(&srcData, SRC_SINC_MEDIUM_QUALITY, targetContext.Channels); error != 0) {
             return {};
         }
 
         return convertedAudioData;
     }
 
-    std::vector<uint8_t> Loader::readFile(const std::filesystem::path& filePath) {
+    void Loader::readFile(const std::filesystem::path& filePath, std::vector<uint8_t>& outFileData) {
+        outFileData.clear();
         if (!std::filesystem::exists(filePath)) {
-            return {};
+            return;
         }
 
         std::ifstream file(filePath, std::ios::binary);
         if (!file.is_open()) {
-            return {};
+            return;
         }
 
-        // read the entire file into a buffer
-        std::vector<uint8_t> buffer(
-            (std::istreambuf_iterator(file)),
+        outFileData = std::vector<uint8_t>(
+            (std::istreambuf_iterator<char>(file)),
             std::istreambuf_iterator<char>()
         );
 
         file.close();
-        return buffer;
     }
 
     std::pair<AudioContext, std::vector<float>> Loader::parseFile(const std::vector<uint8_t>& fileData) {
         switch (determineFileType(fileData)) {
-            case AudioFileType::Wav:
+            case AudioFileType::Wav: {
                 return parseWav(fileData);
+            }
             default:
                 return {};
         }
@@ -126,9 +126,12 @@ namespace OZZ::audio {
         const auto bytesPerSample = bitsPerSample / 8;
 
         std::vector<float> audioData;
+        const auto audioDataStartOffset = startFmtChunkOffset + 32;
         switch (audioFormat) {
             case 1: {
-                for (auto i = 44; i < fileData.size(); i += bytesPerSample) {
+                std::cout << "Is right size: " << (fileData.size() - audioDataStartOffset) / bytesPerSample <<
+                    std::endl;
+                for (auto i = audioDataStartOffset; i < fileData.size(); i += bytesPerSample) {
                     if (i + bytesPerSample > fileData.size()) {
                         break; // Prevent out-of-bounds access
                     }
@@ -143,7 +146,8 @@ namespace OZZ::audio {
                         }
                         case 2: {
                             const int16_t sample = *reinterpret_cast<const int16_t*>(fileData.data() + i);
-                            audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int16_t>::max());
+                            audioData.push_back(
+                                static_cast<float>(sample) / std::abs(std::numeric_limits<int16_t>::min()));
                             break;
                         }
                         case 3: {
@@ -174,12 +178,13 @@ namespace OZZ::audio {
                 }
                 // TODO: @paulm -- we're assuming the floats are normalized to [-1.0, 1.0]
                 if (bytesPerSample == 4) {
-                    audioData.resize((fileData.size() - 44) / sizeof(float));
-                    memcpy(audioData.data(), fileData.data() + 44, fileData.size() - 44);
+                    audioData.resize((fileData.size() - (startFmtChunkOffset + 32)) / sizeof(float));
+                    memcpy(audioData.data(), fileData.data() + audioDataStartOffset,
+                           fileData.size() - audioDataStartOffset);
                 }
                 else {
                     // we need to convert 64-bit float to 32-bit float
-                    for (auto i = 44; i < fileData.size(); i += bytesPerSample) {
+                    for (auto i = audioDataStartOffset; i < fileData.size(); i += bytesPerSample) {
                         if (i + 8 > fileData.size()) {
                             break; // Prevent out-of-bounds access
                         }

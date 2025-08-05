@@ -29,7 +29,7 @@ namespace OZZ::audio {
         }
 
         bool operator==(const AudioContext& other) const {
-            return FileType == other.FileType &&
+            return
                 SampleRate == other.SampleRate &&
                 Channels == other.Channels;
         }
@@ -54,7 +54,7 @@ namespace OZZ::audio {
             const std::filesystem::path& filePath, AudioContext targetContext);
 
     private:
-        static std::vector<uint8_t> readFile(const std::filesystem::path& filePath);
+        static void readFile(const std::filesystem::path& filePath, std::vector<uint8_t>& outFileData);
 
         /**
          * Parses the header of the audio file to extract metadata and audio data.

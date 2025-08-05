@@ -66,7 +66,7 @@ int main() {
     auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
 
     audioSubsystem->Init({
-        .SampleRate = 48000,
+        .SampleRate = 44100,
         .AudioChannels = 2
     });
 
@@ -77,11 +77,11 @@ int main() {
 
     const auto Saw = audioSubsystem->CreateAudioNode<OZZ::lights::audio::SawToothNode>();
     const auto testAudio = audioSubsystem->CreateAudioNode<OZZ::lights::audio::AudioCue>();
-    testAudio->Data.Load(std::filesystem::current_path() / "test.wav");
+    testAudio->Data.Load(std::filesystem::current_path() / "silence.wav");
     testAudio->Data.PlayState = OZZ::lights::audio::AudioCuePlayState::Playing;
-    testAudio->Data.LoopMode = OZZ::lights::audio::AudioCueLoopMode::None;
+    testAudio->Data.LoopMode = OZZ::lights::audio::AudioCueLoopMode::Loop;
     audioSubsystem->ConnectToMainMixNode(testAudio);
-    audioSubsystem->ConnectToMainMixNode(Saw);
+    // audioSubsystem->ConnectToMainMixNode(Saw);
 
     static auto timeElapsed = 0.f;
     static auto lastTickTime = std::chrono::high_resolution_clock::now();
