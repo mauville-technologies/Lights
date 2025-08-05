@@ -34,13 +34,16 @@ namespace OZZ::lights::audio {
             return false;
         };
 
-        [[nodiscard]] virtual std::vector<float> GetRenderedAudio() const {
-            return {};
+        [[nodiscard]] const std::vector<float>& GetRenderedAudio() {
+            return AudioGraphNode::renderedAudio;
         };
 
         [[nodiscard]] virtual std::string GetDescription() const {
             return "This node shouldn't be used directly";
         };
+
+    protected:
+        std::vector<float> renderedAudio{};
 
     private:
         uint16_t sampleRate{44100};

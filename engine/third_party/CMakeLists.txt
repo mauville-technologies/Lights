@@ -1,6 +1,7 @@
 include(FetchContent)
 
 set(GLFW_BUILD_WAYLAND FALSE)
+set(BUILD_SHARED_LIBS FALSE)
 
 set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: GLFW, SDL3")
 

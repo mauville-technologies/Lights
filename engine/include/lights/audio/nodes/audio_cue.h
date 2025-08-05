@@ -39,7 +39,6 @@ namespace OZZ::lights::audio {
         // Interface functions
         [[nodiscard]] std::string GetName() const override;
         bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
-        [[nodiscard]] std::vector<float> GetRenderedAudio() const override;
         [[nodiscard]] std::string GetDescription() const override;
 
         bool Load(const std::filesystem::path& filePath);
@@ -79,6 +78,5 @@ namespace OZZ::lights::audio {
         AudioCueAudioData audioData;
 
         bool bCurrentPlayDirectionForward{true};
-        std::vector<float> renderedAudio{};
     };
 }

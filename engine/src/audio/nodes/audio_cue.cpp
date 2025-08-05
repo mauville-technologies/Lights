@@ -2,6 +2,7 @@
 // Created by ozzadar on 2025-07-24.
 //
 
+#include <iostream>
 #include <lights/audio/nodes/audio_cue.h>
 #include <ozz_audio/audio.h>
 
@@ -14,22 +15,19 @@ namespace OZZ::lights::audio {
 
     bool AudioCue::Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) {
         renderedAudio.clear();
-
         // Ensure the audio data is valid
         if (!IsValid()) {
             spdlog::error("AudioCue is not valid. Cannot render audio.");
             return false;
         }
-
         const auto framesToRender = std::min(
             nFrames, static_cast<int>(audioData.Data.size() - audioData.PlayHead) / GetChannels());
         if (PlayState == AudioCuePlayState::Stopped || audioData.Data.empty() || framesToRender <= 0) {
             // fill empty audio
-            audioData.Data.resize(nFrames * GetChannels(), 0.0f);
+            renderedAudio.resize(nFrames * GetChannels(), 0.0f);
             audioData.PlayHead = 0;
             return true;
         }
-
         renderedAudio.resize(nFrames * GetChannels(), 0.0f);
         // get the frames
         const auto startOffset = audioData.PlayHead;
@@ -39,7 +37,6 @@ namespace OZZ::lights::audio {
         // TODO: @paulm - implement pingpong logic
         std::copy_n(audioData.Data.begin() + startOffset, bytesToRender, renderedAudio.begin());
         audioData.PlayHead = endOffset;
-
         // We've got audio data to render and we're currently playing
         if (framesToRender < nFrames) {
             switch (LoopMode) {
@@ -48,18 +45,16 @@ namespace OZZ::lights::audio {
                 case AudioCueLoopMode::None: {
                     PlayState = AudioCuePlayState::Stopped;
                     // Fill the rest of the buffer with silence
-                    audioData.Data.resize(nFrames * GetChannels(), 0.0f);
+                    renderedAudio.resize(nFrames * GetChannels(), 0.0f);
                     break;
                 }
                 case AudioCueLoopMode::Loop: {
                     // Loop the audio data
                     const auto remainingFrames = nFrames - framesToRender;
-                    audioData.PlayHead = remainingFrames;
-
+                    audioData.PlayHead = remainingFrames * GetChannels();
                     // play the audio data from the beginning
-                    std::copy_n(audioData.Data.begin(), remainingFrames,
-                                renderedAudio.begin() + framesToRender);
-
+                    std::copy_n(audioData.Data.begin(), remainingFrames * GetChannels(),
+                                renderedAudio.begin() + framesToRender * GetChannels());
                     break;
                 }
                     // case AudioCueLoopMode::PingPong: {
@@ -71,10 +66,6 @@ namespace OZZ::lights::audio {
         }
 
         return true;
-    }
-
-    std::vector<float> AudioCue::GetRenderedAudio() const {
-        return renderedAudio; // Return empty vector for now, as this is a placeholder
     }
 
     std::string AudioCue::GetDescription() const {
