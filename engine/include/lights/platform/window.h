@@ -3,19 +3,13 @@
 //
 
 #pragma once
-#include <glad/glad.h>
-#include <array>
-#include <unordered_map>
-#include <functional>
-#include "lights/input/input_keys.h"
 #include <lights/platform/platform_window.h>
 #include "glm/glm.hpp"
-#include <variant>
+#include <memory>
 
 namespace OZZ {
     class Window {
     public:
-
         Window(platform::WindowCallbacks&& inCallbacks);
         ~Window();
 
@@ -33,13 +27,13 @@ namespace OZZ {
 
     private:
         void initWindow(platform::WindowCallbacks&& inCallbacks);
+
     public:
 
 
     private:
         std::unique_ptr<platform::IPlatformWindow> window;
 
-        inline static bool bGLADInitialized {false};
-
+        inline static bool bGLADInitialized{false};
     };
 } // OZZ

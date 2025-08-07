@@ -23,7 +23,6 @@ namespace OZZ::lights::audio {
         }
 
         bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
-        [[nodiscard]] std::vector<float> GetRenderedAudio() const override;
 
         [[nodiscard]] std::string GetDescription() const override {
             return "SawTooth synth";
@@ -40,10 +39,8 @@ namespace OZZ::lights::audio {
         }
 
     private:
-        std::vector<float> renderedAudio;
         float phase = 0.0f;
         float frequency = 440.0f; // A4 note by default
-        float sampleRate = 44100.0f;
         Note currentNote = Note::A;
         Octave currentOctave = Octave::Oct4;
 

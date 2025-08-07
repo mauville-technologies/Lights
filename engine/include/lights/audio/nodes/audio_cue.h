@@ -9,26 +9,9 @@
 #include "lights/audio/audio_graph.h"
 
 namespace OZZ::lights::audio {
-    enum class AudioCueContainerType {
-        Wav,
-        Ogg,
-        Mp3,
-        Flac,
-        Unknown
-    };
-
-    enum class AudioCueLoadResult {
-        Success,
-        FileNotFound,
-        UnsupportedFormat,
-        UnknownError
-    };
-
     enum class AudioCuePlayState {
         Playing,
-        Paused,
-        Stopped,
-        Error
+        Stopped
     };
 
     enum class AudioCueLoopMode {
@@ -37,44 +20,33 @@ namespace OZZ::lights::audio {
         PingPong
     };
 
-    struct AudioCueParams {
-        AudioCueContainerType Type{AudioCueContainerType::Unknown};
-        AudioCueLoadResult LoadResult{AudioCueLoadResult::UnknownError};
-        AudioCuePlayState PlayState{AudioCuePlayState::Stopped};
-        AudioCueLoopMode LoopMode{AudioCueLoopMode::None};
-    };
-
     struct AudioCueAudioData {
         // It's assumed that the audio data is in normalized float format
         std::vector<float> Data;
         uint32_t SampleRate{44100};
-        uint8_t BitDepth{2};
         size_t PlayHead{0};
         std::string FileName;
 
         [[nodiscard]] bool IsValid() const {
-            return !Data.empty() && SampleRate > 0 && BitDepth > 0;
+            return !Data.empty() && SampleRate > 0;
         }
     };
 
-    class AudioCue : public AudioGraphNode {
+    class AudioCue final : public AudioGraphNode {
     public:
         ~AudioCue() override;
 
         // Interface functions
         [[nodiscard]] std::string GetName() const override;
         bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
-        [[nodiscard]] std::vector<float> GetRenderedAudio() const override;
         [[nodiscard]] std::string GetDescription() const override;
 
-        void Load(const std::filesystem::path& filePath);
+        bool Load(const std::filesystem::path& filePath);
 
         [[nodiscard]] bool IsValid() const {
-            bool isValid = false;
+            bool isValid = true;
             isValid &= !filePath.empty();
-            isValid &= Params.LoadResult == AudioCueLoadResult::Success;
-            isValid &= Params.Type != AudioCueContainerType::Unknown;
-            isValid &= Params.PlayState != AudioCuePlayState::Error;
+            isValid &= audioData.IsValid();
             return isValid;
         }
 
@@ -82,14 +54,29 @@ namespace OZZ::lights::audio {
             return filePath;
         }
 
-    private:
-        void loadWav(const std::filesystem::path& filePath);
+        float GetDuration() const {
+            if (!audioData.IsValid()) {
+                return 0.0f;
+            }
+            return static_cast<float>(audioData.Data.size()) / (audioData.SampleRate * GetChannels());
+        }
+
+        void Seek(const float seconds) {
+            if (!audioData.IsValid()) {
+                return;
+            }
+            const auto targetFrame = static_cast<size_t>(seconds * audioData.SampleRate * GetChannels());
+            audioData.PlayHead = std::min(targetFrame, audioData.Data.size() - 1);
+        }
 
     public:
-        AudioCueParams Params;
+        AudioCueLoopMode LoopMode{AudioCueLoopMode::None};
+        AudioCuePlayState PlayState{AudioCuePlayState::Stopped};
 
     private:
         std::filesystem::path filePath;
         AudioCueAudioData audioData;
+
+        bool bCurrentPlayDirectionForward{true};
     };
 }

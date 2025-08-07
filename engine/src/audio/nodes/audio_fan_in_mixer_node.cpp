@@ -14,7 +14,7 @@ namespace OZZ::lights::audio {
 
         const auto scale = 1.f / static_cast<float>(inputs.size());
 
-        for (const auto* inputNode : inputs) {
+        for (auto* inputNode : inputs) {
             // we want to first ensure not null
             if (!inputNode) {
                 spdlog::warn("Input node is null");
@@ -38,9 +38,5 @@ namespace OZZ::lights::audio {
             frame = scale * frame;
         }
         return true;
-    }
-
-    std::vector<float> AudioFanInMixerNode::GetRenderedAudio() const {
-        return renderedAudio;
     }
 }

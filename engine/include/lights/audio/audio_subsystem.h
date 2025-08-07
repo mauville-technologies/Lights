@@ -15,6 +15,11 @@
 #include "nodes/audio_fan_in_mixer_node.h"
 
 namespace OZZ::lights::audio {
+    struct AudioSubsystemSettings {
+        uint32_t SampleRate{44100};
+        uint8_t AudioChannels{2};
+    };
+
     struct AudioDevice {
         std::string Name;
         uint32_t ID;
@@ -32,12 +37,24 @@ namespace OZZ::lights::audio {
 
     class AudioSubsystem {
     public:
-        void Init();
+        void Init(AudioSubsystemSettings&& inSettings = {});
         void Shutdown();
 
         template <typename T>
         void ConnectToMainMixNode(AudioGraphNodePtr<T> node) {
             AudioGraphNodeType<T>::Connect(node, mainMixNode);
+        }
+
+        template <typename T>
+        std::shared_ptr<AudioGraphNodeType<T>> CreateAudioNode() {
+            if (!bInitialized) {
+                spdlog::error("AudioSubsystem is not initialized. Cannot create audio node.");
+                return nullptr;
+            }
+            auto node = std::make_shared<AudioGraphNodeType<T>>();
+            node->Data.SetSampleRate(settings.SampleRate);
+            node->Data.SetChannels(settings.AudioChannels);
+            return node;
         }
 
         [[nodiscard]] const std::vector<AudioDevice>& GetAudioDevices() const {
@@ -94,15 +111,17 @@ namespace OZZ::lights::audio {
         bool initializeMainMix();
 
         int renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-                        RtAudioStreamStatus status) const;
+            RtAudioStreamStatus status) const;
 
         void shutdownMainMix();
         void closeOpenStream();
         void shutdownRtAudio();
 
     private:
-        AudioGraphNodePtr<AudioFanInMixerNode> mainMixNode{nullptr};
+        bool bInitialized{false};
 
+        AudioGraphNodePtr<AudioFanInMixerNode> mainMixNode{nullptr};
+        AudioSubsystemSettings settings{};
         std::unique_ptr<RtAudio> rtAudio{nullptr};
         const AudioDevice* currentOutputDevice{nullptr};
         std::vector<AudioDevice> audioDevices{};

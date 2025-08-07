@@ -14,12 +14,12 @@ namespace OZZ::lights::audio {
         renderedAudio.resize(renderedAudioSize);
 
         // Calculate phase increment per sample
-        const float phaseIncrement = frequency / sampleRate;
+        const float phaseIncrement = frequency / static_cast<float>(GetSampleRate());
 
         // Generate sawtooth wave
         for (int i = 0; i < nFrames; ++i) {
             // Generate one sample of sawtooth wave (-1 to 1)
-            float sample = (2.0f * phase) - 1.0f;
+            const float sample = (2.0f * phase) - 1.0f;
 
             // Update phase
             phase += phaseIncrement;
@@ -27,16 +27,13 @@ namespace OZZ::lights::audio {
                 phase -= 1.0f;
             }
 
-            // Write to both channels
-            renderedAudio[i * numChannels] = sample; // Left channel
-            renderedAudio[i * numChannels + 1] = sample; // Right channel
+            // Write to all channels
+            for (auto channel = 0; channel < numChannels; ++channel) {
+                renderedAudio[i * numChannels + channel] = sample * 0.05f;
+            }
         }
 
         return true;
-    }
-
-    std::vector<float> SawToothNode::GetRenderedAudio() const {
-        return renderedAudio;
     }
 
     void SawToothNode::SetNote(Note note, Octave octave) {

@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include "lights/audio/audio_subsystem.h"
+#include "lights/audio/nodes/audio_cue.h"
 #include "lights/audio/nodes/saw_tooth_node.h"
 
 struct CommandLineArguments {
@@ -62,19 +63,29 @@ constexpr OZZ::lights::audio::Note Notes[] = {
 };
 
 int main() {
-    std::unique_ptr<OZZ::lights::audio::AudioSubsystem> audioSubsystem = std::make_unique<
-        OZZ::lights::audio::AudioSubsystem>();
-    audioSubsystem->Init();
+    auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
+
+    audioSubsystem->Init({
+        .SampleRate = 44100,
+        .AudioChannels = 2
+    });
+
     audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 
     // Create a new sawtooth node
-    const auto Saw = std::make_shared<OZZ::lights::audio::AudioGraphNodeType<OZZ::lights::audio::SawToothNode>>();
     // connect to main mix
-    audioSubsystem->ConnectToMainMixNode(Saw);
+
+    const auto Saw = audioSubsystem->CreateAudioNode<OZZ::lights::audio::SawToothNode>();
+    const auto testAudio = audioSubsystem->CreateAudioNode<OZZ::lights::audio::AudioCue>();
+    testAudio->Data.Load(std::filesystem::current_path() / "silence.wav");
+    testAudio->Data.PlayState = OZZ::lights::audio::AudioCuePlayState::Playing;
+    testAudio->Data.LoopMode = OZZ::lights::audio::AudioCueLoopMode::Loop;
+    audioSubsystem->ConnectToMainMixNode(testAudio);
+    // audioSubsystem->ConnectToMainMixNode(Saw);
 
     static auto timeElapsed = 0.f;
     static auto lastTickTime = std::chrono::high_resolution_clock::now();
-    static const float changeInterval = 0.5f; // Change note every 5 seconds
+    static constexpr float changeInterval = 0.5f; // Change note every 5 seconds
     static auto currentNoteIndex = 0;
     Saw->Data.SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
 
