@@ -13,6 +13,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(spdlog)
 
+set(ENABLE_MONGODB_AWS_AUTH OFF)
 set(ENABLE_UNINSTALL OFF CACHE BOOL "Disable uninstall target for mongocxx" FORCE)
 FetchContent_Declare(
         mongocxx
@@ -53,6 +54,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(toml11_lib)
 
 set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "The RTAUDIO uninstall target name" FORCE)
+set(RTAUDIO_API_ALSA OFF)
+set(RTAUDIO_API_PULSE ON)
 FetchContent_Declare(
         rtaudio_lib
         GIT_REPOSITORY git@github.com:thestk/rtaudio.git

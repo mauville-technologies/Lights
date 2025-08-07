@@ -4,6 +4,7 @@
 
 #include "lights/platform/window.h"
 #include <spdlog/spdlog.h>
+#include <glad/glad.h>
 
 #ifdef OZZ_GLFW
 #include "platform/glfw/glfw_window.h"
@@ -52,9 +53,7 @@ namespace OZZ {
         //TODO: Add mouse and joystick input
     }
 
-    void Window::MakeContextCurrent() {
-
-    }
+    void Window::MakeContextCurrent() {}
 
     void Window::SwapBuffers() {
         window->Present();

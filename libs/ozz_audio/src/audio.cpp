@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <samplerate.h>
+#include <cmath>
+#include <cstring>
 
 namespace OZZ::audio {
     std::pair<AudioContext, std::vector<float>> Loader::LoadAudioFile(
@@ -19,7 +21,7 @@ namespace OZZ::audio {
     }
 
     std::vector<float> Loader::LoadAudioFileWithContext(const std::filesystem::path& filePath,
-        const AudioContext targetContext) {
+                                                        const AudioContext targetContext) {
         auto [context, audioData] = LoadAudioFile(filePath);
         if (context == targetContext) {
             return audioData; // No conversion needed
@@ -41,7 +43,7 @@ namespace OZZ::audio {
             .input_frames = inputFrames,
             .output_frames = outputFrames,
             .src_ratio = conversionRatio
-        };
+            };
 
         if (const auto error = src_simple(&srcData, SRC_SINC_MEDIUM_QUALITY, targetContext.Channels); error != 0) {
             return {};
@@ -71,11 +73,11 @@ namespace OZZ::audio {
 
     std::pair<AudioContext, std::vector<float>> Loader::parseFile(const std::vector<uint8_t>& fileData) {
         switch (determineFileType(fileData)) {
-            case AudioFileType::Wav: {
-                return parseWav(fileData);
-            }
-            default:
-                return {};
+        case AudioFileType::Wav: {
+            return parseWav(fileData);
+        }
+        default:
+            return {};
         }
     }
 
@@ -128,74 +130,74 @@ namespace OZZ::audio {
         std::vector<float> audioData;
         const auto audioDataStartOffset = startFmtChunkOffset + 32;
         switch (audioFormat) {
-            case 1: {
-                std::cout << "Is right size: " << (fileData.size() - audioDataStartOffset) / bytesPerSample <<
-                    std::endl;
+        case 1: {
+            std::cout << "Is right size: " << (fileData.size() - audioDataStartOffset) / bytesPerSample <<
+                std::endl;
+            for (auto i = audioDataStartOffset; i < fileData.size(); i += bytesPerSample) {
+                if (i + bytesPerSample > fileData.size()) {
+                    break; // Prevent out-of-bounds access
+                }
+
+                switch (bytesPerSample) {
+                case 1: {
+                    const uint8_t sample = fileData[i];
+                    constexpr auto max = std::numeric_limits<uint8_t>::max();
+                    audioData.push_back(
+                        (static_cast<float>(sample) - (max / 2.f)) / (max / 2.f));
+                    break;
+                }
+                case 2: {
+                    const int16_t sample = *reinterpret_cast<const int16_t*>(fileData.data() + i);
+                    audioData.push_back(
+                        static_cast<float>(sample) / std::abs(std::numeric_limits<int16_t>::min()));
+                    break;
+                }
+                case 3: {
+                    const int32_t sample = (fileData[i] | (fileData[i + 1] << 8) | (fileData[i + 2] << 16)) <<
+                        8;
+                    audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int32_t>::max());
+                    break;
+                }
+                case 4: {
+                    const int32_t sample = *reinterpret_cast<const int32_t*>(fileData.data() + i);
+                    audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int32_t>::max());
+                    break;
+                }
+                case 8: {
+                    const int64_t sample = *reinterpret_cast<const int64_t*>(fileData.data() + i);
+                    audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int64_t>::max());
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            return {context, audioData};
+        }
+        case 3: {
+            if (bytesPerSample != 4 && bytesPerSample != 8) {
+                return {}; // Unsupported bit depth
+            }
+            // TODO: @paulm -- we're assuming the floats are normalized to [-1.0, 1.0]
+            if (bytesPerSample == 4) {
+                audioData.resize((fileData.size() - (startFmtChunkOffset + 32)) / sizeof(float));
+                std::memcpy(audioData.data(), fileData.data() + audioDataStartOffset,
+                            fileData.size() - audioDataStartOffset);
+            }
+            else {
+                // we need to convert 64-bit float to 32-bit float
                 for (auto i = audioDataStartOffset; i < fileData.size(); i += bytesPerSample) {
-                    if (i + bytesPerSample > fileData.size()) {
+                    if (i + 8 > fileData.size()) {
                         break; // Prevent out-of-bounds access
                     }
-
-                    switch (bytesPerSample) {
-                        case 1: {
-                            const uint8_t sample = fileData[i];
-                            constexpr auto max = std::numeric_limits<uint8_t>::max();
-                            audioData.push_back(
-                                (static_cast<float>(sample) - (max / 2.f)) / (max / 2.f));
-                            break;
-                        }
-                        case 2: {
-                            const int16_t sample = *reinterpret_cast<const int16_t*>(fileData.data() + i);
-                            audioData.push_back(
-                                static_cast<float>(sample) / std::abs(std::numeric_limits<int16_t>::min()));
-                            break;
-                        }
-                        case 3: {
-                            const int32_t sample = (fileData[i] | (fileData[i + 1] << 8) | (fileData[i + 2] << 16)) <<
-                                8;
-                            audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int32_t>::max());
-                            break;
-                        }
-                        case 4: {
-                            const int32_t sample = *reinterpret_cast<const int32_t*>(fileData.data() + i);
-                            audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int32_t>::max());
-                            break;
-                        }
-                        case 8: {
-                            const int64_t sample = *reinterpret_cast<const int64_t*>(fileData.data() + i);
-                            audioData.push_back(static_cast<float>(sample) / std::numeric_limits<int64_t>::max());
-                            break;
-                        }
-                        default:
-                            break;
-                    }
+                    const double sample = *reinterpret_cast<const double*>(fileData.data() + i);
+                    audioData.push_back(static_cast<float>(sample));
                 }
-                return {context, audioData};
             }
-            case 3: {
-                if (bytesPerSample != 4 && bytesPerSample != 8) {
-                    return {}; // Unsupported bit depth
-                }
-                // TODO: @paulm -- we're assuming the floats are normalized to [-1.0, 1.0]
-                if (bytesPerSample == 4) {
-                    audioData.resize((fileData.size() - (startFmtChunkOffset + 32)) / sizeof(float));
-                    memcpy(audioData.data(), fileData.data() + audioDataStartOffset,
-                           fileData.size() - audioDataStartOffset);
-                }
-                else {
-                    // we need to convert 64-bit float to 32-bit float
-                    for (auto i = audioDataStartOffset; i < fileData.size(); i += bytesPerSample) {
-                        if (i + 8 > fileData.size()) {
-                            break; // Prevent out-of-bounds access
-                        }
-                        const double sample = *reinterpret_cast<const double*>(fileData.data() + i);
-                        audioData.push_back(static_cast<float>(sample));
-                    }
-                }
-                return {context, audioData};
-            }
-            default:
-                return {}; // Unsupported audio format
+            return {context, audioData};
+        }
+        default:
+            return {}; // Unsupported audio format
         }
     }
 }
