@@ -57,13 +57,13 @@ namespace OZZ::lights::audio {
                      device->Name, device->ID, device->OutputChannels);
 
         rtAudio->openStream(
-            nullptr, // No input
             &OutParameters, // Output device ID
+            nullptr, // No input
             RTAUDIO_FLOAT32, // Sample format
             settings.SampleRate, // Sample rate
             &BufferSize, // Buffer size
             [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-            RtAudioStreamStatus status, void* userData) {
+               RtAudioStreamStatus status, void* userData) {
                 const auto* audioSubsystem = static_cast<AudioSubsystem*>(userData);
                 return audioSubsystem->renderAudio(outputBuffer, inputBuffer, nFrames, streamTime, status);
             },
@@ -119,7 +119,7 @@ namespace OZZ::lights::audio {
     }
 
     int AudioSubsystem::renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-        RtAudioStreamStatus status) const {
+                                    RtAudioStreamStatus status) const {
         const auto deviceSampleRate = rtAudio->getStreamSampleRate();
         const auto deviceChannels = rtAudio->getDeviceInfo(currentOutputDevice->ID).outputChannels;
 
@@ -134,7 +134,6 @@ namespace OZZ::lights::audio {
         if (status == RTAUDIO_INPUT_OVERFLOW) {
             spdlog::warn("Audio input overflow detected. This may cause audio glitches.");
         }
-
 
         // Ensure the output buffer is large enough
         if (outputBuffer == nullptr || requiredFrames == 0) {
@@ -159,7 +158,8 @@ namespace OZZ::lights::audio {
                 }
             }
 
-            if (!CurrentNode->Data.Render(requiredFrames, inputs)) {
+            auto* baseNode = &(CurrentNode->Data);
+            if (!baseNode->Render(requiredFrames, inputs)) {
                 spdlog::warn("Node {} failed to render audio.", CurrentNode->Data.GetName());
             }
         }
@@ -186,7 +186,7 @@ namespace OZZ::lights::audio {
                 .input_frames = inMixFrameCount,
                 .output_frames = outMixFrameCount,
                 .src_ratio = conversionRatio,
-            };
+                };
 
             if (const auto error = src_simple(&srcData, SRC_SINC_BEST_QUALITY, deviceChannels); error != 0) {
                 spdlog::error("Error resampling audio: {}", src_strerror(error));
