@@ -60,7 +60,7 @@ constexpr OZZ::lights::audio::Note Notes[] = {
     OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::C,
     OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
     OZZ::lights::audio::Note::C, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
-};
+    };
 
 int main() {
     auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
@@ -68,7 +68,7 @@ int main() {
     audioSubsystem->Init({
         .SampleRate = 44100,
         .AudioChannels = 2
-    });
+        });
 
     audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 

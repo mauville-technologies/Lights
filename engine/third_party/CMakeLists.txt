@@ -54,8 +54,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(toml11_lib)
 
 set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "The RTAUDIO uninstall target name" FORCE)
-set(RTAUDIO_API_ALSA OFF)
-set(RTAUDIO_API_PULSE ON)
+
+# if on linux
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(RTAUDIO_API_ALSA OFF)
+    set(RTAUDIO_API_PULSE ON)
+endif ()
 FetchContent_Declare(
         rtaudio_lib
         GIT_REPOSITORY git@github.com:thestk/rtaudio.git
