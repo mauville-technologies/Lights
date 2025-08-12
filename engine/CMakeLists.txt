@@ -2,9 +2,6 @@ project(lights_engine)
 
 set(CMAKE_CXX_STANDARD 23)
 
-# Set to build shared libraries
-set(BUILD_SHARED_LIBS FALSE)
-
 add_subdirectory(third_party)
 
 find_package(OpenGL REQUIRED)

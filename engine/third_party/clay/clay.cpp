@@ -3,4 +3,4 @@
 //
 
 #define CLAY_IMPLEMENTATION
-#include "clay.h"
+#include "clay/clay.h"

@@ -13,7 +13,6 @@
 #include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
 #include "lights/util/configuration.h"
-#include "network/client.h"
 
 namespace OZZ::game {
     enum class EWindowMode {
@@ -62,7 +61,6 @@ namespace OZZ::game {
                         AudioChannels = static_cast<uint8_t>(AudioSection.at("Channels").as_integer());
                     }
                 }
-
             }
             catch (...) {
                 return false;
@@ -151,7 +149,7 @@ namespace OZZ::game {
                 .OnMouseMove = [this](const glm::vec2 pos) {
                     input->NotifyMouseMove(pos);
                 }
-            };
+                };
             window = std::make_shared<Window>(std::move(callbacks));
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);

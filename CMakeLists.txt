@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(Lights)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(BUILD_SHARED_LIBS FALSE)
 
 ## function for setting base directory
 function(set_base_dir target base_dir)

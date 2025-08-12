@@ -1,7 +1,7 @@
 project(Lights_CLI)
 
 set(CMAKE_CXX_STANDARD 20)
-set(BUILD_SHARED_LIBS FALSE)
+#option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 add_executable(${PROJECT_NAME} main.cpp)
 
 # if set_base_dir(target) is defined, call it

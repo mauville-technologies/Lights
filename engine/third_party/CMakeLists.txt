@@ -1,10 +1,9 @@
 include(FetchContent)
 
 set(GLFW_BUILD_WAYLAND FALSE)
-set(BUILD_SHARED_LIBS FALSE)
 
 set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: GLFW, SDL3")
-
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
