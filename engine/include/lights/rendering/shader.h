@@ -14,11 +14,13 @@ namespace OZZ {
         ~Shader();
 
         void SetInteger(const std::string& name, int value);
+        void SetVec2(const std::string& name, const glm::vec2& value);
         void SetVec3(const std::string& name, const glm::vec3& value);
         void SetVec4(const std::string& name, const glm::vec4& value);
         void SetMat4(const std::string& name, const glm::mat4& value);
 
         void Bind();
+
     private:
         void compile(const std::string& vertexSource, const std::string& fragmentSource);
         int getUniformLocation(const std::string& name) const;
@@ -26,5 +28,4 @@ namespace OZZ {
     private:
         uint32_t shaderId;
     };
-
 } // OZZ

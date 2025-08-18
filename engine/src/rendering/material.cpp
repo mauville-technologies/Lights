@@ -12,39 +12,45 @@ namespace OZZ {
         glLineWidth(settings.LineWidth);
         glPointSize(settings.PointSize);
 
-        for (const auto &mapping : textureMappings) {
+        for (const auto& mapping : textureMappings) {
             glActiveTexture(mapping.SlotNumber);
             shader->SetInteger(mapping.SlotName, mapping.SlotNumber - GL_TEXTURE0);
             mapping.TextureResource->Bind();
         }
 
-        for (const auto &[Name, Value] : uniformSettings) {
+        for (const auto& [Name, Value] : uniformSettings) {
             if (std::holds_alternative<int>(Value)) {
                 shader->SetInteger(Name, std::get<int>(Value));
-            } else if (std::holds_alternative<glm::vec3>(Value)) {
+            }
+            else if (std::holds_alternative<glm::vec2>(Value)) {
+                shader->SetVec2(Name, std::get<glm::vec2>(Value));
+            }
+            else if (std::holds_alternative<glm::vec3>(Value)) {
                 shader->SetVec3(Name, std::get<glm::vec3>(Value));
-            } else if (std::holds_alternative<glm::vec4>(Value)) {
+            }
+            else if (std::holds_alternative<glm::vec4>(Value)) {
                 shader->SetVec4(Name, std::get<glm::vec4>(Value));
             }
         }
     }
-    void Material::AddTextureMapping(const TextureMapping &mapping) {
+
+    void Material::AddTextureMapping(const TextureMapping& mapping) {
         textureMappings.push_back(mapping);
     }
 
-    void Material::RemoveTextureMapping(const std::string &slotName) {
+    void Material::RemoveTextureMapping(const std::string& slotName) {
         textureMappings.erase(std::remove_if(textureMappings.begin(), textureMappings.end(),
-                     [slotName](const TextureMapping &mapping) {
-                         return mapping.SlotName == slotName;
-                     }), textureMappings.end());
+                                             [slotName](const TextureMapping& mapping) {
+                                                 return mapping.SlotName == slotName;
+                                             }), textureMappings.end());
     }
 
-    void Material::AddUniformSetting(const UniformSetting &setting) {
+    void Material::AddUniformSetting(const UniformSetting& setting) {
         // find first setting
         auto it = std::find_if(uniformSettings.begin(), uniformSettings.end(),
-            [&setting](const UniformSetting &s) {
-                return s.Name == setting.Name;
-            });
+                               [&setting](const UniformSetting& s) {
+                                   return s.Name == setting.Name;
+                               });
 
         if (it != uniformSettings.end()) {
             // if found, update the value
@@ -55,10 +61,10 @@ namespace OZZ {
         uniformSettings.push_back(setting);
     }
 
-    void Material::RemoveUniformSetting(const std::string &name) {
+    void Material::RemoveUniformSetting(const std::string& name) {
         uniformSettings.erase(std::remove_if(uniformSettings.begin(), uniformSettings.end(),
-            [name](const UniformSetting &setting) {
-                return setting.Name == name;
-            }), uniformSettings.end());
+                                             [name](const UniformSetting& setting) {
+                                                 return setting.Name == name;
+                                             }), uniformSettings.end());
     }
 } // OZZ

@@ -14,7 +14,6 @@
 
 namespace OZZ {
     struct TextureMapping {
-
         std::string SlotName;
         int SlotNumber;
         std::shared_ptr<Texture> TextureResource;
@@ -45,13 +44,13 @@ namespace OZZ {
     public:
         struct UniformSetting {
             std::string Name;
-            std::variant<int, glm::vec3, glm::vec4> Value;
+            std::variant<int, glm::vec2, glm::vec3, glm::vec4> Value;
         };
 
         struct MaterialSettings {
-            DrawMode Mode { DrawMode::Triangles };
-            float LineWidth { 1.f };
-            float PointSize { 1.f };
+            DrawMode Mode{DrawMode::Triangles};
+            float LineWidth{1.f};
+            float PointSize{1.f};
         };
 
         Material() = default;
@@ -91,5 +90,4 @@ namespace OZZ {
 
         MaterialSettings settings;
     };
-
 } // OZZ

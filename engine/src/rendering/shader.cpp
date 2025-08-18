@@ -10,7 +10,7 @@
 #include <glad/glad.h>
 
 namespace OZZ {
-    Shader::Shader(const Shader::path &vertexPath, const Shader::path &fragmentPath) {
+    Shader::Shader(const Shader::path& vertexPath, const Shader::path& fragmentPath) {
         // load files
         std::ifstream vertexFile(vertexPath);
         std::ifstream fragmentFile(fragmentPath);
@@ -38,23 +38,28 @@ namespace OZZ {
         glUseProgram(shaderId);
     }
 
-    void Shader::SetInteger(const std::string &name, int value) {
+    void Shader::SetInteger(const std::string& name, int value) {
         glUniform1i(getUniformLocation(name), value);
     }
 
-    void Shader::SetVec3(const std::string &name, const glm::vec3 &value) {
+    void Shader::SetVec2(const std::string& name, const glm::vec2& value) {
+        glUniform2fv(getUniformLocation(name), 1, glm::value_ptr(value));
+    }
+
+
+    void Shader::SetVec3(const std::string& name, const glm::vec3& value) {
         glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
     }
 
-    void Shader::SetVec4(const std::string &name, const glm::vec4 &value) {
+    void Shader::SetVec4(const std::string& name, const glm::vec4& value) {
         glUniform4fv(getUniformLocation(name), 1, glm::value_ptr(value));
     }
 
-    void Shader::SetMat4(const std::string &name, const glm::mat4& value) {
+    void Shader::SetMat4(const std::string& name, const glm::mat4& value) {
         glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    void Shader::compile(const std::string &vertexSource, const std::string &fragmentSource) {
+    void Shader::compile(const std::string& vertexSource, const std::string& fragmentSource) {
         uint32_t vertex, fragment;
 
         int success;
@@ -98,10 +103,7 @@ namespace OZZ {
         glDeleteShader(fragment);
     }
 
-    int Shader::getUniformLocation(const std::string &name) const {
+    int Shader::getUniformLocation(const std::string& name) const {
         return glGetUniformLocation(shaderId, name.c_str());
     }
-
-
-
 } // OZZ

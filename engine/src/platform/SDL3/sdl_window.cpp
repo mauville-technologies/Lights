@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ::platform::SDL3 {
-    void SDLWindow::CreateWindow(const std::string &title, int width, int height) {
+    void SDLWindow::CreateWindow(const std::string& title, int width, int height) {
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD) < 0) {
             spdlog::error("Failed to initialize SDL: {}", SDL_GetError());
@@ -25,7 +25,8 @@ namespace OZZ::platform::SDL3 {
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-        window = SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
+        window = SDL_CreateWindow(title.c_str(), width, height,
+                                  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
         if (!window) {
             spdlog::error("Failed to create SDL window: {}", SDL_GetError());
             return;
@@ -43,11 +44,11 @@ namespace OZZ::platform::SDL3 {
         SDL_ShowWindow(window);
     }
 
-    void * SDLWindow::GetProcAddress() {
-        return reinterpret_cast<void *>(SDL_GL_GetProcAddress);
+    void* SDLWindow::GetProcAddress() {
+        return reinterpret_cast<void*>(SDL_GL_GetProcAddress);
     }
 
-    void SDLWindow::InitInput(WindowCallbacks &&inCallbacks) {
+    void SDLWindow::InitInput(WindowCallbacks&& inCallbacks) {
         callbacks = std::move(inCallbacks);
     }
 
@@ -76,7 +77,7 @@ namespace OZZ::platform::SDL3 {
                         continue;
                     }
                     auto deviceID = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), it));
-                    if (auto &controller = controllerState[deviceID]; controller[button] != newButtonState) {
+                    if (auto& controller = controllerState[deviceID]; controller[button] != newButtonState) {
                         controller[button] = newButtonState;
                         if (callbacks.OnKeyPressed) {
                             callbacks.OnKeyPressed({deviceID, button}, newButtonState);
@@ -122,7 +123,7 @@ namespace OZZ::platform::SDL3 {
                 }
                 case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 case SDL_EVENT_MOUSE_BUTTON_UP: {
-                    spdlog::info("Mouse event: {} {}", event.type, event.key.key);
+                    spdlog::info("Mouse event: {} {}", event.type, static_cast<unsigned int>(event.button.button));
                     const sdl3::SDLMouseButton sdlMouseButton(event.button.button);
                     const sdl3::SDLKeyState newMouseState(static_cast<int>(event.type));
                     if (auto oldMouseState = mouseButtonStates[sdlMouseButton]; oldMouseState != newMouseState) {
@@ -183,7 +184,8 @@ namespace OZZ::platform::SDL3 {
     void SDLWindow::SetTextMode(const bool bIsTextMode) {
         if (bIsTextMode) {
             SDL_StartTextInput(window);
-        } else {
+        }
+        else {
             SDL_StopTextInput(window);
         }
     }
@@ -204,7 +206,6 @@ namespace OZZ::platform::SDL3 {
             if (callbacks.OnControllerConnected) {
                 callbacks.OnControllerConnected(+availableIndex);
             }
-
         }
     }
 
