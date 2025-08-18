@@ -12,8 +12,8 @@
 
 namespace OZZ {
     enum class EDeviceID : int8_t {
-        Unknown = -3,
-        Mouse = -2,
+        Unknown  = -3,
+        Mouse    = -2,
         Keyboard = -1,
         GamePad0,
         GamePad1,
@@ -26,6 +26,7 @@ namespace OZZ {
         GamePad8,
         NumberOfGamePads = 9,
     };
+
     enum class EKeyState : uint8_t {
         KeyReleased,
         KeyPressed,
@@ -134,6 +135,7 @@ namespace OZZ {
         F14,
         F15,
         Pause,
+        Grave,
         KeyCount
     };
 
@@ -174,23 +176,23 @@ namespace OZZ {
         ButtonCount
     };
 
-    constexpr int operator+(const EKey &key) {
+    constexpr int operator+(const EKey& key) {
         return static_cast<int>(key);
     }
 
-    constexpr int operator+(const EControllerButton &button) {
+    constexpr int operator+(const EControllerButton& button) {
         return static_cast<int>(button);
     }
 
-    constexpr int operator+(const EKeyState &state) {
+    constexpr int operator+(const EKeyState& state) {
         return static_cast<int>(state);
     }
 
-    constexpr int operator+(const EMouseButton &button) {
+    constexpr int operator+(const EMouseButton& button) {
         return static_cast<int>(button);
     }
 
-    constexpr int operator+(const EDeviceID &deviceId) {
+    constexpr int operator+(const EDeviceID& deviceId) {
         return static_cast<int>(deviceId);
     }
 
@@ -204,12 +206,12 @@ namespace OZZ {
         EDeviceID DeviceID = EDeviceID::Unknown;
         std::variant<EKey, EControllerButton, EMouseButton> Key = EKey::KeyCount;
 
-        bool operator==(const InputKey &other) const {
+        bool operator==(const InputKey& other) const {
             return DeviceID == other.DeviceID && Key == other.Key;
         }
     };
 }
 
-std::ostream &operator<<(std::ostream &out, const OZZ::EKeyState &state);
+std::ostream& operator<<(std::ostream& out, const OZZ::EKeyState& state);
 
-std::ostream &operator<<(std::ostream &out, const OZZ::EKey &key);
+std::ostream& operator<<(std::ostream& out, const OZZ::EKey& key);
