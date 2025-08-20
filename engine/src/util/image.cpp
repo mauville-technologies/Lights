@@ -55,8 +55,10 @@ namespace OZZ {
                     // copy the pixel data
                     for (int channel = 0; channel < maxChannels; channel++) {
                         if (channel < image->GetChannels()) {
-                            result->data[(currentY * result->width) + currentX + channel] = image->GetData()[(y * image->GetWidth() * image->GetChannels()) + (x * image->GetChannels()) + channel];
-                        } else {
+                            result->data[(currentY * result->width) + currentX + channel] = image->GetData()[(y * image->GetWidth() * image
+                                ->GetChannels()) + (x * image->GetChannels()) + channel];
+                        }
+                        else {
                             result->data[(currentY * result->width) + currentX + channel] = 0; // fill with 0's
                         }
                     }
@@ -72,14 +74,13 @@ namespace OZZ {
 
     Image::Image(const path& texturePath, int desiredChannels) {
         stbi_set_flip_vertically_on_load(true);
-        auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, desiredChannels);
-        if (iData) {
+        if (auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, desiredChannels)) {
             data = std::vector<unsigned char>(iData, iData + width * height * channels);
             stbi_image_free(iData);
         }
     }
 
-    Image::Image(const unsigned char *inData, int inWidth, int inHeight, int inChannels) {
+    Image::Image(const unsigned char* inData, int inWidth, int inHeight, int inChannels) {
         // resize the data vector to the size of the image
         data.resize(inWidth * inHeight * inChannels);
         // copy the data into the vector
@@ -92,6 +93,23 @@ namespace OZZ {
 
     Image::~Image() {
         data.clear();
+    }
+
+    void Image::FillColor(const glm::vec4& color, const glm::vec2& size) {
+        // clear data
+        data.clear();
+        // resize the data vector to the size of the image
+        width = static_cast<int>(size.x);
+        height = static_cast<int>(size.y);
+        channels = 4; // RGBA
+        data.resize(width * height * channels);
+        // fill the data with the color
+        for (int i = 0; i < width * height; i += channels) {
+            data[i] = static_cast<unsigned char>(color.r * 255);
+            data[i + 1] = static_cast<unsigned char>(color.g * 255);
+            data[i + 2] = static_cast<unsigned char>(color.b * 255);
+            data[i + 3] = static_cast<unsigned char>(color.a * 255);
+        }
     }
 
     void Image::FlipPixels(bool bVertical, bool bHorizontal) {
@@ -111,11 +129,12 @@ namespace OZZ {
                     std::swap(data[i * width * stepSize + j], data[(height - 1 - i) * width * stepSize + j]);
                 }
             }
-        } else if (bHorizontal) {
+        }
+        else if (bHorizontal) {
             // loop through each column, from the right, rebuilding the image
             for (int i = 0; i < width / 2; i++) {
                 for (int j = 0; j < height * stepSize; j++) {
-                    std::swap(data[i * stepSize + (j*width)], data[(width - 1 - i) * stepSize + (j*width)]);
+                    std::swap(data[i * stepSize + (j * width)], data[(width - 1 - i) * stepSize + (j * width)]);
                 }
             }
         }
@@ -130,7 +149,8 @@ namespace OZZ {
         // save the image
         if (stbi_write_png(imagePath.string().c_str(), width, height, channels, data.data(), width * channels) == 0) {
             spdlog::error("Could not save image to file: {}", imagePath.string());
-        } else {
+        }
+        else {
             spdlog::info("Saved image to file: {}", imagePath.string());
         }
     }
