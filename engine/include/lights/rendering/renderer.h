@@ -11,6 +11,7 @@ namespace OZZ {
     public:
         Renderer();
 
+        void Init();
         void RenderScene(scene::Scene* scene);
     };
 }

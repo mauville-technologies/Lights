@@ -11,42 +11,46 @@
 #include <tuple>
 
 namespace OZZ {
-	class Image;
+    class Image;
 
-	struct CharacterDetails {
-		glm::vec4 UV;
-		glm::ivec2 Size;
-		glm::ivec2 Bearing;
-		glm::ivec2 Advance;
-	};
+    struct CharacterDetails {
+        glm::vec4 UV;
+        glm::ivec2 Size;
+        glm::ivec2 Bearing;
+        glm::ivec2 Advance;
+    };
 
-	struct FontSet {
-		std::unique_ptr<Image> Texture { nullptr };
-		std::unordered_map<char, CharacterDetails> Characters {};
-		glm::vec2 CharacterSize {};
-	};
+    struct FontSet {
+        std::unique_ptr<Image> Texture{nullptr};
+        std::unordered_map<char, CharacterDetails> Characters{};
+        glm::vec2 CharacterSize{};
+        std::string Name{};
 
-	class FontLoader {
-	using path = std::filesystem::path;
-	public:
-		FontLoader();
-		~FontLoader() = default;
+        [[nodiscard]] glm::ivec2 MeasureText(const std::string& text) const;
+    };
 
-		FontSet* GetFontSet(const std::filesystem::path& fontPath, uint16_t fontSize);
+    class FontLoader {
+        using path = std::filesystem::path;
 
-		constexpr static auto CharacterSet =
-			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;':\",.<>?`~ ";
-	private:
-		bool loadFont(const path& fontPath);
-	private:
-		FT_Library library;
+    public:
+        FontLoader();
+        ~FontLoader() = default;
 
-		std::unordered_map<path, FT_Face> faces;
+        FontSet* GetFontSet(const std::filesystem::path& fontPath, uint16_t fontSize);
 
-		// The font sets are textures that contain the characters in a single texture atlas
-		// path, fontSize -> FontSet
-		std::unordered_map<path, std::unordered_map<uint16_t, std::unique_ptr<FontSet>>> fontSets;
-	};
+        constexpr static auto CharacterSet =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+[]{}|;':\",.<>?`~ ";
 
+    private:
+        bool loadFont(const path& fontPath);
 
+    private:
+        FT_Library library;
+
+        std::unordered_map<path, FT_Face> faces;
+
+        // The font sets are textures that contain the characters in a single texture atlas
+        // path, fontSize -> FontSet
+        std::unordered_map<path, std::unordered_map<uint16_t, std::unique_ptr<FontSet>>> fontSets;
+    };
 } // OZZ

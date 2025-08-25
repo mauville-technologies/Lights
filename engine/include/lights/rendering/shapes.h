@@ -35,7 +35,7 @@ namespace OZZ {
         return normal;
     }
 
-    constexpr std::array<uint32_t, 6> quadIndices{0, 1, 3, 1, 2, 3};
+    constexpr std::array<uint32_t, 6> quadIndices{0, 3, 1, 2, 1, 3};
     constexpr std::array<uint32_t, 8> quadOutlineIndices{0, 1, 1, 2, 2, 3, 3, 0};
 
     constexpr std::array<Vertex, 4> quadVertices{
@@ -403,7 +403,7 @@ namespace OZZ {
         }
     };
 
-    static std::pair<std::vector<Vertex>, std::vector<uint32_t> > GenerateCircle(
+    static std::pair<std::vector<Vertex>, std::vector<uint32_t>> GenerateCircle(
         float radius = 1.f, uint32_t sectors = 50, bool bOutlineOnly = false) {
         std::vector<Vertex> vertices{};
         std::vector<uint32_t> indices{};
@@ -437,23 +437,23 @@ namespace OZZ {
         return {vertices, indices};
     }
 
-    static std::pair<std::vector<Vertex>, std::vector<uint32_t> > GenerateSphere(
+    static std::pair<std::vector<Vertex>, std::vector<uint32_t>> GenerateSphere(
         float radius = 1.f, uint32_t sectors = 50, uint32_t stacks = 50) {
         std::vector<Vertex> vertices{};
         std::vector<uint32_t> indices{};
         uint32_t k1, k2;
-        float x, y, z, xy; // vertex position
+        float x, y, z, xy;                           // vertex position
         float nx, ny, nz, lengthInv = 1.0f / radius; // vertex normal
-        float s, t; // vertex texCoord
+        float s, t;                                  // vertex texCoord
 
         double sectorStep = 2 * PI / sectors;
         double stackStep = PI / stacks;
         double sectorAngle, stackAngle;
 
         for (uint32_t i = 0; i <= stacks; ++i) {
-            stackAngle = PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
+            stackAngle = PI / 2 - i * stackStep;                // starting from pi/2 to -pi/2
             xy = radius * cosf(static_cast<float>(stackAngle)); // r * cos(u)
-            z = radius * sinf(static_cast<float>(stackAngle)); // r * sin(u)
+            z = radius * sinf(static_cast<float>(stackAngle));  // r * sin(u)
 
             k1 = i * (sectors + 1); // beginning of current stack
             k2 = k1 + sectors + 1;
@@ -462,7 +462,7 @@ namespace OZZ {
             // but different tex coords
             for (uint32_t j = 0; j <= sectors; ++j, ++k1, ++k2) {
                 sectorAngle =
-                        static_cast<float>(j) * sectorStep; // starting from 0 to 2pi
+                    static_cast<float>(j) * sectorStep; // starting from 0 to 2pi
 
                 // vertex position (x, y, z)
                 x = xy *
@@ -476,8 +476,8 @@ namespace OZZ {
                 nz = z * lengthInv;
 
                 // vertex tex coord (s, t) range between [0, 1]
-                s = (float) j / static_cast<float>(sectors);
-                t = (float) i / static_cast<float>(stacks);
+                s = (float)j / static_cast<float>(sectors);
+                t = (float)i / static_cast<float>(stacks);
 
                 vertices.push_back(Vertex{
                     .position = {x, y, z},
@@ -489,7 +489,7 @@ namespace OZZ {
 
         for (uint32_t i = 0; i < stacks; ++i) {
             k1 = i * (sectors + 1); // beginning of current stack
-            k2 = k1 + sectors + 1; // beginning of next stack
+            k2 = k1 + sectors + 1;  // beginning of next stack
 
             for (uint32_t j = 0; j < sectors; ++j, ++k1, ++k2) {
                 // 2 triangles per sector excluding first and last

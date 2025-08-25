@@ -149,7 +149,7 @@ namespace OZZ::game {
                 .OnMouseMove = [this](const glm::vec2 pos) {
                     input->NotifyMouseMove(pos);
                 }
-                };
+            };
             window = std::make_shared<Window>(std::move(callbacks));
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
@@ -187,6 +187,7 @@ namespace OZZ::game {
 
         void initRenderer() {
             renderer = std::make_unique<Renderer>();
+            renderer->Init();
         }
 
         // TODO: The viewport will probably live in a render target
