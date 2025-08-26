@@ -7,11 +7,11 @@
 #include <glad/glad.h>
 
 #ifdef OZZ_GLFW
-#include "platform/glfw/glfw_window.h"
+#include "platform/GLFW/glfw_window.h"
 #endif
 
 #ifdef OZZ_SDL3
-#include "platform/sdl3/sdl_window.h"
+#include "platform/SDL3/sdl_window.h"
 #endif
 
 

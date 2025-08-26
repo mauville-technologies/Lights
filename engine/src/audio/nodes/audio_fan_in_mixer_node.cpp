@@ -12,7 +12,7 @@ namespace OZZ::lights::audio {
         renderedAudio.clear();
         renderedAudio.resize(renderedAudioSize, 0.0f);
 
-        const auto scale = 1.f / static_cast<float>(inputs.size());
+        const auto scale = inputs.empty() ? 1.f : 1.f / static_cast<float>(inputs.size());
 
         for (auto* inputNode : inputs) {
             // we want to first ensure not null

@@ -56,6 +56,11 @@ namespace OZZ::lights::audio {
         spdlog::info("Selected Output Device: {} (ID: {}, Channels: {})",
                      device->Name, device->ID, device->OutputChannels);
 
+        RtAudio::StreamOptions OutOptions {
+            .flags = RTAUDIO_SCHEDULE_REALTIME | RTAUDIO_MINIMIZE_LATENCY,
+            .numberOfBuffers = 1,
+            .priority = 1
+        };
         rtAudio->openStream(
             &OutParameters, // Output device ID
             nullptr, // No input
@@ -67,7 +72,8 @@ namespace OZZ::lights::audio {
                 const auto* audioSubsystem = static_cast<AudioSubsystem*>(userData);
                 return audioSubsystem->renderAudio(outputBuffer, inputBuffer, nFrames, streamTime, status);
             },
-            this
+            this,
+            &OutOptions
         );
 
         spdlog::info("Opening audio stream with buffer size: {}, sample rate: {}", BufferSize,
