@@ -51,6 +51,8 @@ namespace OZZ {
             DrawMode Mode{DrawMode::Triangles};
             float LineWidth{1.f};
             float PointSize{1.f};
+            bool bHasScissor{false};
+            glm::vec4 Scissor{0, 0, 0, 0};
         };
 
         Material() = default;

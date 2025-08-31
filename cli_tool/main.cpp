@@ -77,7 +77,7 @@ int main() {
 
     const auto Saw = audioSubsystem->CreateAudioNode<OZZ::lights::audio::SawToothNode>();
     const auto testAudio = audioSubsystem->CreateAudioNode<OZZ::lights::audio::AudioCue>();
-    testAudio->Data.Load(std::filesystem::current_path() / "silence.wav");
+    testAudio->Data.Load(std::filesystem::current_path() / "soul.wav");
     testAudio->Data.PlayState = OZZ::lights::audio::AudioCuePlayState::Playing;
     testAudio->Data.LoopMode = OZZ::lights::audio::AudioCueLoopMode::Loop;
     audioSubsystem->ConnectToMainMixNode(testAudio);

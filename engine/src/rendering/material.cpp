@@ -9,6 +9,17 @@
 namespace OZZ {
     void Material::Bind() {
         shader->Bind();
+
+        // TODO: This should be cached and only set if changed
+        if (settings.bHasScissor) {
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(static_cast<int>(settings.Scissor.x), static_cast<int>(settings.Scissor.y),
+                      static_cast<int>(settings.Scissor.z), static_cast<int>(settings.Scissor.w));
+        }
+        else {
+            glDisable(GL_SCISSOR_TEST);
+        }
+
         glLineWidth(settings.LineWidth);
         glPointSize(settings.PointSize);
 
