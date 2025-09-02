@@ -8,17 +8,14 @@
 #include <toml.hpp>
 
 #include "lights/audio/audio_subsystem.h"
+#include "lights/input/input_subsystem.h"
 #include "lights/platform/window.h"
 #include "lights/rendering/renderer.h"
-#include "lights/input/input_subsystem.h"
 #include "lights/scene/scene.h"
 #include "lights/util/configuration.h"
 
 namespace OZZ::game {
-    enum class EWindowMode {
-        Windowed,
-        BorderlessFullscreen
-    };
+    enum class EWindowMode { Windowed, BorderlessFullscreen };
 
     struct GameParameters {
         // Engine header
@@ -44,7 +41,7 @@ namespace OZZ::game {
                         WindowMode = static_cast<EWindowMode>(WindowSection.at("Mode").as_integer());
                     }
                     if (WindowSection.contains("Size") && WindowSection.at("Size").is_array()) {
-                        const auto& sizeArray = WindowSection.at("Size");
+                        const auto &sizeArray = WindowSection.at("Size");
                         if (sizeArray.size() == 2 && sizeArray[0].is_integer() && sizeArray[1].is_integer()) {
                             WindowSize.x = static_cast<int>(sizeArray[0].as_integer());
                             WindowSize.y = static_cast<int>(sizeArray[1].as_integer());
@@ -61,8 +58,7 @@ namespace OZZ::game {
                         AudioChannels = static_cast<uint8_t>(AudioSection.at("Channels").as_integer());
                     }
                 }
-            }
-            catch (...) {
+            } catch (...) {
                 return false;
             }
             return true;
@@ -82,7 +78,7 @@ namespace OZZ::game {
     template <typename SceneType>
     class LightsGame {
     public:
-        explicit LightsGame(const std::filesystem::path& configFilePath) : params(configFilePath) {}
+        explicit LightsGame(const std::filesystem::path &configFilePath) : params(configFilePath) {}
 
         ~LightsGame() {
             scene.reset();
@@ -120,36 +116,39 @@ namespace OZZ::game {
 
                 // Tick on all polled events
                 if (input) {
-                    input->Tick(window->GetKeyStates(), window->GetControllerState());
+                    input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
                 }
             }
         }
 
     private:
         void initWindow() {
-            OZZ::platform::WindowCallbacks callbacks{
-                .OnWindowClose = [this]() {
-                    bRunning = false;
-                },
-                .OnWindowResized = [this](glm::ivec2 size) {
-                    updateViewport(size);
-                    if (scene) {
-                        scene->WindowResized(size);
-                        drawScene(scene.get());
-                    }
-                },
-                .OnKeyPressed = [this](InputKey key, EKeyState state) {
-                    input->NotifyInputEvent({key, state});
-                },
-                .OnTextEvent = [this](unsigned int unicode) {
-                    // convert unicode to char
-                    char character = static_cast<char>(unicode);
-                    input->NotifyTextEvent(character);
-                },
-                .OnMouseMove = [this](const glm::vec2 pos) {
-                    input->NotifyMouseMove(pos);
-                }
-            };
+            OZZ::platform::WindowCallbacks callbacks{.OnWindowClose =
+                                                         [this]() {
+                                                             bRunning = false;
+                                                         },
+                                                     .OnWindowResized =
+                                                         [this](glm::ivec2 size) {
+                                                             updateViewport(size);
+                                                             if (scene) {
+                                                                 scene->WindowResized(size);
+                                                                 drawScene(scene.get());
+                                                             }
+                                                         },
+                                                     .OnKeyPressed =
+                                                         [this](InputKey key, EKeyState state) {
+                                                             input->NotifyInputEvent({key, state});
+                                                         },
+                                                     .OnTextEvent =
+                                                         [this](unsigned int unicode) {
+                                                             // convert unicode to char
+                                                             char character = static_cast<char>(unicode);
+                                                             input->NotifyTextEvent(character);
+                                                         },
+                                                     .OnMouseMove =
+                                                         [this](const glm::vec2 pos) {
+                                                             input->NotifyMouseMove(pos);
+                                                         }};
             window = std::make_shared<Window>(std::move(callbacks));
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
@@ -157,8 +156,7 @@ namespace OZZ::game {
 
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);
-            }
-            else {
+            } else {
                 window->SetFullscreen(false);
                 window->SetWindowedSize(params.Config.WindowSize);
             }
@@ -175,9 +173,7 @@ namespace OZZ::game {
             updateViewport(size);
         }
 
-        void initInput() {
-            input = std::make_shared<InputSubsystem>();
-        }
+        void initInput() { input = std::make_shared<InputSubsystem>(); }
 
         void initScene() {
             scene = std::make_unique<SceneType>();
@@ -191,11 +187,9 @@ namespace OZZ::game {
         }
 
         // TODO: The viewport will probably live in a render target
-        void updateViewport(glm::ivec2 size) {
-            glViewport(0, 0, size.x, size.y);
-        }
+        void updateViewport(glm::ivec2 size) { glViewport(0, 0, size.x, size.y); }
 
-        void drawScene(OZZ::scene::Scene* scene) {
+        void drawScene(OZZ::scene::Scene *scene) {
             renderer->RenderScene(scene);
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
@@ -213,4 +207,4 @@ namespace OZZ::game {
         std::unique_ptr<OZZ::scene::Scene> scene{nullptr};
         std::unique_ptr<Renderer> renderer{nullptr};
     };
-} // OZZ
+} // namespace OZZ::game

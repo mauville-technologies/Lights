@@ -2,38 +2,35 @@
 // Created by ozzadar on 2024-10-09.
 //
 
-#include <cassert>
 #include "lights/input/input_subsystem.h"
+#include <cassert>
 
 #include <algorithm>
 #include <spdlog/spdlog.h>
 
 namespace OZZ {
-    InputSubsystem::InputSubsystem() {
-    }
+    InputSubsystem::InputSubsystem() {}
 
-    void InputSubsystem::Initialize() {
-    }
+    void InputSubsystem::Initialize() {}
 
-    void InputSubsystem::Shutdown() {
-    }
+    void InputSubsystem::Shutdown() {}
 
     void InputSubsystem::NotifyInputEvent(const InputEvent &Event) {
         // Notify all mappings
-        for (auto &Mapping: mappings) {
+        for (auto &Mapping : mappings) {
             // loops through all chords, if one of them is triggered, call the callback
-            auto& chords = Mapping.Chords;
-            for (auto &Chord: chords) {
+            auto &chords = Mapping.Chords;
+            for (auto &Chord : chords) {
                 if (Chord.ReceiveEvent(Event.Key, Event.State)) {
                     switch (Chord.CurrentState) {
                         case EKeyState::KeyPressed:
                             if (Mapping.Callbacks.OnPressed)
                                 Mapping.Callbacks.OnPressed();
-                        break;
+                            break;
                         case EKeyState::KeyReleased:
                             if (Mapping.Callbacks.OnReleased)
                                 Mapping.Callbacks.OnReleased();
-                        break;
+                            break;
                         default:
                             break;
                     }
@@ -44,7 +41,7 @@ namespace OZZ {
 
     void InputSubsystem::NotifyTextEvent(char character) {
         // Notify all text mappings
-        for (auto &[Name, Callback]: textMappings) {
+        for (auto &[Name, Callback] : textMappings) {
             if (Callback) {
                 Callback(character);
             }
@@ -55,9 +52,16 @@ namespace OZZ {
         mousePosition = inMousePosition;
     }
 
-    void InputSubsystem::Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates) {
+    void InputSubsystem::Tick(const KeyStateArrayType &inKeyStates,
+                              const ControllerStateMap &inControllerStates,
+                              const MouseButtonStateArrayType &inMouseButtonStates) {
+        // TODO: We'll want this to be more efficient in the future
+        keyStates = inKeyStates;
+        controllerStates = inControllerStates;
+        mouseButtonStates = inMouseButtonStates;
+
         // Update all the axis mappings
-        for (auto &Mapping: axisMappings) {
+        for (auto &Mapping : axisMappings) {
             Mapping.Value = 0.f;
 
             for (auto &[eKey, Weight] : Mapping.Keys) {
@@ -66,14 +70,15 @@ namespace OZZ {
                 }
 
                 if (eKey.DeviceID == EDeviceID::Keyboard) {
-                    Mapping.Value = std::clamp(keyStates[+std::get<EKey>(eKey.Key)] * Weight, -1.f, 1.f);
+                    Mapping.Value = std::clamp(+inKeyStates[+std::get<EKey>(eKey.Key)] * Weight, -1.f, 1.f);
                 } else {
                     // this is a controller mapping
-                    if (controllerStates.contains(eKey.DeviceID)) {
+                    if (inControllerStates.contains(eKey.DeviceID)) {
                         const auto key = std::get<EControllerButton>(eKey.Key);
-                        auto value = controllerStates.at(eKey.DeviceID)[+key];
+                        auto value = inControllerStates.at(eKey.DeviceID)[+key];
 
-                        // TODO: Current deadzone is hardcoded. It might make sense to make this customizable
+                        // TODO: Current deadzone is hardcoded. It might make sense to make
+                        // this customizable
                         value = value < 0.1f && value > -0.1f ? 0.f : value;
 
                         Mapping.Value = std::clamp(value * Weight, -1.f, 1.f);
@@ -83,8 +88,26 @@ namespace OZZ {
         }
     }
 
+    EKeyState InputSubsystem::GetKeyState(const InputKey &Key) const {
+        switch (Key.DeviceID) {
+            case EDeviceID::Keyboard: {
+                return keyStates[+std::get<EKey>(Key.Key)];
+            }
+            case EDeviceID::Mouse: {
+                return mouseButtonStates[+std::get<EMouseButton>(Key.Key)];
+            }
+            default: {
+                if (controllerStates.contains(Key.DeviceID)) {
+                    const auto button = std::get<EControllerButton>(Key.Key);
+                    return static_cast<EKeyState>(static_cast<int>(controllerStates.at(Key.DeviceID)[+button]));
+                }
+                break;
+            }
+        }
+    }
+
     float InputSubsystem::GetAxisValue(const std::string &Action) const {
-        auto Mapping = std::ranges::find_if(axisMappings, [&Action](const AxisMapping& Mapping) {
+        auto Mapping = std::ranges::find_if(axisMappings, [&Action](const AxisMapping &Mapping) {
             return Mapping.Action == Action;
         });
 
@@ -94,14 +117,14 @@ namespace OZZ {
         return 0.f;
     }
 
-    const glm::vec2 & InputSubsystem::GetMousePosition() const {
+    const glm::vec2 &InputSubsystem::GetMousePosition() const {
         return mousePosition;
     }
 
     void InputSubsystem::RegisterInputMapping(InputMapping &&Mapping) {
         std::string Action = Mapping.Action;
         bool bFound = false;
-        for (auto &ExistingMapping: mappings) {
+        for (auto &ExistingMapping : mappings) {
             if (ExistingMapping.Action == Action) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -123,7 +146,7 @@ namespace OZZ {
     void InputSubsystem::RegisterAxisMapping(AxisMapping &&Mapping) {
         const std::string &action = Mapping.Action;
         bool bFound = false;
-        for (auto &ExistingMapping: axisMappings) {
+        for (auto &ExistingMapping : axisMappings) {
             if (ExistingMapping.Action == action) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -145,7 +168,7 @@ namespace OZZ {
     void InputSubsystem::RegisterTextListener(TextListenerMapping &&Mapping) {
         const std::string &name = Mapping.Name;
         bool bFound = false;
-        for (auto &ExistingMapping: textMappings) {
+        for (auto &ExistingMapping : textMappings) {
             if (ExistingMapping.Name == name) {
                 ExistingMapping = Mapping;
                 bFound = true;
@@ -177,7 +200,7 @@ namespace OZZ {
         if (!bIsSequence) {
             // Calculate new state
             bool bAllPressed = true;
-            for (const auto &KeyState: States) {
+            for (const auto &KeyState : States) {
                 if (KeyState == EKeyState::KeyReleased) {
                     bAllPressed = false;
                     break;
@@ -192,11 +215,8 @@ namespace OZZ {
             }
         } else {
             auto CurrentTime = std::chrono::high_resolution_clock::now();
-            bool bProgressSequence =
-                    (CurrentKeyIndex == 0 || CurrentTime - LastKeyTime < TimeBetweenKeys)
-                    && bChangedState
-                    && State == EKeyState::KeyPressed
-                    && Keys[CurrentKeyIndex] == Key;
+            bool bProgressSequence = (CurrentKeyIndex == 0 || CurrentTime - LastKeyTime < TimeBetweenKeys) &&
+                                     bChangedState && State == EKeyState::KeyPressed && Keys[CurrentKeyIndex] == Key;
 
             // if you screw up, you want to be able to start over at any point.
             if (!bProgressSequence && State == EKeyState::KeyPressed && Key == Keys[0]) {
@@ -227,11 +247,11 @@ namespace OZZ {
     void InputChord::EnsureInitialized() {
         if (!bInitialized) {
             States.resize(Keys.size());
-            for (auto &State: States) {
+            for (auto &State : States) {
                 State = EKeyState::KeyReleased;
             }
             LastKeyTime = std::chrono::high_resolution_clock::now();
             bInitialized = true;
         }
     }
-} // OZZ
+} // namespace OZZ

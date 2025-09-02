@@ -3,34 +3,33 @@
 //
 #pragma once
 
+#include <chrono>
+#include <functional>
+#include <glm/glm.hpp>
 #include <lights/input/input_keys.h>
 #include <string>
-#include <functional>
-#include <vector>
-#include <chrono>
 #include <variant>
-#include <glm/glm.hpp>
+#include <vector>
 
 namespace OZZ {
     using namespace std::chrono_literals;
 
     struct InputEvent {
-        InputKey Key {};
-        EKeyState State {};
+        InputKey Key{};
+        EKeyState State{};
     };
 
     struct InputChord {
         std::vector<InputKey> Keys;
-        bool bIsSequence { false };
-        bool bCanRepeat { false };
-        std::chrono::duration<long long, std::milli> TimeBetweenKeys { 1000 };
+        bool bIsSequence{false};
+        bool bCanRepeat{false};
+        std::chrono::duration<long long, std::milli> TimeBetweenKeys{1000};
 
         // These next values are not meant to be used directly
         std::vector<EKeyState> States;
-        EKeyState CurrentState { EKeyState::KeyReleased };
-        int CurrentKeyIndex { 0 };
+        EKeyState CurrentState{EKeyState::KeyReleased};
+        int CurrentKeyIndex{0};
         std::chrono::time_point<std::chrono::high_resolution_clock> LastKeyTime;
-
 
         /*
          * Receive an event from the input system
@@ -41,7 +40,7 @@ namespace OZZ {
         bool ReceiveEvent(InputKey Key, EKeyState State);
         void EnsureInitialized();
 
-        bool bInitialized { false };
+        bool bInitialized{false};
     };
 
     struct ActionCallbacks {
@@ -72,24 +71,24 @@ namespace OZZ {
     class InputSubsystem {
     public:
         InputSubsystem();
-        void RegisterInputMapping(InputMapping&& Mapping);
-        void UnregisterInputMapping(const std::string& Action);
+        void RegisterInputMapping(InputMapping &&Mapping);
+        void UnregisterInputMapping(const std::string &Action);
 
-        void RegisterAxisMapping(AxisMapping&& Mapping);
-        void UnregisterAxisMapping(const std::string& Action);
+        void RegisterAxisMapping(AxisMapping &&Mapping);
+        void UnregisterAxisMapping(const std::string &Action);
 
-        void RegisterTextListener(TextListenerMapping&& Mapping);
-        void UnregisterTextListener(const std::string& Name);
+        void RegisterTextListener(TextListenerMapping &&Mapping);
+        void UnregisterTextListener(const std::string &Name);
 
-        void NotifyInputEvent(const InputEvent& Event);
+        void NotifyInputEvent(const InputEvent &Event);
         void NotifyTextEvent(char character);
         void NotifyMouseMove(glm::vec2 inMousePosition);
 
-        void Tick(const KeyStateArrayType &keyStates, const ControllerStateMap& controllerStates);
+        void Tick(const KeyStateArrayType &inKeyStates,
+                  const ControllerStateMap &inControllerStates,
+                  const MouseButtonStateArrayType &inMouseButtonStates);
 
-        void SetTextModeFunc(TextModeFunc&& InTextModeDelegate) {
-            TextModeDelegate = std::move(InTextModeDelegate);
-        }
+        void SetTextModeFunc(TextModeFunc &&InTextModeDelegate) { TextModeDelegate = std::move(InTextModeDelegate); }
 
         void SetTextMode(const bool bIsTextMode) const {
             if (TextModeDelegate) {
@@ -97,27 +96,30 @@ namespace OZZ {
             }
         }
 
-        [[nodiscard]] const std::vector<InputMapping>& GetMappings() const { return mappings; }
-        [[nodiscard]] const std::vector<AxisMapping>& GetAxisMappings() const { return axisMappings; }
-        [[nodiscard]] const std::vector<TextListenerMapping>& GetTextMappings() const { return textMappings; }
+        [[nodiscard]] const std::vector<InputMapping> &GetMappings() const { return mappings; }
+        [[nodiscard]] const std::vector<AxisMapping> &GetAxisMappings() const { return axisMappings; }
+        [[nodiscard]] const std::vector<TextListenerMapping> &GetTextMappings() const { return textMappings; }
 
-        [[nodiscard]] EKeyState GetKeyState(const InputKey& Key) const;
-        [[nodiscard]] float GetAxisValue(const std::string& Action) const;
-        [[nodiscard]] const glm::vec2& GetMousePosition() const;
+        [[nodiscard]] EKeyState GetKeyState(const InputKey &Key) const;
+        [[nodiscard]] float GetAxisValue(const std::string &Action) const;
+        [[nodiscard]] const glm::vec2 &GetMousePosition() const;
 
         ~InputSubsystem() = default;
-    private:
 
+    private:
         void Initialize();
         void Shutdown();
 
     private:
         TextModeFunc TextModeDelegate;
 
-        std::vector<AxisMapping> axisMappings {};
-        std::vector<InputMapping> mappings {};
-        std::vector<TextListenerMapping> textMappings {};
+        std::vector<AxisMapping> axisMappings{};
+        std::vector<InputMapping> mappings{};
+        std::vector<TextListenerMapping> textMappings{};
 
-        glm::vec2 mousePosition {};
+        glm::vec2 mousePosition{};
+        KeyStateArrayType keyStates;
+        ControllerStateMap controllerStates;
+        MouseButtonStateArrayType mouseButtonStates;
     };
-} // OZZ
+} // namespace OZZ
