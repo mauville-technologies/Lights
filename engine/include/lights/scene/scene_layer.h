@@ -4,9 +4,10 @@
 
 #pragma once
 
+#include "glm/ext/matrix_transform.hpp"
+#include "lights/scene/scene_object.h"
 #include <glm/glm.hpp>
 #include <vector>
-#include "lights/scene/scene_object.h"
 
 namespace OZZ::scene {
     class Camera {
@@ -19,19 +20,25 @@ namespace OZZ::scene {
     public:
         virtual ~SceneLayer() = default;
 
-        virtual void Init() {
-        };
+        virtual void Init() {};
 
-        virtual void PhysicsTick(float DeltaTime) {
-        };
+        virtual void PhysicsTick(float DeltaTime) {};
 
-        virtual void Tick(float DeltaTime) {
-        };
+        virtual void Tick(float DeltaTime) {};
 
         virtual void RenderTargetResized(glm::ivec2 size) = 0;
 
         virtual std::vector<SceneObject> GetSceneObjects() = 0;
 
+        const Camera &GetCamera() const { return LayerCamera; }
+
+    protected:
+        void LookAtPosition2D(const glm::vec2 &position) {
+            LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{position.x, position.y, 3.f}, // Camera position
+                                                 glm::vec3{position.x, position.y, 0.f}, // Target to look at
+                                                 glm::vec3{0.f, 1.f, 0.f});              // Up vector
+        }
+
         Camera LayerCamera{};
     };
-}
+} // namespace OZZ::scene

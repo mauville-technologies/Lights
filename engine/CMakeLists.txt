@@ -22,6 +22,7 @@ set(SOURCES
         src/input/input_subsystem.cpp
 
         src/library/layers/ui_layer.cpp
+        src/library/layers/world_2d_layer.cpp
         src/library/objects/tilemap.cpp
         src/library/objects/ui/input/button.cpp
         src/library/objects/ui/input/text_input.cpp

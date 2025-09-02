@@ -113,7 +113,6 @@ namespace OZZ::platform::SDL3 {
                 }
                 case SDL_EVENT_KEY_DOWN:
                 case SDL_EVENT_KEY_UP: {
-                    spdlog::info("Key event: {} {}", event.type, event.key.key);
                     const sdl3::SDLKey sdlKey(static_cast<int>(event.key.key));
                     if (sdlKey == EKey::KeyCount) {
                         spdlog::error("Invalid key code: {}", event.key.key);

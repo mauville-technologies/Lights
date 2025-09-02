@@ -26,8 +26,8 @@ namespace OZZ {
             for (auto& object : layer->GetSceneObjects()) {
                 auto& [transform, objMesh, objMat] = object;
                 objMat->Bind();
-                objMat->GetShader()->SetMat4("view", layer->LayerCamera.ViewMatrix);
-                objMat->GetShader()->SetMat4("projection", layer->LayerCamera.ProjectionMatrix);
+                objMat->GetShader()->SetMat4("view", layer->GetCamera().ViewMatrix);
+                objMat->GetShader()->SetMat4("projection", layer->GetCamera().ProjectionMatrix);
                 objMat->GetShader()->SetMat4("model", transform);
                 objMesh->Bind();
                 const auto drawMode = ToGLEnum(objMat->GetSettings().Mode);
@@ -37,4 +37,4 @@ namespace OZZ {
 
         // TODO: Unbind the render target
     }
-}
+} // namespace OZZ

@@ -5,19 +5,22 @@
 #include <lights/game/game_object.h>
 #include <lights/scene/scene.h>
 #include <lights/scene/scene_object.h>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 namespace OZZ::game::scene {
     class Sprite final : public GameObject {
     public:
-        explicit Sprite(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const std::filesystem::path& texture);
-    	~Sprite() override;
+        explicit Sprite(GameWorld *inGameWorld,
+                        std::shared_ptr<OzzWorld2D> inPhysicsWorld,
+                        const std::filesystem::path &texture,
+                        uint8_t imageChannels = 4);
+        ~Sprite() override;
         void Tick(float DeltaTime) override;
 
         std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
-        void SetTexture(const std::filesystem::path& inPath);
+        void SetTexture(const std::filesystem::path &inPath, uint8_t imageChannels);
 
         /**
          * Creates a new body for the sprite, replaces the old one if it exists
@@ -25,20 +28,18 @@ namespace OZZ::game::scene {
          * @param args  Same arguments as OzzWorld2D::CreateBody
          */
         template <typename... Args>
-    	void AddBody(Args&&... args) {
-        	if (MainBody == InvalidBodyID) {
-        		physicsWorld->DestroyBody(MainBody);
-        		MainBody = InvalidBodyID;
-        	}
-			MainBody = physicsWorld->CreateBody(std::forward<Args>(args)...);
-		}
+        void AddBody(Args &&...args) {
+            if (MainBody != InvalidBodyID) {
+                physicsWorld->DestroyBody(MainBody);
+                MainBody = InvalidBodyID;
+            }
+            MainBody = physicsWorld->CreateBody(std::forward<Args>(args)...);
+        }
 
-    	[[nodiscard]] Body* GetBody() const {
-		    return physicsWorld->GetBody(MainBody);
-    	}
+        [[nodiscard]] Body *GetBody() const { return physicsWorld->GetBody(MainBody); }
 
     private:
-        BodyID MainBody { InvalidBodyID };
+        BodyID MainBody{InvalidBodyID};
 
 #ifdef OZZ_DEBUG
         bool bDrawDebug = true;
@@ -53,4 +54,4 @@ namespace OZZ::game::scene {
         static std::unordered_map<std::string, OZZ::scene::SceneObject> debugShapes;
         static std::shared_ptr<Shader> debugShader;
     };
-}
+} // namespace OZZ::game::scene

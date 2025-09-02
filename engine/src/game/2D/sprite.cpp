@@ -10,10 +10,13 @@ namespace OZZ::game::scene {
     std::shared_ptr<Shader> Sprite::debugShader = nullptr;
     std::unordered_map<std::string, OZZ::scene::SceneObject> Sprite::debugShapes{};
 
-    Sprite::Sprite(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const std::filesystem::path &texture) : GameObject(
-        inGameWorld,
-        std::move(inPhysicsWorld)) {
-        const auto shader = std::make_shared<Shader>("assets/shaders/sprite.vert", "assets/shaders/sprite.frag");
+    Sprite::Sprite(GameWorld *inGameWorld,
+                   std::shared_ptr<OzzWorld2D> inPhysicsWorld,
+                   const std::filesystem::path &texture,
+                   const uint8_t imageChannels)
+        : GameObject(inGameWorld, std::move(inPhysicsWorld)) {
+        const auto shader =
+            std::make_shared<Shader>("assets/shaders/engine/sprite.vert", "assets/shaders/engine/sprite.frag");
         sceneObject.Mat = std::make_unique<Material>();
         sceneObject.Mat->SetShader(shader);
         sceneObject.Mesh = std::make_shared<IndexVertexBuffer>();
@@ -21,7 +24,7 @@ namespace OZZ::game::scene {
         auto indices = std::vector<uint32_t>(quadIndices.begin(), quadIndices.end());
         sceneObject.Mesh->UploadData(vertices, indices);
 
-        SetTexture(texture);
+        SetTexture(texture, imageChannels);
         SetScale({1.f, 1.f, 1.f});
     }
 
@@ -49,13 +52,9 @@ namespace OZZ::game::scene {
          * Later I will want to cache the transform but for now we'll rebuild it every frame
          */
         glm::mat4 transform(1.f);
-        const auto& position = GetPosition();
-        const auto& scale = GetScale();
-        glm::vec3 renderPosition = {
-            position.x,
-            position.y,
-            0.f
-        };
+        const auto &position = GetPosition();
+        const auto &scale = GetScale();
+        glm::vec3 renderPosition = {position.x, position.y, 0.f};
 
         if (const auto mainBody = physicsWorld->GetBody(MainBody)) {
             auto ShapePosition = mainBody->GetPosition();
@@ -65,11 +64,7 @@ namespace OZZ::game::scene {
 
         transform = glm::translate(transform, renderPosition);
 
-        glm::vec3 renderScale = {
-            scale.x,
-            scale.y,
-            1.f
-        };
+        glm::vec3 renderScale = {scale.x, scale.y, 1.f};
 
         transform = glm::scale(transform, renderScale);
         sceneObject.Transform = transform;
@@ -78,13 +73,15 @@ namespace OZZ::game::scene {
 
         // let's add the needed debug shapes here
         if (bDrawDebug) {
-            // The static lazy initialization of this is a bit ugly. Likely there should be a resource manager available somehow that
-            // can initialize and cache these resources. For now, this will do -- but will likely break if changing scenes. These are very small things to sit in memory so
-            // it might not be a problem that these will stick around for the lifetime of the application.
+            // The static lazy initialization of this is a bit ugly. Likely there should be a resource manager available
+            // somehow that can initialize and cache these resources. For now, this will do -- but will likely break if
+            // changing scenes. These are very small things to sit in memory so it might not be a problem that these
+            // will stick around for the lifetime of the application.
             // TODO: If the glcontext changes (I don't know why it would), this will probably break.
 
             if (!debugShader) {
-                debugShader = std::make_shared<Shader>("assets/shaders/debug.vert", "assets/shaders/debug.frag");
+                debugShader =
+                    std::make_shared<Shader>("assets/shaders/engine/debug.vert", "assets/shaders/engine/debug.frag");
                 debugShader->Bind();
                 // red
                 debugShader->SetVec3("lineColor", {1.f, 0.f, 0.f});
@@ -126,14 +123,12 @@ namespace OZZ::game::scene {
             }
 
             if (!debugShapes.contains("point")) {
-                auto vertices = std::vector<Vertex>{
-                    Vertex{
-                        .position = {0.f, 0.f, 0.f},
-                        .color = {1.f, 0.f, 0.f, 0.f},
-                        .normal = {0.f, 0.f, 1.f},
-                        .uv = {0.f, 0.f},
-                    }
-                };
+                auto vertices = std::vector<Vertex>{Vertex{
+                    .position = {0.f, 0.f, 0.f},
+                    .color = {1.f, 0.f, 0.f, 0.f},
+                    .normal = {0.f, 0.f, 1.f},
+                    .uv = {0.f, 0.f},
+                }};
 
                 auto indices = std::vector<uint32_t>{0};
                 const auto pointMesh = std::make_shared<IndexVertexBuffer>();
@@ -162,16 +157,8 @@ namespace OZZ::game::scene {
                         // build transform from shape
                         auto &circleShape = std::get<OzzCircle>(body->Data);
                         glm::mat4 circleTransform{1.f};
-                        glm::vec3 circleRenderPosition{
-                            circleShape.Position.x,
-                            circleShape.Position.y,
-                            0.f
-                        };
-                        glm::vec3 circleRenderScale{
-                            circleShape.Radius * 2,
-                            circleShape.Radius * 2,
-                            0.f
-                        };
+                        glm::vec3 circleRenderPosition{circleShape.Position.x, circleShape.Position.y, 0.f};
+                        glm::vec3 circleRenderScale{circleShape.Radius * 2, circleShape.Radius * 2, 0.f};
 
                         circleTransform = glm::translate(circleTransform, circleRenderPosition);
                         circleTransform = glm::scale(circleTransform, circleRenderScale);
@@ -185,16 +172,8 @@ namespace OZZ::game::scene {
                         // build transform from shape
                         auto &rectangleShape = std::get<OzzRectangle>(body->Data);
                         glm::mat4 rectangleTransform{1.f};
-                        glm::vec3 rectangleRenderPosition{
-                            rectangleShape.Position.x,
-                            rectangleShape.Position.y,
-                            0.f
-                        };
-                        glm::vec3 rectangleRenderScale{
-                            rectangleShape.Size.x,
-                            rectangleShape.Size.y,
-                            1.f
-                        };
+                        glm::vec3 rectangleRenderPosition{rectangleShape.Position.x, rectangleShape.Position.y, 0.f};
+                        glm::vec3 rectangleRenderScale{rectangleShape.Size.x, rectangleShape.Size.y, 1.f};
 
                         rectangleTransform = glm::translate(rectangleTransform, rectangleRenderPosition);
                         rectangleTransform = glm::scale(rectangleTransform, rectangleRenderScale);
@@ -215,15 +194,12 @@ namespace OZZ::game::scene {
         return objects;
     }
 
-    void Sprite::SetTexture(const std::filesystem::path &inPath) {
-        const auto image = std::make_unique<Image>(inPath);
+    void Sprite::SetTexture(const std::filesystem::path &inPath, uint8_t imageChannels) {
+        const auto image = std::make_unique<Image>(inPath, imageChannels);
         const auto texture = std::make_shared<Texture>();
         texture->UploadData(image.get());
 
-        sceneObject.Mat->AddTextureMapping({
-            .SlotName = "inTexture",
-            .SlotNumber = GL_TEXTURE0,
-            .TextureResource = texture
-        });
+        sceneObject.Mat->AddTextureMapping(
+            {.SlotName = "inTexture", .SlotNumber = GL_TEXTURE0, .TextureResource = texture});
     }
-}
+} // namespace OZZ::game::scene

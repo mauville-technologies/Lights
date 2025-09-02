@@ -21,6 +21,9 @@ NamespaceIndentation: All
 ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 ColumnLimit: 120
+SeparateDefinitionBlocks: Always
+SortIncludes: true
+PointerAlignment: Left
 BraceWrapping:
   AfterEnum: true
   AfterFunction: true
