@@ -13,7 +13,6 @@ set(SOURCES
         src/audio/audio_subsystem.cpp
         src/audio/audio_graph.cpp
 
-        src/game/2D/sprite.cpp
         src/game/game_object.cpp
         src/game/tiled_map.cpp
         src/game/game_world.cpp
@@ -23,6 +22,7 @@ set(SOURCES
 
         src/library/layers/ui_layer.cpp
         src/library/layers/world_2d_layer.cpp
+        src/library/objects/2D/sprite.cpp
         src/library/objects/tilemap.cpp
         src/library/objects/ui/input/button.cpp
         src/library/objects/ui/input/text_input.cpp

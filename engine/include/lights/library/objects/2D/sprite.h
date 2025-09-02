@@ -9,18 +9,36 @@
 #include <unordered_map>
 
 namespace OZZ::game::scene {
+    struct SpriteConstructionParams {
+        uint8_t TextureImageChannels{4};
+        std::filesystem::path VertexShaderPath{"assets/shaders/engine/sprite.vert"};
+        std::filesystem::path FragShaderPath{"assets/shaders/engine/sprite.frag"};
+    };
+
     class Sprite final : public GameObject {
     public:
-        explicit Sprite(GameWorld *inGameWorld,
+        explicit Sprite(GameWorld* inGameWorld,
                         std::shared_ptr<OzzWorld2D> inPhysicsWorld,
-                        const std::filesystem::path &texture,
-                        uint8_t imageChannels = 4);
+                        const std::filesystem::path& texture,
+                        const SpriteConstructionParams&& inConstructionParams = SpriteConstructionParams{});
         ~Sprite() override;
         void Tick(float DeltaTime) override;
 
         std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
-        void SetTexture(const std::filesystem::path &inPath, uint8_t imageChannels);
+        /**
+         * Loads and uploads a texture to the sprite. Called in constructor.
+         * Uses uniform name "inTexture" -- if running custom shader
+         * @param inPath Path to the texture
+         * @param imageChannels Number of channels on the source image
+         */
+        void SetTexture(const std::filesystem::path& inPath, uint8_t imageChannels);
+
+        /**
+         * Get the material directly. Probably unneeded unless running custom shader
+         * @return the material on the main sprite
+         */
+        std::shared_ptr<OZZ::Material> GetMaterial() { return sceneObject.Mat; }
 
         /**
          * Creates a new body for the sprite, replaces the old one if it exists
@@ -28,7 +46,7 @@ namespace OZZ::game::scene {
          * @param args  Same arguments as OzzWorld2D::CreateBody
          */
         template <typename... Args>
-        void AddBody(Args &&...args) {
+        void AddBody(Args&&... args) {
             if (MainBody != InvalidBodyID) {
                 physicsWorld->DestroyBody(MainBody);
                 MainBody = InvalidBodyID;
@@ -36,7 +54,7 @@ namespace OZZ::game::scene {
             MainBody = physicsWorld->CreateBody(std::forward<Args>(args)...);
         }
 
-        [[nodiscard]] Body *GetBody() const { return physicsWorld->GetBody(MainBody); }
+        [[nodiscard]] Body* GetBody() const { return physicsWorld->GetBody(MainBody); }
 
     private:
         BodyID MainBody{InvalidBodyID};
