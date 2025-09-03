@@ -3,69 +3,59 @@
 //
 
 #include "lights/scene/scene_layer_manager.h"
-#include <ranges>
-
 
 namespace OZZ::scene {
-	SceneLayerManager::~SceneLayerManager() {
-		ActiveLayers.clear();
-		LayerNames.clear();
-		Layers.clear();
-	}
+    SceneLayerManager::~SceneLayerManager() {
+        activeLayers.clear();
+        layerNames.clear();
+        layers.clear();
+    }
 
-	void SceneLayerManager::Init() {
-		// initialize all layers
-		for (const auto& layer : Layers) {
-			layer->Init();
-		}
+    void SceneLayerManager::Init() {
+        // initialize all layers
+        for (const auto& layer : layers) {
+            layer->Init();
+        }
 
-		bIsInitialized = true;
-	}
+        bIsInitialized = true;
+    }
 
-	void SceneLayerManager::RemoveLayer(const std::string &LayerName) {
-		for (const auto& [index, name] : LayerNames | std::ranges::views::enumerate) {
-			if (name == LayerName) {
-				// remove from the active layers if it is there
-				erase_if(ActiveLayers, [index](const auto& layerIndex) { return layerIndex == index; });
+    void SceneLayerManager::RemoveLayer(const std::string& layerName) {
+        for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+            if (name == layerName) {
+                // remove from the active layers if it is there
+                erase_if(activeLayers, [index](const auto& layerIndex) {
+                    return layerIndex == index;
+                });
 
-				// remove the layer from the names and layers by emptying the slot. We keep the slots empty for re-use to
-				// avoid invalidating the indices
-				LayerNames[index] = "";
-				Layers[index].reset();
-			}
-		}
-	}
+                // remove the layer from the names and layers by emptying the slot. We keep the slots empty for re-use
+                // to avoid invalidating the indices
+                layerNames[index] = "";
+                layers[index].reset();
+            }
+        }
+    }
 
-	SceneLayer * SceneLayerManager::GetLayer(const std::string &LayerName) {
-		for (const auto& [index, name] : LayerNames | std::ranges::views::enumerate) {
-			if (name == LayerName) {
-				return Layers[index].get();
-			}
-		}
-		return nullptr;
-	}
+    void SceneLayerManager::SetLayerActive(const std::string& layerName, bool bActive) {
+        for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+            if (name == layerName) {
+                if (bActive) {
+                    activeLayers.insert(index);
+                } else {
+                    activeLayers.erase(index);
+                }
+                return;
+            }
+        }
+    }
 
-	void SceneLayerManager::SetLayerActive(const std::string &LayerName, bool active) {
-		for (const auto& [index, name] : LayerNames | std::ranges::views::enumerate) {
-			if (name == LayerName) {
-				if (active) {
-					ActiveLayers.insert(index);
-				} else {
-					ActiveLayers.erase(index);
-				}
-				return;
-			}
-		}
-	}
-
-	std::vector<SceneLayer *> SceneLayerManager::GetActiveLayers() const {
-		// use ranges library to pick out the active layers
-		std::vector<SceneLayer *> layers;
-		for (const auto index : ActiveLayers) {
-			if (index < Layers.size()) {
-				layers.push_back(Layers[index].get());
-			}
-		}
-		return layers;
-	}
-} // OZZ
+    std::vector<SceneLayer*> SceneLayerManager::GetActiveLayers() const {
+        std::vector<SceneLayer*> result;
+        for (const auto index : activeLayers) {
+            if (index < layers.size()) {
+                result.push_back(this->layers[index].get());
+            }
+        }
+        return result;
+    }
+} // namespace OZZ::scene
