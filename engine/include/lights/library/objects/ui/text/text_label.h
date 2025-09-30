@@ -3,9 +3,9 @@
 //
 
 #pragma once
+#include <lights/game/anchors.h>
 #include <lights/library/objects/ui/ui_component.h>
 #include <lights/text/font_loader.h>
-#include <lights/game/anchors.h>
 
 namespace OZZ {
     class FontLoader;
@@ -24,7 +24,10 @@ namespace OZZ::game::objects {
     public:
         using ParamsType = TextLabelParams;
 
-        explicit TextLabel(GameWorld* inGameWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld, const TextLabelParams& inParams = {});
+        explicit TextLabel(uint64_t inId,
+                           GameWorld* inGameWorld,
+                           std::shared_ptr<OzzWorld2D> inPhysicsWorld,
+                           const TextLabelParams& inParams = {});
 
         void Tick(float DeltaTime) override;
         std::vector<scene::SceneObject> GetSceneObjects() override;
@@ -33,9 +36,7 @@ namespace OZZ::game::objects {
         void SetColor(const glm::vec3& inColor);
         void SetRectBounds(const glm::vec2& size);
 
-        [[nodiscard]] glm::vec2 GetCharacterSize() const {
-            return characterSize;
-        };
+        [[nodiscard]] glm::vec2 GetCharacterSize() const { return characterSize; };
 
     protected:
         void onPositionChanged() override;
@@ -78,4 +79,4 @@ namespace OZZ::game::objects {
         glm::quat builtRotation{};
         glm::vec2 builtRectBounds{};
     };
-} // game
+} // namespace OZZ::game::objects

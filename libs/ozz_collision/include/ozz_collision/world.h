@@ -3,14 +3,18 @@
 //
 
 #pragma once
+
+#include <algorithm>
+#include <any>
+#include <limits>
+#include <mutex>
+#include <random>
 #include <variant>
 #include <vector>
-#include <random>
-#include <limits>
+
 #include <glm/glm.hpp>
-#include <mutex>
+
 #include <ozz_collision/ozz_collision_shapes.h>
-#include <algorithm>
 
 namespace OZZ {
     using namespace OZZ::collision::shapes;
@@ -18,44 +22,46 @@ namespace OZZ {
     using BodyID = uint64_t;
     constexpr auto InvalidBodyID = std::numeric_limits<BodyID>::max();
 
-    enum class BodyType {
-        Static,
-        Dynamic,
-        Kinematic
-    };
+    enum class BodyType { Static, Dynamic, Kinematic };
 
     struct Body {
         BodyID ID{};
         BodyType Type{BodyType::Static};
         OzzShapeData Data{};
+        std::any UserData{};
 
         [[nodiscard]] glm::vec3 GetPosition() const {
-            return std::visit([](const auto& shape) {
-                return glm::vec3{shape.Position, 1.f};
-            }, Data);
+            return std::visit(
+                [](const auto& shape) {
+                    return glm::vec3{shape.Position, 1.f};
+                },
+                Data);
         }
 
         void SetPosition(const glm::vec2& position) {
-            std::visit([position](auto& shape) {
-                shape.Position = position;
-            }, Data);
+            std::visit(
+                [position](auto& shape) {
+                    shape.Position = position;
+                },
+                Data);
         }
 
         glm::vec2 GetScale() const {
-            return std::visit([](auto& shape) {
-                return shape.Scale();
-            }, Data);
+            return std::visit(
+                [](auto& shape) {
+                    return shape.Scale();
+                },
+                Data);
         }
+
         glm::vec2 Velocity{0.f};
 
-        [[nodiscard]] OzzShapeKind Kind() const {
-            return static_cast<OzzShapeKind>(Data.index());
-        }
+        [[nodiscard]] OzzShapeKind Kind() const { return static_cast<OzzShapeKind>(Data.index()); }
 
-        // TODO: Maybe we want rotation and other junk. For now, let's assume everything stays upright the way the shape is defined
+        // TODO: Maybe we want rotation and other junk. For now, let's assume everything stays upright the way the shape
+        // is defined
         bool bCollidedThisFrame{false};
     };
-
 
     namespace collision {
         struct CollisionVisitor {
@@ -68,17 +74,24 @@ namespace OZZ {
         static collision::OzzCollisionResult IsColliding(const Body& a, const Body& b) {
             return std::visit(CollisionVisitor{}, a.Data, b.Data);
         }
-    }
 
+        static collision::OzzCollisionResult IsColliding(const OzzShapeData& a, const Body& b) {
+            return std::visit(CollisionVisitor{}, a, b.Data);
+        }
+    } // namespace collision
 
     class OzzWorld2D {
     public:
-        BodyID CreateBody(BodyType type, const OzzShapeData& shapeDef,
-                          const glm::vec2& velocity = {0.f, 0.f});
+        BodyID
+        CreateBody(BodyType type, const OzzShapeData& shapeDef, const glm::vec2& velocity, std::any userData = {});
         void DestroyBody(BodyID id);
         Body* GetBody(BodyID id);
 
         void PhysicsTick(float DeltaTime);
+
+        // Functions for performing queries
+        // Collides with point
+        std::vector<BodyID> QueryPoint(const glm::vec2& worldPoint);
 
     private:
         BodyID generateUnusedID() {
@@ -90,8 +103,8 @@ namespace OZZ {
 
             // We should make sure that the ID is unique
             while (id == 0 || std::any_of(bodies.begin(), bodies.end(), [id](const auto& body) {
-                return body.ID == id;
-            })) {
+                       return body.ID == id;
+                   })) {
                 id = dis(gen);
             }
 
@@ -102,4 +115,4 @@ namespace OZZ {
         std::mutex bodyMutex{};
         std::vector<Body> bodies{};
     };
-} // OZZ
+} // namespace OZZ

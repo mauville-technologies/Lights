@@ -23,7 +23,7 @@ namespace OZZ::scene {
         // Only SceneLayerManager can create/destroy layers
         SceneLayer() = default;
 
-        void SetLayerManager(SceneLayerManager* manager = nullptr) { layerManager = manager; }
+        void SetLayerManager(class SceneLayerManager* manager = nullptr) { layerManager = manager; }
 
     public:
         virtual ~SceneLayer() = default;

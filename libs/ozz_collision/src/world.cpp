@@ -2,14 +2,14 @@
 // Created by ozzadar on 2025-01-12.
 //
 
-#include "ozz_collision/world.h"
+#include <utility>
 
 #include "ozz_collision/ozz_collision_shapes.h"
-#include <iostream>
+#include "ozz_collision/world.h"
 
 namespace OZZ {
-    uint64_t OzzWorld2D::CreateBody(BodyType type, const OzzShapeData& shapeDef,
-                                    const glm::vec2& velocity) {
+    uint64_t
+    OzzWorld2D::CreateBody(BodyType type, const OzzShapeData& shapeDef, const glm::vec2& velocity, std::any userData) {
         const auto newId = generateUnusedID();
 
         {
@@ -18,6 +18,7 @@ namespace OZZ {
                 .ID = newId,
                 .Type = type,
                 .Data = shapeDef,
+                .UserData = std::move(userData),
                 .Velocity = velocity,
             });
         }
@@ -55,25 +56,25 @@ namespace OZZ {
             body.bCollidedThisFrame = false;
             // Apply forces
             switch (body.Type) {
-            case BodyType::Dynamic: {
-                // Apply gravity
-                body.Velocity.y -= 50.f * DeltaTime;
-                // Apply velocity
+                case BodyType::Dynamic: {
+                    // Apply gravity
+                    body.Velocity.y -= 50.f * DeltaTime;
+                    // Apply velocity
 
-                auto position = body.GetPosition();
-                position += glm::vec3{body.Velocity, 1.f};
-                body.SetPosition(position);
-                dynamicBodies.emplace_back(&body);
-                break;
-            }
-            case BodyType::Kinematic:
-                kinematicBodies.emplace_back(&body);
-                break;
-            case BodyType::Static:
-                staticBodies.emplace_back(&body);
-                break;
-            default:
-                break;
+                    auto position = body.GetPosition();
+                    position += glm::vec3{body.Velocity, 1.f};
+                    body.SetPosition(position);
+                    dynamicBodies.emplace_back(&body);
+                    break;
+                }
+                case BodyType::Kinematic:
+                    kinematicBodies.emplace_back(&body);
+                    break;
+                case BodyType::Static:
+                    staticBodies.emplace_back(&body);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -107,7 +108,8 @@ namespace OZZ {
                 // check if they collide
                 auto collisionResult = collision::IsColliding(*dynamicBody, *otherDynamicBody);
                 dynamicBody->bCollidedThisFrame = dynamicBody->bCollidedThisFrame || collisionResult.bCollided;
-                otherDynamicBody->bCollidedThisFrame = otherDynamicBody->bCollidedThisFrame || collisionResult.bCollided;
+                otherDynamicBody->bCollidedThisFrame =
+                    otherDynamicBody->bCollidedThisFrame || collisionResult.bCollided;
                 if (collisionResult.bCollided) {
                     collisions.emplace_back(dynamicBody, otherDynamicBody, collisionResult);
                 }
@@ -140,4 +142,16 @@ namespace OZZ {
             }
         }
     }
-} // OZZ
+
+    std::vector<BodyID> OzzWorld2D::QueryPoint(const glm::vec2& worldPoint) {
+        std::vector<BodyID> result{};
+
+        const OzzShapeData Point = OzzPoint{.Position = worldPoint};
+        for (const auto& body : bodies) {
+            if (const auto collisionResult = collision::IsColliding(Point, body); collisionResult.bCollided) {
+                result.emplace_back(body.ID);
+            }
+        }
+        return result;
+    }
+} // namespace OZZ

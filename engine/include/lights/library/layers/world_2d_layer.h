@@ -12,7 +12,7 @@ namespace OZZ {
     namespace lights {
         class World2DLayer : public OZZ::scene::SceneLayer {
         public:
-            explicit World2DLayer(OZZ::GameWorld *inWorld, const std::shared_ptr<OZZ::InputSubsystem> &inInput);
+            explicit World2DLayer(OZZ::GameWorld* inWorld, const std::shared_ptr<OZZ::InputSubsystem>& inInput);
             ~World2DLayer() override = default;
             void Init() override;
             void PhysicsTick(float DeltaTime) override;
@@ -20,11 +20,12 @@ namespace OZZ {
             void RenderTargetResized(glm::ivec2 size) override;
 
         protected:
-            OZZ::GameWorld *gameWorld{nullptr};
+            OZZ::GameWorld* gameWorld{nullptr};
             std::shared_ptr<OZZ::InputSubsystem> input{nullptr};
             std::vector<OZZ::scene::SceneObject> sceneObjects{};
 
             glm::vec2 cameraPosition{0.f, 0.f};
+            glm::ivec2 viewportSize{0, 0};
         };
     } // namespace lights
 } // namespace OZZ

@@ -8,13 +8,14 @@
 namespace OZZ::game::objects {
     class UIComponent : public OZZ::GameObject {
     public:
-        UIComponent(GameWorld *inWorld, const std::shared_ptr<OzzWorld2D> &ozz_world_2d)
-            : GameObject(inWorld, ozz_world_2d) {
-        }
+        UIComponent(uint64_t inId, GameWorld* inWorld, const std::shared_ptr<OzzWorld2D>& ozz_world_2d)
+            : GameObject(inId, inWorld, ozz_world_2d) {}
 
-        virtual bool IsMouseOver(const glm::vec2 &mousePosition) { return false; }
+        virtual bool IsMouseOver(const glm::vec2& mousePosition) { return false; }
+
         virtual void Clicked() {};
-		// virtual void SetupInput(InputSubsystem* inInputSubsystem);
+
+        // virtual void SetupInput(InputSubsystem* inInputSubsystem);
 
         void SetFocused(bool isFocused) {
             if (focused == isFocused) {
@@ -24,28 +25,29 @@ namespace OZZ::game::objects {
             onFocusChanged();
         }
 
-        [[nodiscard]] bool IsFocused() const {
-            return focused;
-        }
+        [[nodiscard]] bool IsFocused() const { return focused; }
+
     protected:
         virtual void onFocusChanged() {};
 
     private:
-        bool focused { false };
+        bool focused{false};
     };
-}
+} // namespace OZZ::game::objects
 
-template<typename T>
+template <typename T>
 concept HasParamsType = requires { typename T::ParamsType; };
 
-template<typename T>
-concept HasUIConstructor = requires(OZZ::GameWorld *inGameWorld, std::shared_ptr<OZZ::OzzWorld2D> inPhysicsWorld,
-                                    const typename T::ParamsType &inParams) {
+template <typename T>
+concept HasUIConstructor = requires(OZZ::GameWorld* inGameWorld,
+                                    std::shared_ptr<OZZ::OzzWorld2D> inPhysicsWorld,
+                                    const typename T::ParamsType& inParams) {
     T{inGameWorld, inPhysicsWorld, inParams}; // Check if T can be constructed with these parameters
 };
 
 template <typename T>
-concept IsUIComponentType = std::derived_from<T, OZZ::game::objects::UIComponent> && HasParamsType<T> && HasUIConstructor<T>;
+concept IsUIComponentType =
+    std::derived_from<T, OZZ::game::objects::UIComponent> && HasParamsType<T> && HasUIConstructor<T>;
 
-template<typename... Types>
+template <typename... Types>
 concept IsUIComponent = (IsUIComponentType<Types> && ...);

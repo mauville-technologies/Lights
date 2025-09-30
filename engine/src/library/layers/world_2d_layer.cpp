@@ -6,7 +6,7 @@
 #include "lights/game/game_world.h"
 
 namespace OZZ::lights {
-    World2DLayer::World2DLayer(OZZ::GameWorld *inWorld, const std::shared_ptr<OZZ::InputSubsystem> &inInput)
+    World2DLayer::World2DLayer(OZZ::GameWorld* inWorld, const std::shared_ptr<OZZ::InputSubsystem>& inInput)
         : gameWorld(inWorld), input(inInput) {}
 
     void World2DLayer::Init() {
@@ -33,5 +33,6 @@ namespace OZZ::lights {
 
         LayerCamera.ProjectionMatrix =
             glm::ortho(-width / 2.f, width / 2.f, -height / 2.f, height / 2.f, 0.001f, 1000.f);
+        viewportSize = size;
     }
 } // namespace OZZ::lights

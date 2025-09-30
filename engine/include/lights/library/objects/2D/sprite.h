@@ -15,9 +15,15 @@ namespace OZZ::game::scene {
         std::filesystem::path FragShaderPath{"assets/shaders/engine/sprite.frag"};
     };
 
-    class Sprite final : public GameObject {
+    struct SpriteUserData {
+        uint64_t GameObjectID;
+    };
+
+    // TODO: @paulm mark final again after merging in configurables from AGE repo
+    class Sprite : public GameObject {
     public:
-        explicit Sprite(GameWorld* inGameWorld,
+        explicit Sprite(uint64_t inId,
+                        GameWorld* inGameWorld,
                         std::shared_ptr<OzzWorld2D> inPhysicsWorld,
                         const std::filesystem::path& texture,
                         const SpriteConstructionParams&& inConstructionParams = SpriteConstructionParams{});
@@ -47,17 +53,21 @@ namespace OZZ::game::scene {
          */
         template <typename... Args>
         void AddBody(Args&&... args) {
-            if (MainBody != InvalidBodyID) {
-                physicsWorld->DestroyBody(MainBody);
-                MainBody = InvalidBodyID;
+            if (bodyId != InvalidBodyID) {
+                physicsWorld->DestroyBody(bodyId);
+                bodyId = InvalidBodyID;
             }
-            MainBody = physicsWorld->CreateBody(std::forward<Args>(args)...);
+
+            std::any userData = SpriteUserData{.GameObjectID = id};
+            bodyId = physicsWorld->CreateBody(std::forward<Args>(args)..., userData);
         }
 
-        [[nodiscard]] Body* GetBody() const { return physicsWorld->GetBody(MainBody); }
+        [[nodiscard]] BodyID GetBodyID() const { return bodyId; }
+
+        [[nodiscard]] Body* GetBody() const { return physicsWorld->GetBody(bodyId); }
 
     private:
-        BodyID MainBody{InvalidBodyID};
+        BodyID bodyId{InvalidBodyID};
 
 #ifdef OZZ_DEBUG
         bool bDrawDebug = true;

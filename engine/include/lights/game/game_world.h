@@ -23,32 +23,34 @@ namespace OZZ {
     };
 
     template <typename T>
-    using GameObjectContainer = std::pair<uint64_t, T *>;
+    using GameObjectContainer = std::pair<uint64_t, T*>;
 
     class GameWorld {
     public:
         GameWorld() = default;
         ~GameWorld() = default;
 
-        void Init(const WorldParams &params = {});
+        void Init(const WorldParams& params = {});
 
         void PhysicsTick(float deltaTime);
         void Tick(float deltaTime);
 
         void DeInit();
 
-        inline auto &GetObjects() { return objects; }
+        inline auto& GetObjects() { return objects; }
 
         template <typename T, typename... Args>
-        GameObjectContainer<T> CreateGameObject(Args &&...inArgs) {
+        GameObjectContainer<T> CreateGameObject(Args&&... inArgs) {
             auto id = generateUnusedID();
-            auto newObject = std::make_unique<T>(this, world, std::forward<Args>(inArgs)...);
+            auto newObject = std::make_unique<T>(id, this, world, std::forward<Args>(inArgs)...);
             objects[id] = std::move(newObject);
-            return {id, dynamic_cast<T *>(objects[id].get())};
+            return {id, dynamic_cast<T*>(objects[id].get())};
         }
 
-        GameObject *GetObject(uint64_t id);
+        GameObject* GetObject(uint64_t id);
         void RemoveObject(uint64_t id);
+
+        std::weak_ptr<OzzWorld2D> GetPhysicsWorld() { return world; }
 
     private:
         uint64_t generateUnusedID() {
