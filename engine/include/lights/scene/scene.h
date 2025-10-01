@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <memory>
 #include <glm/glm.hpp>
+#include <memory>
 #include <vector>
 
 #include <lights/game/game_world.h>
@@ -48,21 +48,24 @@ namespace OZZ::scene {
             static float accumulator = 0.f;
             accumulator += DeltaTime;
 
+            const auto& activeLayers = GetActiveLayers();
             while (accumulator >= physicsTickRate) {
-                for (const auto &Layer: GetLayers()) {
+                for (const auto& Layer : activeLayers) {
                     Layer->PhysicsTick(physicsTickRate);
                 }
                 GetWorld()->PhysicsTick(physicsTickRate);
                 accumulator -= physicsTickRate;
             }
-            for (const auto &Layer: GetLayers()) {
+            for (const auto& Layer : activeLayers) {
                 Layer->Tick(DeltaTime);
             }
         };
 
         // Marked virtual to allow derived Scenes with custom entities
-        virtual void WindowResized(glm::ivec2 size) {
-            for (auto &Layer: GetLayers()) {
+        virtual void WindowResized(const glm::ivec2 size) {
+            // the render targets should resize even if they're not active so that when they become active again they're
+            // correct
+            for (const auto& Layer : GetAllLayers()) {
                 Layer->RenderTargetResized(size);
             }
         }
@@ -70,19 +73,23 @@ namespace OZZ::scene {
         virtual ~Scene() {
             layerManager.reset();
 
-            if (world) world->DeInit();
+            if (world)
+                world->DeInit();
             world.reset();
         }
 
-        std::vector<SceneLayer*> GetLayers() { return layerManager->GetActiveLayers(); }
+        [[nodiscard]] std::vector<SceneLayer*> GetActiveLayers() const { return layerManager->GetActiveLayers(); }
 
-        GameWorld *GetWorld() {
-            if (!world) world = std::make_shared<GameWorld>();
+        [[nodiscard]] std::vector<SceneLayer*> GetAllLayers() const { return layerManager->GetAllLayers(); }
+
+        GameWorld* GetWorld() {
+            if (!world)
+                world = std::make_shared<GameWorld>();
             return world.get();
         }
 
     public:
-        SceneParams Params {};
+        SceneParams Params{};
 
     protected:
         std::unique_ptr<SceneLayerManager> layerManager;
@@ -91,4 +98,4 @@ namespace OZZ::scene {
     private:
         std::shared_ptr<GameWorld> world;
     };
-}
+} // namespace OZZ::scene

@@ -22,7 +22,7 @@ namespace OZZ {
 
         // TODO: Render the scene
         // Render all scene objects
-        for (auto& layer : scene->GetLayers()) {
+        for (auto& layer : scene->GetActiveLayers()) {
             for (auto& object : layer->GetSceneObjects()) {
                 auto& [transform, objMesh, objMat] = object;
                 objMat->Bind();

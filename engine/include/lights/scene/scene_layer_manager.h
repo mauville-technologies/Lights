@@ -36,6 +36,7 @@ namespace OZZ::scene {
             if (!wasInserted) {
                 layers.emplace_back(std::move(newLayer));
                 layerNames.push_back(layerName);
+                layerZOrders.emplace_back(0); // default z-order
             }
 
             auto insertedLayer = GetLayer<T>(layerName);
@@ -64,12 +65,15 @@ namespace OZZ::scene {
         }
 
         void SetLayerActive(const std::string& layerName, bool bActive);
+        void SetLayerZOrder(const std::string& layerName, uint16_t zOrder);
 
         [[nodiscard]] std::vector<SceneLayer*> GetActiveLayers() const;
+        std::vector<SceneLayer*> GetAllLayers() const;
 
     private:
         std::set<size_t> activeLayers;
         std::vector<std::string> layerNames;
+        std::vector<uint16_t> layerZOrders;
         std::vector<std::unique_ptr<SceneLayer>> layers;
 
         bool bIsInitialized = false;
