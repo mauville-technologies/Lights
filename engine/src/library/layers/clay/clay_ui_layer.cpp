@@ -56,8 +56,8 @@ void ClayUILayer::Tick(float DeltaTime) {
         Clay_UpdateScrollContainers(true, {0, 0}, DeltaTime);
 
         Clay_BeginLayout();
-        if (componentRenderFunction) {
-            componentRenderFunction();
+        if (tickDefinitionFunction) {
+            tickDefinitionFunction();
         } else {
             const Clay_Color COLOR_LIGHT = Clay_Color{224, 215, 210, 255};
             const Clay_Color COLOR_RED = Clay_Color{168, 66, 28, 255};

@@ -39,7 +39,7 @@ public:
     void RegisterFont(const uint16_t& fontId, const std::filesystem::path& fontPath);
     void UnregisterFont(const uint16_t& fontId);
 
-    void SetRenderFunction(std::function<void()> func) { componentRenderFunction = std::move(func); }
+    void SetTickDefinitionFunction(std::function<void()> func) { tickDefinitionFunction = std::move(func); }
 
     void SetDebugPanelOpened(bool bOpened);
     [[nodiscard]] bool IsDebugPanelOpened() const;
@@ -63,7 +63,7 @@ private:
                           const glm::vec2& baseline = {0, 0});
 
 private:
-    std::function<void()> componentRenderFunction;
+    std::function<void()> tickDefinitionFunction;
     std::shared_ptr<OZZ::InputSubsystem> inputSubsystem;
 
     glm::ivec2 screenSize{0, 0};
