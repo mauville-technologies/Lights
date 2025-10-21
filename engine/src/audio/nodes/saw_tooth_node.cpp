@@ -6,7 +6,7 @@
 #include <cmath>
 
 namespace OZZ::lights::audio {
-    bool SawToothNode::Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) {
+    bool SawToothNode::Render(int nFrames) {
         constexpr auto numChannels = 2;
         const auto renderedAudioSize = nFrames * numChannels;
 

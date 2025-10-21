@@ -22,7 +22,7 @@ namespace OZZ::lights::audio {
             return "SawTooth";
         }
 
-        bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
+        bool Render(int nFrames) override;
 
         [[nodiscard]] std::string GetDescription() const override {
             return "SawTooth synth";

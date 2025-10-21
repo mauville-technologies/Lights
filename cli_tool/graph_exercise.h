@@ -5,7 +5,7 @@
 #pragma once
 #include <ranges>
 
-#include "node.h"
+#include "lights/algo/graph_node.h"
 #include "spdlog/spdlog.h"
 
 struct RenderTarget {

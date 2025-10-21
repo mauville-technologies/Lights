@@ -8,7 +8,7 @@
 #include "spdlog/spdlog.h"
 
 namespace OZZ::lights::audio {
-    void AudioSubsystem::Init(AudioSubsystemSettings&& inSettings) {
+    void AudioSubsystem::Init(AudioSubsystemSettings &&inSettings) {
         spdlog::info("Initializing Audio Subsystem...");
 
         settings = std::move(inSettings);
@@ -34,7 +34,7 @@ namespace OZZ::lights::audio {
     }
 
     void AudioSubsystem::SelectOutputAudioDevice(const uint32_t deviceID) {
-        const auto* device = GetAudioDevice(deviceID);
+        const auto *device = GetAudioDevice(deviceID);
         if (!device) {
             spdlog::error("Audio device with ID {} not found.", deviceID);
             return;
@@ -56,7 +56,7 @@ namespace OZZ::lights::audio {
         spdlog::info("Selected Output Device: {} (ID: {}, Channels: {})",
                      device->Name, device->ID, device->OutputChannels);
 
-        RtAudio::StreamOptions OutOptions {
+        RtAudio::StreamOptions OutOptions{
             .flags = RTAUDIO_SCHEDULE_REALTIME | RTAUDIO_MINIMIZE_LATENCY,
             .numberOfBuffers = 1,
             .priority = 1
@@ -67,9 +67,9 @@ namespace OZZ::lights::audio {
             RTAUDIO_FLOAT32, // Sample format
             settings.SampleRate, // Sample rate
             &BufferSize, // Buffer size
-            [](void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-               RtAudioStreamStatus status, void* userData) {
-                const auto* audioSubsystem = static_cast<AudioSubsystem*>(userData);
+            [](void *outputBuffer, void *inputBuffer, unsigned int nFrames, double streamTime,
+               RtAudioStreamStatus status, void *userData) {
+                const auto *audioSubsystem = static_cast<AudioSubsystem *>(userData);
                 return audioSubsystem->renderAudio(outputBuffer, inputBuffer, nFrames, streamTime, status);
             },
             this,
@@ -90,7 +90,7 @@ namespace OZZ::lights::audio {
         auto devices = rtAudio->getDeviceIds();
 
         // scan through all devices
-        for (auto id : devices) {
+        for (auto id: devices) {
             auto deviceInfo = rtAudio->getDeviceInfo(id);
             spdlog::info("Device {}: {} (Input Channels: {}, Output Channels: {})",
                          id, deviceInfo.name, deviceInfo.inputChannels, deviceInfo.outputChannels);
@@ -109,7 +109,7 @@ namespace OZZ::lights::audio {
 
     bool AudioSubsystem::initializeRtAudio() {
         rtAudio = std::make_unique<RtAudio>(RtAudio::Api::UNSPECIFIED,
-                                            [this](auto ErrorType, const auto& ErrorMessage) {
+                                            [this](auto ErrorType, const auto &ErrorMessage) {
                                                 spdlog::error("RtAudio Error: {} - {}", static_cast<int>(ErrorType),
                                                               ErrorMessage);
                                             });
@@ -120,11 +120,11 @@ namespace OZZ::lights::audio {
     }
 
     bool AudioSubsystem::initializeMainMix() {
-        mainMixNode = std::make_shared<AudioGraphNodeType<AudioFanInMixerNode>>();
+        mainMixNode = std::make_shared<AudioFanInMixerNode>();
         return true;
     }
 
-    int AudioSubsystem::renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
+    int AudioSubsystem::renderAudio(void *outputBuffer, void *inputBuffer, unsigned int nFrames, double streamTime,
                                     RtAudioStreamStatus status) const {
         const auto deviceSampleRate = rtAudio->getStreamSampleRate();
         const auto deviceChannels = rtAudio->getDeviceInfo(currentOutputDevice->ID).outputChannels;
@@ -148,31 +148,24 @@ namespace OZZ::lights::audio {
         }
 
         // Flatten the main mix node to get dependency graph
-        const auto sortedNodes = OZZ::lights::algo::Kahns(mainMixNode);
+        const auto sortedNodes = GraphNode::TopologicalSort(mainMixNode.get());
         if (!sortedNodes) {
             spdlog::error("Failed to flatten audio graph. Cycle detected or empty graph.");
             return 0;
         }
 
-        for (auto& node : *sortedNodes) {
-            auto CurrentNode = AsNode<AudioGraphNode>(node);
-            // build input
-            auto inputs = std::vector<AudioGraphNode*>();
-            for (const auto& previousNode : node->PreviousNodes) {
-                if (previousNode) {
-                    inputs.push_back(&AsNode<AudioGraphNode>(previousNode.get())->Data);
-                }
-            }
+        for (auto &node: *sortedNodes) {
+            auto CurrentNode = static_cast<AudioGraphNode *>(node);
 
-            auto* baseNode = &(CurrentNode->Data);
-            if (!baseNode->Render(requiredFrames, inputs)) {
-                spdlog::warn("Node {} failed to render audio.", CurrentNode->Data.GetName());
+            // TODO: Double check that inputs exist
+            if (!CurrentNode->Render(requiredFrames)) {
+                spdlog::warn("Node {} failed to render audio.", CurrentNode->GetName());
             }
         }
 
         // we can then grab the rendered audio from the main mix node
         // TODO: @paulm - i should probably be using views here instead of copying the data
-        auto mix = mainMixNode->Data.GetRenderedAudio();
+        auto mix = mainMixNode->GetRenderedAudio();
 
         if (!mix.empty() && deviceSampleRate != settings.SampleRate) {
             // resample the audio to match the device sample rate
@@ -192,7 +185,7 @@ namespace OZZ::lights::audio {
                 .input_frames = inMixFrameCount,
                 .output_frames = outMixFrameCount,
                 .src_ratio = conversionRatio,
-                };
+            };
 
             if (const auto error = src_simple(&srcData, SRC_SINC_BEST_QUALITY, deviceChannels); error != 0) {
                 spdlog::error("Error resampling audio: {}", src_strerror(error));
@@ -203,13 +196,11 @@ namespace OZZ::lights::audio {
         if (mix.empty()) {
             spdlog::warn("Main mix node rendered no audio data. Returning silence.");
             mix = std::vector<float>(bufferSize, 0.0f);
-        }
-        else if (mix.size() > bufferSize) {
+        } else if (mix.size() > bufferSize) {
             spdlog::warn("Main mix node rendered more audio data than requested. Truncating.");
             // Truncate the mix if it's longer than nFrames
             mix.resize(bufferSize);
-        }
-        else if (mix.size() < bufferSize) {
+        } else if (mix.size() < bufferSize) {
             // pad with silence if the mix is shorter than nFrames
             mix.resize(bufferSize, 0.0f);
         }
@@ -217,14 +208,15 @@ namespace OZZ::lights::audio {
         // TODO: @paulm - Handle different channel counts properly
         for (unsigned int i = 0; i < nFrames; ++i) {
             // Convert float to int16_t and write to output buffer
-            static_cast<float*>(outputBuffer)[i * 2] = mix[i * 2];
-            static_cast<float*>(outputBuffer)[i * 2 + 1] = mix[i * 2 + 1];
+            static_cast<float *>(outputBuffer)[i * 2] = mix[i * 2];
+            static_cast<float *>(outputBuffer)[i * 2 + 1] = mix[i * 2 + 1];
         }
 
         return 0;
     }
 
-    void AudioSubsystem::shutdownMainMix() {}
+    void AudioSubsystem::shutdownMainMix() {
+    }
 
     void AudioSubsystem::closeOpenStream() {
         if (rtAudio) {

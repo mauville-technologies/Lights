@@ -38,10 +38,12 @@ namespace OZZ::lights::audio {
 
         // Interface functions
         [[nodiscard]] std::string GetName() const override;
-        bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
+
+        bool Render(int nFrames) override;
+
         [[nodiscard]] std::string GetDescription() const override;
 
-        bool Load(const std::filesystem::path& filePath);
+        bool Load(const std::filesystem::path &filePath);
 
         [[nodiscard]] bool IsValid() const {
             bool isValid = true;
@@ -50,7 +52,7 @@ namespace OZZ::lights::audio {
             return isValid;
         }
 
-        [[nodiscard]] const std::filesystem::path& GetFilePath() const {
+        [[nodiscard]] const std::filesystem::path &GetFilePath() const {
             return filePath;
         }
 

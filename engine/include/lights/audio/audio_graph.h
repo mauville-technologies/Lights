@@ -3,10 +3,12 @@
 //
 
 #pragma once
-#include "lights/algo/graphs/node.h"
+#include <string>
+
+#include "lights/algo/graph_node.h"
 
 namespace OZZ::lights::audio {
-    class AudioGraphNode {
+    class AudioGraphNode : public GraphNode {
     public:
         virtual ~AudioGraphNode() = default;
 
@@ -30,11 +32,11 @@ namespace OZZ::lights::audio {
             return "Base AudioGraphNode";
         }
 
-        virtual bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) {
+        virtual bool Render(int nFrames) {
             return false;
         };
 
-        [[nodiscard]] const std::vector<float>& GetRenderedAudio() {
+        [[nodiscard]] const std::vector<float> &GetRenderedAudio() {
             return AudioGraphNode::renderedAudio;
         };
 
@@ -50,17 +52,8 @@ namespace OZZ::lights::audio {
         uint8_t channels{2};
     };
 
-    template <typename T>
-    concept IsAudioProcessorNode = std::derived_from<T, AudioGraphNode>;
 
-    template <IsAudioProcessorNode T>
-    using AudioGraphNodeType = algo::Node<T>;
-
-    template <IsAudioProcessorNode T>
-    using AudioGraphNodePtr = std::shared_ptr<AudioGraphNodeType<T>>;
-
-    template <IsAudioProcessorNode T>
-    void ConnectAudioGraphNodes(AudioGraphNodePtr<T> from, AudioGraphNodePtr<T> to) {
-        algo::Node<T>::Connect(from, to);
+    inline void ConnectAudioGraphNodes(AudioGraphNode *from, AudioGraphNode *to) {
+        GraphNode::Connect(from, to);
     }
 }

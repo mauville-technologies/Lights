@@ -3,9 +3,10 @@
 //
 
 #include <lights/audio/nodes/audio_fan_in_mixer_node.h>
+#include <spdlog/spdlog.h>
 
 namespace OZZ::lights::audio {
-    bool AudioFanInMixerNode::Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) {
+    bool AudioFanInMixerNode::Render(int nFrames) {
         constexpr auto numChannels = 2;
         const auto renderedAudioSize = nFrames * numChannels;
 
@@ -14,14 +15,15 @@ namespace OZZ::lights::audio {
 
         const auto scale = inputs.empty() ? 1.f : 1.f / static_cast<float>(inputs.size());
 
-        for (auto* inputNode : inputs) {
+        for (auto *inputNode: inputs) {
             // we want to first ensure not null
             if (!inputNode) {
                 spdlog::warn("Input node is null");
                 continue;
             }
 
-            const auto inputRenderedAudio = inputNode->GetRenderedAudio();
+            auto *audioInputNode = static_cast<AudioGraphNode *>(inputNode);
+            const auto inputRenderedAudio = audioInputNode->GetRenderedAudio();
 
             // for each float in rendered audio, sum to existing output
             for (auto i = 0; i < inputRenderedAudio.size(); i++) {
@@ -34,7 +36,7 @@ namespace OZZ::lights::audio {
             }
         }
 
-        for (auto& frame : renderedAudio) {
+        for (auto &frame: renderedAudio) {
             frame = scale * frame;
         }
         return true;

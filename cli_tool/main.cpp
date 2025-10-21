@@ -5,7 +5,6 @@
 #include "graph_exercise.h"
 
 #include <filesystem>
-#include <lights/algo/graphs/node.h>
 #include <lights/util/configuration.h>
 #include <spdlog/spdlog.h>
 
@@ -13,7 +12,7 @@
 #include "lights/audio/nodes/audio_cue.h"
 #include "lights/audio/nodes/saw_tooth_node.h"
 
-#include "node.h"
+#include "../engine/include/lights/algo/graph_node.h"
 
 struct CommandLineArguments {
     std::string SampleConfigValueOne;
@@ -88,17 +87,17 @@ void TestAudio() {
 
     const auto Saw = audioSubsystem->CreateAudioNode<OZZ::lights::audio::SawToothNode>();
     const auto testAudio = audioSubsystem->CreateAudioNode<OZZ::lights::audio::AudioCue>();
-    testAudio->Data.Load(std::filesystem::current_path() / "soul.wav");
-    testAudio->Data.PlayState = OZZ::lights::audio::AudioCuePlayState::Playing;
-    testAudio->Data.LoopMode = OZZ::lights::audio::AudioCueLoopMode::Loop;
-    audioSubsystem->ConnectToMainMixNode(testAudio);
-    // audioSubsystem->ConnectToMainMixNode(Saw);
+    testAudio->Load(std::filesystem::current_path() / "soul.wav");
+    testAudio->PlayState = OZZ::lights::audio::AudioCuePlayState::Playing;
+    testAudio->LoopMode = OZZ::lights::audio::AudioCueLoopMode::Loop;
+    audioSubsystem->ConnectToMainMixNode(testAudio.get());
+    // audioSubsystem->ConnectToMainMixNode(Saw.get());
 
     static auto timeElapsed = 0.f;
     static auto lastTickTime = std::chrono::high_resolution_clock::now();
     static constexpr float changeInterval = 0.5f; // Change note every 5 seconds
     static auto currentNoteIndex = 0;
-    Saw->Data.SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
+    Saw->SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
 
     // every 5 seconds, change the note on the sawtooth node
     while (true) {
@@ -110,7 +109,7 @@ void TestAudio() {
         if (timeElapsed >= changeInterval) {
             currentNoteIndex = (currentNoteIndex + 1) % std::size(Notes);
             // Change the note on the sawtooth node
-            Saw->Data.SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
+            Saw->SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
             timeElapsed = 0.f;
         }
     }

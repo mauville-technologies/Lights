@@ -2,18 +2,19 @@
 // Created by ozzadar on 2025-07-24.
 //
 
-#include <iostream>
 #include <lights/audio/nodes/audio_cue.h>
 #include <ozz_audio/audio.h>
+#include <spdlog/spdlog.h>
 
 namespace OZZ::lights::audio {
-    AudioCue::~AudioCue() {}
+    AudioCue::~AudioCue() {
+    }
 
     std::string AudioCue::GetName() const {
         return "AudioCue - " + audioData.FileName;
     }
 
-    bool AudioCue::Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) {
+    bool AudioCue::Render(int nFrames) {
         renderedAudio.clear();
         // Ensure the audio data is valid
         if (!IsValid()) {
@@ -75,7 +76,7 @@ It contains the audio data and can be connected to other nodes for processing.
 )";
     }
 
-    bool AudioCue::Load(const std::filesystem::path& filePath) {
+    bool AudioCue::Load(const std::filesystem::path &filePath) {
         const OZZ::audio::AudioContext context{
             .SampleRate = GetSampleRate(),
             .Channels = GetChannels(),

@@ -14,7 +14,7 @@ namespace OZZ::lights::audio {
             return "Audio Fan-In Mixer";
         }
 
-        bool Render(int nFrames, const std::vector<AudioGraphNode*>& inputs) override;
+        bool Render(int nFrames) override;
 
         [[nodiscard]] std::string GetDescription() const override {
             return "Mixes multiple audio inputs into a single output stream.";
