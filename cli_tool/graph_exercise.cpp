@@ -21,6 +21,7 @@ void Renderer::ExecuteTheGraph(Renderable *sceneGraph) {
     auto orderedGraph = GraphNode::TopologicalSort(viewport.get());
     if (!orderedGraph) {
         spdlog::critical("Failed to topological sort.");
+        return;
     }
 
     // Reset frame state for all nodes
