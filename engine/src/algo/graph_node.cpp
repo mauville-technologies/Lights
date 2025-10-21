@@ -2,7 +2,7 @@
 // Created by ozzadar on 2025-10-20.
 //
 
-#include "node.h"
+#include "lights/algo/graph_node.h"
 
 #include "spdlog/spdlog.h"
 
@@ -13,7 +13,7 @@
 void GraphNode::Connect(GraphNode *from, GraphNode *to) {
     auto &fromOutputs = from->outputs;
     auto &toInputs = to->inputs;
-    auto outExists = std::ranges::find_if(fromOutputs, [to](const GraphNode *node) {
+    const auto outExists = std::ranges::find_if(fromOutputs, [to](const GraphNode *node) {
         return node == to;
     });
 
@@ -141,10 +141,10 @@ bool GraphNode::AreConnected(GraphNode *from, GraphNode *to) {
 void GraphNode::ClearConnections(GraphNode *node) {
     const auto inputsCopy = node->inputs;
     const auto outputsCopy = node->outputs;
+
     for (auto *input: inputsCopy) {
         Disconnect(input, node);
     }
-
     for (auto *output: outputsCopy) {
         Disconnect(node, output);
     }

@@ -7,6 +7,8 @@ add_subdirectory(third_party)
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
+        src/algo/graph_node.cpp
+
         src/audio/nodes/audio_cue.cpp
         src/audio/nodes/audio_fan_in_mixer_node.cpp
         src/audio/nodes/saw_tooth_node.cpp

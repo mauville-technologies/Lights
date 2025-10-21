@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <RtAudio.h>
 
+#include <spdlog/spdlog.h>
+
 #include "audio_graph.h"
 #include "nodes/audio_fan_in_mixer_node.h"
 
@@ -37,43 +39,43 @@ namespace OZZ::lights::audio {
 
     class AudioSubsystem {
     public:
-        void Init(AudioSubsystemSettings&& inSettings = {});
+        void Init(AudioSubsystemSettings &&inSettings = {});
+
         void Shutdown();
 
-        template <typename T>
-        void ConnectToMainMixNode(AudioGraphNodePtr<T> node) {
-            AudioGraphNodeType<T>::Connect(node, mainMixNode);
+        void ConnectToMainMixNode(AudioGraphNode *node) {
+            GraphNode::Connect(node, mainMixNode.get());
         }
 
-        template <typename T>
-        std::shared_ptr<AudioGraphNodeType<T>> CreateAudioNode() {
+        template<typename T>
+        std::shared_ptr<T> CreateAudioNode() {
             if (!bInitialized) {
                 spdlog::error("AudioSubsystem is not initialized. Cannot create audio node.");
                 return nullptr;
             }
-            auto node = std::make_shared<AudioGraphNodeType<T>>();
-            node->Data.SetSampleRate(settings.SampleRate);
-            node->Data.SetChannels(settings.AudioChannels);
+            auto node = std::make_shared<T>();
+            node->SetSampleRate(settings.SampleRate);
+            node->SetChannels(settings.AudioChannels);
             return node;
         }
 
-        [[nodiscard]] const std::vector<AudioDevice>& GetAudioDevices() const {
+        [[nodiscard]] const std::vector<AudioDevice> &GetAudioDevices() const {
             return audioDevices;
         }
 
         [[nodiscard]] auto GetOutputDevices() const {
-            return audioDevices | std::views::filter([](const AudioDevice& device) {
+            return audioDevices | std::views::filter([](const AudioDevice &device) {
                 return device.CanOutput();
             });
         }
 
         [[nodiscard]] auto GetCurrentInputDevice() const {
-            return audioDevices | std::views::filter([](const AudioDevice& device) {
+            return audioDevices | std::views::filter([](const AudioDevice &device) {
                 return device.CanInput();
             });
         }
 
-        [[nodiscard]] const AudioDevice* GetCurrentOutputDevice() const {
+        [[nodiscard]] const AudioDevice *GetCurrentOutputDevice() const {
             return currentOutputDevice;
         }
 
@@ -83,13 +85,13 @@ namespace OZZ::lights::audio {
         }
 
         [[nodiscard]] bool IsValidDevice(const uint32_t deviceID) const {
-            return std::ranges::find_if(audioDevices, [deviceID](const AudioDevice& device) {
+            return std::ranges::find_if(audioDevices, [deviceID](const AudioDevice &device) {
                 return device.ID == deviceID;
             }) != audioDevices.end();
         }
 
-        [[nodiscard]] const AudioDevice* GetAudioDevice(const uint32_t deviceID) const {
-            const auto device = std::ranges::find_if(audioDevices, [deviceID](const AudioDevice& device) {
+        [[nodiscard]] const AudioDevice *GetAudioDevice(const uint32_t deviceID) const {
+            const auto device = std::ranges::find_if(audioDevices, [deviceID](const AudioDevice &device) {
                 return device.ID == deviceID;
             });
             if (device != audioDevices.end()) {
@@ -108,22 +110,25 @@ namespace OZZ::lights::audio {
         void detectAudioDevices();
 
         bool initializeRtAudio();
+
         bool initializeMainMix();
 
-        int renderAudio(void* outputBuffer, void* inputBuffer, unsigned int nFrames, double streamTime,
-            RtAudioStreamStatus status) const;
+        int renderAudio(void *outputBuffer, void *inputBuffer, unsigned int nFrames, double streamTime,
+                        RtAudioStreamStatus status) const;
 
         void shutdownMainMix();
+
         void closeOpenStream();
+
         void shutdownRtAudio();
 
     private:
         bool bInitialized{false};
 
-        AudioGraphNodePtr<AudioFanInMixerNode> mainMixNode{nullptr};
+        std::shared_ptr<AudioFanInMixerNode> mainMixNode{nullptr};
         AudioSubsystemSettings settings{};
         std::unique_ptr<RtAudio> rtAudio{nullptr};
-        const AudioDevice* currentOutputDevice{nullptr};
+        const AudioDevice *currentOutputDevice{nullptr};
         std::vector<AudioDevice> audioDevices{};
     };
 }
