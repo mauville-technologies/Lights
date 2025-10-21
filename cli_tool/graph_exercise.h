@@ -1,98 +1,20 @@
 //
 // Created by ozzadar on 2025-10-19.
 //
-
+/**
+ * TIP: THIS IS BORKED AFTER MIGRATION -- don't use!!
+ */
 #pragma once
 #include <ranges>
 
 #include "lights/algo/graph_node.h"
+#include "lights/rendering/renderable.h"
 #include "spdlog/spdlog.h"
 
-struct RenderTarget {
-    std::string data;
-    bool bRendered{false};
-
-    void NewFrame() {
-        bRendered = false;
-    }
-};
-
-class Renderable : public GraphNode {
-public:
-    virtual ~Renderable() = default;
-
-    virtual std::string GetName() = 0;
-
-    virtual std::vector<std::string> GetRequiredInputs() { return {}; }
-
-    std::optional<RenderTarget *> GetRender(const std::string &name) {
-        if (bRenderedThisFrame && renders.contains(name)) {
-            if (&renders[name].bRendered) {
-                // found, and rendered
-                return &renders[name];
-            }
-            // found, but not rendered
-            return std::nullopt;
-        }
-        // not found
-        return std::nullopt;
-    };
-
-    bool Render() {
-        if (!HasAllRequiredInputs()) {
-            spdlog::warn("Cannot render node {} due to missing inputs", GetName());
-            return false;
-        }
-
-        if (render()) {
-            bRenderedThisFrame = true;
-            return true;
-        }
-        return false;
-    }
-
-    void ResetFrameState() {
-        bRenderedThisFrame = false;
-        for (auto &renderTarget: renders | std::views::values) {
-            renderTarget.NewFrame();
-        }
-        newFrame();
-    }
-
-protected:
-    bool HasAllRequiredInputs() {
-        for (const auto &requiredInput: GetRequiredInputs()) {
-            bool found = false;
-            for (const auto &inputNode: inputs) {
-                auto *renderableNode = static_cast<Renderable *>(inputNode);
-                if (renderableNode->GetRender(requiredInput)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                spdlog::warn("Missing required input {} for node {}", requiredInput, GetName());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    virtual bool render() = 0;
-
-    virtual void newFrame() {
-    }
-
-protected:
-    bool bRenderedThisFrame{false};
-    std::unordered_map<std::string, RenderTarget> renders{};
-};
-
-class PGTexture : public Renderable {
+class PGTexture : public OZZ::Renderable {
 public:
     PGTexture() {
-        auto newTarget = RenderTarget();
-        newTarget.data = "TextureData";
+        auto newTarget = OZZ::RenderTarget(OZZ::RenderTargetType::Texture);
         renders.insert(std::make_pair("PGTexture", newTarget));
     }
 
@@ -101,12 +23,11 @@ public:
 protected:
     bool render() override {
         spdlog::info("Rendering texture");
-        renders["PGTexture"].bRendered = true;
         return true;
     }
 };
 
-class UILayer : public Renderable {
+class UILayer : public OZZ::Renderable {
 public:
     std::string GetName() override { return "UILayer"; }
 
@@ -129,7 +50,7 @@ protected:
     }
 };
 
-class GameLayer : public Renderable {
+class GameLayer : public OZZ::Renderable {
 public:
     std::string GetName() override { return "GameLayer"; }
 
@@ -150,7 +71,7 @@ protected:
     }
 };
 
-class Aggregator : public Renderable {
+class Aggregator : public OZZ::Renderable {
 public:
     std::string GetName() override { return "Aggregator"; }
 
@@ -161,7 +82,7 @@ protected:
     }
 };
 
-class Viewport : public Renderable {
+class Viewport : public OZZ::Renderable {
 public:
     std::string GetName() override { return "Viewport"; }
 
@@ -176,7 +97,7 @@ class Scene : public GraphNode {
 public:
     Scene();
 
-    [[nodiscard]] Renderable *GetSceneGraph() const;
+    [[nodiscard]] OZZ::Renderable *GetSceneGraph() const;
 
 private:
     std::unique_ptr<PGTexture> texture;
@@ -190,10 +111,10 @@ class Renderer {
 public:
     Renderer();
 
-    void ExecuteTheGraph(Renderable *sceneGraph);
+    void ExecuteTheGraph(OZZ::Renderable *sceneGraph);
 
 private:
-    std::unique_ptr<Renderable> viewport;
+    std::unique_ptr<OZZ::Renderable> viewport;
 };
 
 class Game {

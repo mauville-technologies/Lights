@@ -96,13 +96,13 @@ void TestAudio() {
     static auto timeElapsed = 0.f;
     static auto lastTickTime = std::chrono::high_resolution_clock::now();
     static constexpr float changeInterval = 0.5f; // Change note every 5 seconds
-    static auto currentNoteIndex = 0;
+    static auto currentNoteIndex = 0u;
     Saw->SetNote(Notes[currentNoteIndex], OZZ::lights::audio::Octave::Oct4);
 
     // every 5 seconds, change the note on the sawtooth node
     while (true) {
         auto currentTime = std::chrono::high_resolution_clock::now();
-        auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
+        const auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
         lastTickTime = currentTime;
         timeElapsed += deltaTime;
 

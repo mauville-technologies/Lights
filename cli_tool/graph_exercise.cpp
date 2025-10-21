@@ -8,7 +8,7 @@ Renderer::Renderer() {
     viewport = std::make_unique<Viewport>();
 }
 
-void Renderer::ExecuteTheGraph(Renderable *sceneGraph) {
+void Renderer::ExecuteTheGraph(OZZ::Renderable *sceneGraph) {
     // Clear current connections
     GraphNode::ClearConnections(viewport.get());
 
@@ -26,12 +26,12 @@ void Renderer::ExecuteTheGraph(Renderable *sceneGraph) {
 
     // Reset frame state for all nodes
     for (const auto node: orderedGraph.value()) {
-        auto *renderNode = static_cast<Renderable *>(node);
+        auto *renderNode = static_cast<OZZ::Renderable *>(node);
         renderNode->ResetFrameState();
     }
 
     for (const auto node: orderedGraph.value()) {
-        auto *renderNode = static_cast<Renderable *>(node);
+        auto *renderNode = static_cast<OZZ::Renderable *>(node);
         if (!renderNode->Render()) {
             spdlog::error("Failed to render node {}", renderNode->GetName());
         }
@@ -59,12 +59,12 @@ Scene::Scene() {
     game = std::make_unique<GameLayer>();
     aggregator = std::make_unique<Aggregator>();
 
-    Renderable::Connect(texture.get(), game.get());
-    Renderable::Connect(texture.get(), layer.get());
-    Renderable::Connect(game.get(), aggregator.get());
-    Renderable::Connect(layer.get(), aggregator.get());
+    OZZ::Renderable::Connect(texture.get(), game.get());
+    OZZ::Renderable::Connect(texture.get(), layer.get());
+    OZZ::Renderable::Connect(game.get(), aggregator.get());
+    OZZ::Renderable::Connect(layer.get(), aggregator.get());
 }
 
-Renderable *Scene::GetSceneGraph() const {
+OZZ::Renderable *Scene::GetSceneGraph() const {
     return aggregator.get();
 }

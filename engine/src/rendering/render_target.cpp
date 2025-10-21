@@ -2,11 +2,11 @@
 // Created by ozzadar on 2024-12-20.
 //
 
-#include "lights/rendering/render_pass.h"
+#include "lights/rendering/render_target.h"
 #include <glad/glad.h>
 
 namespace OZZ {
-    RenderPass::RenderPass(RenderTargetType InType) : type(InType) {
+    RenderTarget::RenderTarget(RenderTargetType InType) : type(InType) {
         if (type == RenderTargetType::Texture) {
             glGenFramebuffers(1, &framebuffer);
         } else {
@@ -14,11 +14,11 @@ namespace OZZ {
         }
     }
 
-    void RenderPass::Begin() {
+    void RenderTarget::Begin() {
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     }
 
-    void RenderPass::End() {
+    void RenderTarget::End() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 } // OZZ
