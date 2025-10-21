@@ -2,18 +2,23 @@
 // Created by ozzadar on 2024-12-17.
 //
 
-#include <spdlog/spdlog.h>
-#include <lights/util/configuration.h>
-#include <lights/algo/graphs/node.h>
+#include "graph_exercise.h"
+
 #include <filesystem>
+#include <lights/algo/graphs/node.h>
+#include <lights/util/configuration.h>
+#include <spdlog/spdlog.h>
 
 #include "lights/audio/audio_subsystem.h"
 #include "lights/audio/nodes/audio_cue.h"
 #include "lights/audio/nodes/saw_tooth_node.h"
 
+#include "node.h"
+
 struct CommandLineArguments {
     std::string SampleConfigValueOne;
-    std::string SampleConfigValueTwo;;
+    std::string SampleConfigValueTwo;
+    ;
 
     // Window options
     uint32_t WindowWidth{1280};
@@ -26,8 +31,7 @@ struct CommandLineArguments {
             SampleConfigValueTwo = data.at("SampleConfigValueTwo").as_string();
             WindowWidth = data.at("Window Settings").at("Width").as_integer();
             WindowHeight = data.at("Window Settings").at("Height").as_integer();
-        }
-        catch (...) {
+        } catch (...) {
             spdlog::error("Failed to parse configuration file");
             return false;
         }
@@ -55,20 +59,27 @@ void TestConfig() {
 }
 
 constexpr OZZ::lights::audio::Note Notes[] = {
-    OZZ::lights::audio::Note::C, OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E,
-    OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::F,
-    OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::C,
-    OZZ::lights::audio::Note::D, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
-    OZZ::lights::audio::Note::C, OZZ::lights::audio::Note::E, OZZ::lights::audio::Note::D,
-    };
+    OZZ::lights::audio::Note::C,
+    OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::F,
+    OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::C,
+    OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::D,
+    OZZ::lights::audio::Note::C,
+    OZZ::lights::audio::Note::E,
+    OZZ::lights::audio::Note::D,
+};
 
-int main() {
+void TestAudio() {
     auto audioSubsystem = std::make_unique<OZZ::lights::audio::AudioSubsystem>();
 
-    audioSubsystem->Init({
-        .SampleRate = 44100,
-        .AudioChannels = 2
-        });
+    audioSubsystem->Init({.SampleRate = 44100, .AudioChannels = 2});
 
     audioSubsystem->SelectOutputAudioDevice(audioSubsystem->GetDefaultOutputDeviceID());
 
@@ -106,8 +117,14 @@ int main() {
     spdlog::info("Press Enter to exit...");
     std::cin.get();
     audioSubsystem->Shutdown();
-    spdlog::info("Exiting CLI tool.");
     audioSubsystem.reset();
+}
+
+int main() {
+    // TestAudio();
+    auto exercise = Game();
+    exercise.Run();
+    spdlog::info("Exiting CLI tool.");
     spdlog::info("Audio subsystem shutdown complete.");
     spdlog::info("Goodbye!");
     spdlog::shutdown();
