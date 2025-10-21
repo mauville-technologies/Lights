@@ -139,11 +139,13 @@ bool GraphNode::AreConnected(GraphNode *from, GraphNode *to) {
 }
 
 void GraphNode::ClearConnections(GraphNode *node) {
-    for (auto *input: node->inputs) {
+    const auto inputsCopy = node->inputs;
+    const auto outputsCopy = node->outputs;
+    for (auto *input: inputsCopy) {
         Disconnect(input, node);
     }
 
-    for (auto *output: node->outputs) {
+    for (auto *output: outputsCopy) {
         Disconnect(node, output);
     }
 }
