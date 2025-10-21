@@ -8,21 +8,24 @@
 // TODO: Revisit render pass
 namespace OZZ {
     enum class RenderTargetType {
-        Window,
+        Viewport,
         Texture
     };
 
-    class RenderPass {
+    class RenderTarget {
     public:
-        explicit RenderPass(RenderTargetType InType);
-        virtual ~RenderPass() = default;
+        explicit RenderTarget(RenderTargetType InType = RenderTargetType::Texture);
+
+        virtual ~RenderTarget() = default;
 
         void Begin();
+
         void End();
 
         [[nodiscard]] RenderTargetType GetType() const {
             return type;
         }
+
     private:
         RenderTargetType type;
         uint32_t framebuffer;

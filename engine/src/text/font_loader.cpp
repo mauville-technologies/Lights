@@ -4,7 +4,7 @@
 
 #include <lights/text/font_loader.h>
 #include <freetype/freetype.h>
-#include <lights/rendering/render_pass.h>
+#include <lights/rendering/render_target.h>
 #include <lights/util/image.h>
 #include <spdlog/spdlog.h>
 

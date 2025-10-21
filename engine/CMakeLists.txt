@@ -41,7 +41,8 @@ set(SOURCES
 
         src/rendering/buffer.cpp
         src/rendering/material.cpp
-        src/rendering/render_pass.cpp
+        src/rendering/render_target.cpp
+        src/rendering/renderable.cpp
         src/rendering/renderer.cpp
         src/rendering/shader.cpp
         src/rendering/texture.cpp
