@@ -1,8 +1,8 @@
 project(Lights_CLI)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 #option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp graph_exercise.cpp node.cpp)
 
 # if set_base_dir(target) is defined, call it
 if (COMMAND set_base_dir)
