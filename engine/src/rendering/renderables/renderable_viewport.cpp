@@ -13,7 +13,7 @@ namespace OZZ {
     void RenderableViewport::Init() {
         // create the render target
         renderTarget = std::make_unique<RenderTarget>(RenderTargetParams{.Type = RenderTargetType::Viewport});
-        renders.insert(std::make_pair(GetName(), renderTarget.get()));
+        renders.insert(std::make_pair(GetRenderableName(), renderTarget.get()));
 
         // TODO: @paulm -- quad to render to
         const auto quadBuffer = std::make_shared<IndexVertexBuffer>();

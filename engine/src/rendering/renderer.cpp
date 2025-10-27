@@ -68,7 +68,7 @@ namespace OZZ {
         for (const auto node : orderedGraph.value()) {
             auto* renderNode = static_cast<OZZ::Renderable*>(node);
             if (!renderNode->Render()) {
-                spdlog::error("Failed to render node {}", renderNode->GetName());
+                spdlog::error("Failed to render node {}", renderNode->GetRenderableName());
             }
         }
     }

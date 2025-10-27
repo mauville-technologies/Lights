@@ -45,7 +45,7 @@ void main()
 
         void Init();
 
-        std::string GetName() override { return "RenderableViewport"; }
+        std::string GetRenderableName() override { return "RenderableViewport"; }
 
         constexpr std::vector<std::string> GetRequiredInputs() override { return {"ViewportTexture"}; }
 
