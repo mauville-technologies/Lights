@@ -39,6 +39,7 @@ set(SOURCES
         src/platform/SDL3/sdl_keys.cpp
         src/platform/SDL3/sdl_window.cpp
 
+        src/rendering/renderables/renderable_viewport.cpp
         src/rendering/buffer.cpp
         src/rendering/material.cpp
         src/rendering/render_target.cpp
@@ -47,6 +48,7 @@ set(SOURCES
         src/rendering/shader.cpp
         src/rendering/texture.cpp
 
+        src/scene/scene.cpp
         src/scene/scene_layer_manager.cpp
 
         src/text/font_loader.cpp

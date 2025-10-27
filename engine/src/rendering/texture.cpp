@@ -15,7 +15,14 @@ namespace OZZ {
         glDeleteTextures(1, &textureId);
     }
 
-    void Texture::UploadData(Image *image) {
+    void Texture::Reserve(const glm::ivec2 Size) {
+        width = Size.x;
+        height = Size.y;
+        Bind();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    }
+
+    void Texture::UploadData(Image* image) {
         width = image->GetWidth();
         height = image->GetHeight();
 
@@ -36,9 +43,7 @@ namespace OZZ {
                 spdlog::warn("Unsupported image format. Defaulting to RGBA");
         }
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     width, height, 0,
-                     format, GL_UNSIGNED_BYTE, image->GetData().data());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, image->GetData().data());
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
@@ -48,7 +53,7 @@ namespace OZZ {
         // TODO: Separate sampler params from the texture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
-} // OZZ
+} // namespace OZZ

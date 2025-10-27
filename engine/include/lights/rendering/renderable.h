@@ -6,8 +6,8 @@
 #include <lights/algo/graph_node.h>
 #include <lights/rendering/render_target.h>
 
-#include <string>
 #include <spdlog/spdlog.h>
+#include <string>
 
 namespace OZZ {
     class Renderable : public GraphNode {
@@ -18,7 +18,7 @@ namespace OZZ {
 
         virtual std::vector<std::string> GetRequiredInputs() { return {}; }
 
-        std::optional<RenderTarget *> GetRender(const std::string &name);
+        std::optional<RenderTarget*> GetRender(const std::string& name);
 
         bool Render();
 
@@ -29,12 +29,10 @@ namespace OZZ {
 
         virtual bool render() = 0;
 
-        virtual void newFrame() {
-        }
+        virtual void newFrame() {}
 
     protected:
         bool bRenderedThisFrame{false};
-        std::unordered_map<std::string, RenderTarget> renders{};
+        std::unordered_map<std::string, RenderTarget*> renders{};
     };
-}
-
+} // namespace OZZ

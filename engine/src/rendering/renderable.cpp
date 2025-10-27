@@ -4,11 +4,11 @@
 
 #include "lights/rendering/renderable.h"
 
-std::optional<OZZ::RenderTarget *> OZZ::Renderable::GetRender(const std::string &name) {
+std::optional<OZZ::RenderTarget*> OZZ::Renderable::GetRender(const std::string& name) {
     if (bRenderedThisFrame && renders.contains(name)) {
         if (&renders[name]) {
             // found, and rendered
-            return &renders[name];
+            return renders[name];
         }
     }
     // not found or rendered yet
@@ -34,10 +34,10 @@ void OZZ::Renderable::ResetFrameState() {
 }
 
 bool OZZ::Renderable::HasAllRequiredInputs() {
-    for (const auto &requiredInput: GetRequiredInputs()) {
+    for (const auto& requiredInput : GetRequiredInputs()) {
         bool found = false;
-        for (const auto &inputNode: inputs) {
-            auto *renderableNode = static_cast<Renderable *>(inputNode);
+        for (const auto& inputNode : inputs) {
+            auto* renderableNode = static_cast<Renderable*>(inputNode);
             if (renderableNode->GetRender(requiredInput)) {
                 found = true;
                 break;

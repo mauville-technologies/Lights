@@ -3,9 +3,10 @@
 //
 
 #pragma once
-#include <vector>
 #include "vertex.h"
 #include <memory>
+#include <span>
+#include <vector>
 
 namespace OZZ {
 
@@ -17,6 +18,7 @@ namespace OZZ {
         void UploadData(void* data, size_t size);
 
         void Bind() const;
+
     private:
         uint32_t vbo;
         uint32_t type;
@@ -27,7 +29,7 @@ namespace OZZ {
         IndexVertexBuffer();
         ~IndexVertexBuffer();
 
-        void UploadData(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+        void UploadData(std::span<Vertex> vertices, std::span<uint32_t> indices);
 
         void Bind() const;
         void Unbind() const;
@@ -41,4 +43,4 @@ namespace OZZ {
         std::unique_ptr<Buffer> vertexBuffer;
         std::unique_ptr<Buffer> indexBuffer;
     };
-} // OZZ
+} // namespace OZZ

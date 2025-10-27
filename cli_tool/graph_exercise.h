@@ -14,8 +14,8 @@
 class PGTexture : public OZZ::Renderable {
 public:
     PGTexture() {
-        auto newTarget = OZZ::RenderTarget(OZZ::RenderTargetType::Texture);
-        renders.insert(std::make_pair("PGTexture", newTarget));
+        newTarget = std::make_unique<OZZ::RenderTarget>(OZZ::RenderTargetType::Texture);
+        renders.insert(std::make_pair("PGTexture", newTarget.get()));
     }
 
     std::string GetName() override { return "PGTexture"; }
@@ -25,6 +25,9 @@ protected:
         spdlog::info("Rendering texture");
         return true;
     }
+
+private:
+    std::unique_ptr<OZZ::RenderTarget> newTarget;
 };
 
 class UILayer : public OZZ::Renderable {
@@ -37,8 +40,8 @@ protected:
     bool render() override {
         spdlog::info("Rendering UI");
         // look for texture input
-        for (const auto &inputNode: inputs) {
-            auto *renderableNode = static_cast<Renderable *>(inputNode);
+        for (const auto& inputNode : inputs) {
+            auto* renderableNode = static_cast<Renderable*>(inputNode);
             auto render = renderableNode->GetRender("PGTexture");
             if (render) {
                 spdlog::info("Found render texture");
@@ -58,8 +61,8 @@ protected:
     bool render() override {
         spdlog::info("Rendering game");
         // look for texture input
-        for (const auto &inputNode: inputs) {
-            auto *renderableNode = static_cast<Renderable *>(inputNode);
+        for (const auto& inputNode : inputs) {
+            auto* renderableNode = static_cast<Renderable*>(inputNode);
             auto render = renderableNode->GetRender("PGTexture");
             if (render) {
                 spdlog::info("Found render texture");
@@ -93,11 +96,11 @@ protected:
     }
 };
 
-class Scene : public GraphNode {
+class Scene {
 public:
     Scene();
 
-    [[nodiscard]] OZZ::Renderable *GetSceneGraph() const;
+    [[nodiscard]] OZZ::Renderable* GetSceneGraph() const;
 
 private:
     std::unique_ptr<PGTexture> texture;
@@ -111,7 +114,7 @@ class Renderer {
 public:
     Renderer();
 
-    void ExecuteTheGraph(OZZ::Renderable *sceneGraph);
+    void ExecuteTheGraph(OZZ::Renderable* sceneGraph);
 
 private:
     std::unique_ptr<OZZ::Renderable> viewport;

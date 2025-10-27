@@ -10,7 +10,7 @@ namespace OZZ {
     class Shader {
     public:
         using path = std::filesystem::path;
-        Shader(const path& vertexPath, const path& fragmentPath);
+        Shader(const std::string& vertex, const std::string& fragment, bool bIsSource = false);
         ~Shader();
 
         void SetInteger(const std::string& name, int value);
@@ -28,4 +28,4 @@ namespace OZZ {
     private:
         uint32_t shaderId;
     };
-} // OZZ
+} // namespace OZZ

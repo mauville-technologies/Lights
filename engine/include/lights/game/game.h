@@ -41,7 +41,7 @@ namespace OZZ::game {
                         WindowMode = static_cast<EWindowMode>(WindowSection.at("Mode").as_integer());
                     }
                     if (WindowSection.contains("Size") && WindowSection.at("Size").is_array()) {
-                        const auto &sizeArray = WindowSection.at("Size");
+                        const auto& sizeArray = WindowSection.at("Size");
                         if (sizeArray.size() == 2 && sizeArray[0].is_integer() && sizeArray[1].is_integer()) {
                             WindowSize.x = static_cast<int>(sizeArray[0].as_integer());
                             WindowSize.y = static_cast<int>(sizeArray[1].as_integer());
@@ -78,7 +78,7 @@ namespace OZZ::game {
     template <typename SceneType>
     class LightsGame {
     public:
-        explicit LightsGame(const std::filesystem::path &configFilePath) : params(configFilePath) {}
+        explicit LightsGame(const std::filesystem::path& configFilePath) : params(configFilePath) {}
 
         ~LightsGame() {
             scene.reset();
@@ -177,7 +177,7 @@ namespace OZZ::game {
 
         void initScene() {
             scene = std::make_unique<SceneType>();
-            scene->Init(input);
+            scene->InitScene(input);
             scene->WindowResized(window->GetSize());
         }
 
@@ -189,8 +189,9 @@ namespace OZZ::game {
         // TODO: The viewport will probably live in a render target
         void updateViewport(glm::ivec2 size) { glViewport(0, 0, size.x, size.y); }
 
-        void drawScene(OZZ::scene::Scene *scene) {
-            renderer->RenderScene(scene);
+        void drawScene(OZZ::scene::Scene* scene) {
+            // renderer->RenderScene(scene);
+            renderer->ExecuteSceneGraph(scene->GetSceneGraph());
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
             }

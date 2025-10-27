@@ -10,6 +10,7 @@
 
 #include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
+#include <lights/rendering/renderable.h>
 #include <lights/scene/constants.h>
 #include <lights/scene/scene_layer.h>
 #include <lights/scene/scene_layer_manager.h>
@@ -33,60 +34,22 @@ namespace OZZ::scene {
         };
 
         // Should be called at the end of the derived class Init function
-        virtual void Init(std::shared_ptr<InputSubsystem> inInput) {
-            input = std::move(inInput);
-            layerManager = std::make_unique<SceneLayerManager>();
+        virtual void InitScene(std::shared_ptr<InputSubsystem> inInput);
 
-            const auto theWorld = GetWorld();
-            theWorld->Init({
-                .Gravity = {0.f, -20.f * game::constants::PhysicsUnitPerMeter},
-            });
-        }
-
-        virtual void Tick(float DeltaTime) {
-            static constexpr float physicsTickRate = 1.f / 60.f;
-            static float accumulator = 0.f;
-            accumulator += DeltaTime;
-
-            const auto& activeLayers = GetActiveLayers();
-            while (accumulator >= physicsTickRate) {
-                for (const auto& Layer : activeLayers) {
-                    Layer->PhysicsTick(physicsTickRate);
-                }
-                GetWorld()->PhysicsTick(physicsTickRate);
-                accumulator -= physicsTickRate;
-            }
-            for (const auto& Layer : activeLayers) {
-                Layer->Tick(DeltaTime);
-            }
-        };
+        virtual void Tick(float DeltaTime);
 
         // Marked virtual to allow derived Scenes with custom entities
-        virtual void WindowResized(const glm::ivec2 size) {
-            // the render targets should resize even if they're not active so that when they become active again they're
-            // correct
-            for (const auto& Layer : GetAllLayers()) {
-                Layer->RenderTargetResized(size);
-            }
-        }
+        virtual void WindowResized(glm::ivec2 size);
 
-        virtual ~Scene() {
-            layerManager.reset();
-
-            if (world)
-                world->DeInit();
-            world.reset();
-        }
+        virtual ~Scene();
 
         [[nodiscard]] std::vector<SceneLayer*> GetActiveLayers() const { return layerManager->GetActiveLayers(); }
 
         [[nodiscard]] std::vector<SceneLayer*> GetAllLayers() const { return layerManager->GetAllLayers(); }
 
-        GameWorld* GetWorld() {
-            if (!world)
-                world = std::make_shared<GameWorld>();
-            return world.get();
-        }
+        GameWorld* GetWorld();
+
+        [[nodiscard]] virtual OZZ::Renderable* GetSceneGraph() const = 0;
 
     public:
         SceneParams Params{};
@@ -98,4 +61,5 @@ namespace OZZ::scene {
     private:
         std::shared_ptr<GameWorld> world;
     };
+
 } // namespace OZZ::scene
