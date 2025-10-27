@@ -17,7 +17,7 @@ std::optional<OZZ::RenderTarget*> OZZ::Renderable::GetRender(const std::string& 
 
 bool OZZ::Renderable::Render() {
     if (!HasAllRequiredInputs()) {
-        spdlog::warn("Cannot render node {} due to missing inputs", GetName());
+        spdlog::warn("Cannot render node {} due to missing inputs", GetRenderableName());
         return false;
     }
 
@@ -44,7 +44,7 @@ bool OZZ::Renderable::HasAllRequiredInputs() {
             }
         }
         if (!found) {
-            spdlog::warn("Missing required input {} for node {}", requiredInput, GetName());
+            spdlog::warn("Missing required input {} for node {}", requiredInput, GetRenderableName());
             return false;
         }
     }

@@ -18,7 +18,7 @@ public:
         renders.insert(std::make_pair("PGTexture", newTarget.get()));
     }
 
-    std::string GetName() override { return "PGTexture"; }
+    std::string GetRenderableName() override { return "PGTexture"; }
 
 protected:
     bool render() override {
@@ -32,7 +32,7 @@ private:
 
 class UILayer : public OZZ::Renderable {
 public:
-    std::string GetName() override { return "UILayer"; }
+    std::string GetRenderableName() override { return "UILayer"; }
 
     std::vector<std::string> GetRequiredInputs() override { return {"PGTexture"}; }
 
@@ -55,7 +55,7 @@ protected:
 
 class GameLayer : public OZZ::Renderable {
 public:
-    std::string GetName() override { return "GameLayer"; }
+    std::string GetRenderableName() override { return "GameLayer"; }
 
 protected:
     bool render() override {
@@ -76,7 +76,7 @@ protected:
 
 class Aggregator : public OZZ::Renderable {
 public:
-    std::string GetName() override { return "Aggregator"; }
+    std::string GetRenderableName() override { return "Aggregator"; }
 
 protected:
     bool render() override {
@@ -87,7 +87,7 @@ protected:
 
 class Viewport : public OZZ::Renderable {
 public:
-    std::string GetName() override { return "Viewport"; }
+    std::string GetRenderableName() override { return "Viewport"; }
 
 protected:
     bool render() override {

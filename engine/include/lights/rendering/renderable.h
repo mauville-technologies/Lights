@@ -14,7 +14,7 @@ namespace OZZ {
     public:
         virtual ~Renderable() = default;
 
-        virtual std::string GetName() = 0;
+        virtual std::string GetRenderableName() = 0;
 
         virtual std::vector<std::string> GetRequiredInputs() { return {}; }
 
