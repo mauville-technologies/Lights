@@ -2,31 +2,36 @@
 // Created by ozzadar on 2024-12-18.
 //
 
-#include <fstream>
 #include "lights/rendering/shader.h"
 #include "spdlog/spdlog.h"
+#include <fstream>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace OZZ {
-    Shader::Shader(const Shader::path& vertexPath, const Shader::path& fragmentPath) {
-        // load files
-        std::ifstream vertexFile(vertexPath);
-        std::ifstream fragmentFile(fragmentPath);
+    Shader::Shader(const std::string& vertex, const std::string& fragment, bool bIsSource) : shaderId(0) {
+        if (!bIsSource) {
+            // load files
+            std::ifstream vertexFile(vertex);
+            std::ifstream fragmentFile(fragment);
 
-        if (!vertexFile.is_open()) {
-            throw std::runtime_error("Failed to open vertex shader file");
+            if (!vertexFile.is_open()) {
+                throw std::runtime_error("Failed to open vertex shader file");
+            }
+
+            if (!fragmentFile.is_open()) {
+                throw std::runtime_error("Failed to open fragment shader file");
+            }
+
+            std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
+            std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)),
+                                       std::istreambuf_iterator<char>());
+
+            compile(vertexSource, fragmentSource);
+        } else {
+            compile(vertex, fragment);
         }
-
-        if (!fragmentFile.is_open()) {
-            throw std::runtime_error("Failed to open fragment shader file");
-        }
-
-        std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
-        std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)), std::istreambuf_iterator<char>());
-
-        compile(vertexSource, fragmentSource);
     }
 
     Shader::~Shader() {
@@ -45,7 +50,6 @@ namespace OZZ {
     void Shader::SetVec2(const std::string& name, const glm::vec2& value) {
         glUniform2fv(getUniformLocation(name), 1, glm::value_ptr(value));
     }
-
 
     void Shader::SetVec3(const std::string& name, const glm::vec3& value) {
         glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
@@ -106,4 +110,4 @@ namespace OZZ {
     int Shader::getUniformLocation(const std::string& name) const {
         return glGetUniformLocation(shaderId, name.c_str());
     }
-} // OZZ
+} // namespace OZZ

@@ -16,8 +16,8 @@ namespace OZZ::game::scene {
                    const std::filesystem::path& texture,
                    const SpriteConstructionParams&& inConstructionParams)
         : GameObject(inId, inGameWorld, std::move(inPhysicsWorld)) {
-        const auto shader =
-            std::make_shared<Shader>(inConstructionParams.VertexShaderPath, inConstructionParams.FragShaderPath);
+        const auto shader = std::make_shared<Shader>(inConstructionParams.VertexShaderPath.string(),
+                                                     inConstructionParams.FragShaderPath.string());
         sceneObject.Mat = std::make_unique<Material>();
         sceneObject.Mat->SetShader(shader);
         sceneObject.Mesh = std::make_shared<IndexVertexBuffer>();

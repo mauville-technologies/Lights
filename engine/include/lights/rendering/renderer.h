@@ -5,6 +5,8 @@
 #pragma once
 
 #include "lights/scene/scene.h"
+#include "renderable.h"
+#include "renderables/renderable_viewport.h"
 
 namespace OZZ {
     class Renderer {
@@ -12,6 +14,12 @@ namespace OZZ {
         Renderer();
 
         void Init();
+
         void RenderScene(scene::Scene* scene);
+
+        void ExecuteSceneGraph(Renderable* sceneGraph);
+
+    private:
+        std::unique_ptr<RenderableViewport> viewport{nullptr};
     };
-}
+} // namespace OZZ

@@ -22,7 +22,6 @@ namespace OZZ {
 
     void Buffer::Bind() const {
         glBindBuffer(type, vbo);
-
     }
 
     IndexVertexBuffer::IndexVertexBuffer() {
@@ -43,7 +42,7 @@ namespace OZZ {
         glDeleteVertexArrays(1, &vao);
     }
 
-    void IndexVertexBuffer::UploadData(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices) {
+    void IndexVertexBuffer::UploadData(std::span<Vertex> vertices, std::span<uint32_t> indices) {
         vertexBuffer->UploadData(vertices.data(), vertices.size() * sizeof(Vertex));
         indexBuffer->UploadData(indices.data(), indices.size() * sizeof(uint32_t));
         indexCount = static_cast<int>(indices.size());
@@ -58,4 +57,4 @@ namespace OZZ {
     void IndexVertexBuffer::Unbind() const {
         glBindVertexArray(0);
     }
-} // OZZ
+} // namespace OZZ
