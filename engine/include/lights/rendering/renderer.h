@@ -15,8 +15,6 @@ namespace OZZ {
 
         void Init();
 
-        void RenderScene(scene::Scene* scene);
-
         void ExecuteSceneGraph(Renderable* sceneGraph);
 
     private:

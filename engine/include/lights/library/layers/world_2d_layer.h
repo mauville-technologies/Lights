@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "lights/rendering/renderable.h"
 #include "lights/scene/scene_layer.h"
 
 namespace OZZ {
@@ -10,7 +11,7 @@ namespace OZZ {
     class GameWorld;
 
     namespace lights {
-        class World2DLayer : public OZZ::scene::SceneLayer {
+        class World2DLayer : public scene::SceneLayer {
         public:
             explicit World2DLayer(OZZ::GameWorld* inWorld, const std::shared_ptr<OZZ::InputSubsystem>& inInput);
             ~World2DLayer() override = default;
