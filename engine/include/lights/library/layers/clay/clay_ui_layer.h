@@ -5,6 +5,7 @@
 #pragma once
 
 #include "lights/input/input_subsystem.h"
+#include "lights/rendering/renderable.h"
 
 #include <clay/clay.h>
 #include <lights/scene/scene_layer.h>
@@ -20,7 +21,7 @@ namespace OZZ {
     class GameWorld;
 }
 
-class ClayUILayer : public OZZ::scene::SceneLayer {
+class ClayUILayer : public OZZ::scene::SceneLayer, public OZZ::Renderable {
 private:
     struct ScissorDef {
         bool bHasScissor{false};
@@ -28,7 +29,7 @@ private:
     };
 
 public:
-    explicit ClayUILayer(OZZ::GameWorld *inWorld, const std::shared_ptr<OZZ::InputSubsystem> &inInput);
+    explicit ClayUILayer(OZZ::GameWorld* inWorld, const std::shared_ptr<OZZ::InputSubsystem>& inInput);
 
     ~ClayUILayer() override;
 
@@ -42,9 +43,9 @@ public:
 
     std::vector<OZZ::scene::SceneObject> GetSceneObjects() override;
 
-    void RegisterFont(const uint16_t &fontId, const std::filesystem::path &fontPath);
+    void RegisterFont(const uint16_t& fontId, const std::filesystem::path& fontPath);
 
-    void UnregisterFont(const uint16_t &fontId);
+    void UnregisterFont(const uint16_t& fontId);
 
     void SetTickDefinitionFunction(std::function<void()> func) { tickDefinitionFunction = std::move(func); }
 
@@ -59,21 +60,27 @@ private:
 
     void shutdownClay();
 
-    void refreshSceneObject(const uint32_t &id, const Clay_RenderCommand &command, const ScissorDef &scissor);
+    void refreshSceneObject(const uint32_t& id, const Clay_RenderCommand& command, const ScissorDef& scissor);
 
-    void buildSceneObject(const uint32_t &id, const Clay_RenderCommand &command, const ScissorDef &scissor);
+    void buildSceneObject(const uint32_t& id, const Clay_RenderCommand& command, const ScissorDef& scissor);
 
-    static bool isRenderCommandChanged(const Clay_RenderCommand &command, const Clay_RenderCommand &otherCommand);
+    static bool isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand);
 
-    void generateSquareMesh(std::vector<OZZ::Vertex> &outVertices,
-                            std::vector<uint32_t> &outIndices,
+    void generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
+                            std::vector<uint32_t>& outIndices,
                             glm::vec2 scale = {1.f, 1.f});
 
-    void generateTextMesh(const std::string &text,
-                          OZZ::FontSet *fontSet,
-                          std::vector<OZZ::Vertex> &outVertices,
-                          std::vector<uint32_t> &outIndices,
-                          const glm::vec2 &baseline = {0, 0});
+    void generateTextMesh(const std::string& text,
+                          OZZ::FontSet* fontSet,
+                          std::vector<OZZ::Vertex>& outVertices,
+                          std::vector<uint32_t>& outIndices,
+                          const glm::vec2& baseline = {0, 0});
+
+public:
+    std::string GetRenderableName() override { return "ClayUILayer"; }
+
+protected:
+    bool render() override;
 
 private:
     std::function<void()> tickDefinitionFunction;
@@ -89,12 +96,14 @@ private:
 
     std::unique_ptr<OZZ::FontLoader> fontLoader{nullptr};
 
+    std::unique_ptr<OZZ::RenderTarget> renderTarget{nullptr};
+
     // Scene objects materials
     std::shared_ptr<OZZ::Shader> uiShader{};
     std::shared_ptr<OZZ::Shader> textShader{};
     std::unordered_map<uint32_t, OZZ::scene::SceneObject> uiSceneObjects{};
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
 
-    std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture> > uiImages{};
+    std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture>> uiImages{};
     std::unordered_map<uint16_t, std::filesystem::path> fontRegistry{};
 };

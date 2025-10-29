@@ -23,6 +23,8 @@ auto layoutElement = Clay_LayoutConfig{.padding = {5}};
 
 void ClayUILayer::Init() {
     SceneLayer::Init();
+    renderTarget = std::make_unique<OZZ::RenderTarget>(OZZ::RenderTargetParams{.Type = OZZ::RenderTargetType::Texture});
+    renders.insert(std::make_pair(GetRenderableName(), renderTarget.get()));
     reinitializeClay();
     LayerCamera.ViewMatrix = glm::mat4(1.f);
 }
@@ -145,6 +147,10 @@ void ClayUILayer::Tick(float DeltaTime) {
 
 void ClayUILayer::RenderTargetResized(const glm::ivec2 size) {
     screenSize = size;
+    if (renderTarget) {
+        renderTarget->Resize(size);
+    }
+
     LayerCamera.ProjectionMatrix =
         glm::ortho(0.0f, static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 0.0f, -1.0f, 1.0f);
     if (bClayInitialized) {
@@ -514,4 +520,26 @@ void ClayUILayer::generateTextMesh(const std::string& text,
         startIndex += 4;
         nextCharacterX += Advance.x >> 6;
     }
+}
+
+bool ClayUILayer::render() {
+    if (!renderTarget) {
+        spdlog::error("Renderable {} invalid -- no render target", GetRenderableName());
+        return false;
+    }
+    renderTarget->Begin();
+    glClearColor(0.f, 0.f, 0.f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (auto& object : GetSceneObjects()) {
+        auto& [transform, objMesh, objMat] = object;
+        objMat->Bind();
+        objMat->GetShader()->SetMat4("view", GetCamera().ViewMatrix);
+        objMat->GetShader()->SetMat4("projection", GetCamera().ProjectionMatrix);
+        objMat->GetShader()->SetMat4("model", transform);
+        objMesh->Bind();
+        const auto drawMode = ToGLEnum(objMat->GetSettings().Mode);
+        glDrawElements(drawMode, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+    }
+    renderTarget->End();
+    return true;
 }
