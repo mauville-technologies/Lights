@@ -17,28 +17,29 @@ namespace OZZ {
 
         // TODO: @paulm -- quad to render to
         const auto quadBuffer = std::make_shared<IndexVertexBuffer>();
+
         auto vertices = std::array<Vertex, 4>{Vertex{
                                                   // Bottom Left
-                                                  .position = {-1.f, -1.f, 0.f},
+                                                  .position = {-1.f, 1.f, 0.f},
                                                   .uv = {0.f, 1.f},
                                               },
                                               Vertex{
                                                   // Top Left
-                                                  .position = {-1.f, 1.f, 0.f},
+                                                  .position = {-1.f, -1.f, 0.f},
                                                   .uv = {0.f, 0.f},
                                               },
                                               Vertex{
                                                   // Top Right
-                                                  .position = {1.f, 1.f, 0.f},
+                                                  .position = {1.f, -1.f, 0.f},
                                                   .uv = {1.f, 0.f},
                                               },
                                               Vertex{
                                                   // Bottom Right
-                                                  .position = {1.f, -1.f, 0.f},
+                                                  .position = {1.f, 1.f, 0.f},
                                                   .uv = {1.f, 1.f},
                                               }};
 
-        auto indices = std::array<unsigned int, 6>{0, 2, 1, 0, 3, 2};
+        auto indices = std::array<unsigned int, 6>{0, 1, 3, 2, 3, 1};
         quadBuffer->UploadData(vertices, indices);
 
         const auto shader = std::make_shared<Shader>(VertexShader, FragmentShader, true);
