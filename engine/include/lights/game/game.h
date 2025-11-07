@@ -78,7 +78,10 @@ namespace OZZ::game {
     template <typename SceneType>
     class LightsGame {
     public:
-        explicit LightsGame(const std::filesystem::path& configFilePath) : params(configFilePath) {}
+        explicit LightsGame(const std::filesystem::path& configFilePath)
+            : params(Configuration<GameParameters>(configFilePath)) {
+            spdlog::info("thing");
+        }
 
         ~LightsGame() {
             scene.reset();

@@ -344,21 +344,8 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
             break;
         }
         case CLAY_RENDER_COMMAND_TYPE_IMAGE: {
-            const auto imagePath = std::filesystem::path(CLAY_EXTRACT_IMAGE_STRING(command));
+            texture = UnwrapUITexture(command.renderData.image.imageData);
             borderRadius = command.renderData.image.cornerRadius;
-            if (!uiImages.contains(imagePath.string())) {
-                // build the texture
-                const auto image = std::make_shared<OZZ::Image>(imagePath, 3);
-                image->FlipPixels(true, false);
-                if (!image->IsValid()) {
-                    spdlog::error("CLAY UI: Failed to load image: {}", imagePath.string());
-                    return;
-                }
-                auto newTexture = std::make_shared<OZZ::Texture>();
-                newTexture->UploadData(image.get());
-                uiImages[imagePath] = newTexture;
-            }
-            texture = uiImages[imagePath];
             generateSquareMesh(vertices, indices);
             break;
         }

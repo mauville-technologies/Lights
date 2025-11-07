@@ -6,16 +6,17 @@
 #include <toml.hpp>
 
 #pragma once
+
 namespace OZZ {
 
     // fromToml function required
-    template<typename T>
+    template <typename T>
     concept FromToml = requires(T t, toml::basic_value<toml::type_config> v) {
         { t.fromToml(v) } -> std::same_as<bool>;
     };
 
     // toToml function required
-    template<typename T>
+    template <typename T>
     concept ToToml = requires(T t) {
         { t.toToml() } -> std::same_as<toml::basic_value<toml::type_config>>;
     };
@@ -25,12 +26,16 @@ namespace OZZ {
      * @tparam T The type into which the configuration will be loaded
      */
     template <typename T>
-    requires FromToml<T> && ToToml<T>
+        requires FromToml<T> && ToToml<T>
     struct Configuration {
-        explicit Configuration(std::filesystem::path  inConfigPath, const bool bSaveIfNew = true) : ConfigPath(std::move(inConfigPath)) {
+        explicit Configuration(std::filesystem::path inConfigPath, const bool bSaveIfNew = true)
+            : ConfigPath(std::move(inConfigPath)) {
             if (std::filesystem::exists(ConfigPath)) {
-                assert(Config.fromToml(toml::parse(ConfigPath)) && "Failed to load configuration from file");
-                // We're going to put a save here -- this will make sure that the config is upgraded to the latest version (if missing fields)
+                if (!Config.fromToml(toml::parse(ConfigPath))) {
+                    spdlog::warn("Failed to load configuration from file");
+                }
+                // We're going to put a save here -- this will make sure that the config is upgraded to the latest
+                // version (if missing fields)
                 SaveConfig();
             } else if (bSaveIfNew) {
                 SaveConfig();
@@ -56,7 +61,7 @@ namespace OZZ {
         }
 
         // Initialize to default
-        T Config {};
+        T Config{};
         std::filesystem::path ConfigPath;
     };
-}
+} // namespace OZZ
