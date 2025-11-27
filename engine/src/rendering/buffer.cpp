@@ -15,7 +15,7 @@ namespace OZZ {
         glDeleteBuffers(1, &vbo);
     }
 
-    void Buffer::UploadData(void* data, size_t size) {
+    void Buffer::UploadData(const void* data, size_t size) {
         Bind();
         glBufferData(type, size, data, GL_STATIC_DRAW);
     }
@@ -42,7 +42,7 @@ namespace OZZ {
         glDeleteVertexArrays(1, &vao);
     }
 
-    void IndexVertexBuffer::UploadData(std::span<Vertex> vertices, std::span<uint32_t> indices) {
+    void IndexVertexBuffer::UploadData(std::span<const Vertex> vertices, std::span<const uint32_t> indices) {
         vertexBuffer->UploadData(vertices.data(), vertices.size() * sizeof(Vertex));
         indexBuffer->UploadData(indices.data(), indices.size() * sizeof(uint32_t));
         indexCount = static_cast<int>(indices.size());

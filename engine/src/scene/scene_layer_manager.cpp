@@ -49,11 +49,10 @@ namespace OZZ::scene {
         }
     }
 
-    void SceneLayerManager::SetLayerZOrder(const std::string& layerName, const uint16_t zOrder) {
-
+    void SceneLayerManager::SetLayerExecutionOrder(const std::string& layerName, const uint16_t zOrder) {
         for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
             if (name == layerName) {
-                layerZOrders[index] = zOrder;
+                layerExecutionOrders[index] = zOrder;
             }
         }
     }
@@ -67,7 +66,7 @@ namespace OZZ::scene {
         }
 
         std::ranges::sort(activeLayerIndices, [this](const size_t a, const size_t b) {
-            return layerZOrders[a] < layerZOrders[b];
+            return layerExecutionOrders[a] < layerExecutionOrders[b];
         });
 
         std::vector<SceneLayer*> result;

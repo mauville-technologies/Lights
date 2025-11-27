@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <string>
+#include "shader.h"
+#include "texture.h"
+#include <glad/glad.h>
 #include <memory>
+#include <string>
 #include <utility>
 #include <variant>
-#include <glad/glad.h>
-#include "texture.h"
-#include "shader.h"
 
 namespace OZZ {
     struct TextureMapping {
@@ -19,12 +19,7 @@ namespace OZZ {
         std::shared_ptr<Texture> TextureResource;
     };
 
-    enum class DrawMode {
-        Triangles,
-        Lines,
-        LineLoop,
-        Points
-    };
+    enum class DrawMode { Triangles, Lines, LineLoop, Points };
 
     inline GLenum ToGLEnum(const DrawMode& mode) {
         switch (mode) {
@@ -44,7 +39,7 @@ namespace OZZ {
     public:
         struct UniformSetting {
             std::string Name;
-            std::variant<int, glm::vec2, glm::vec3, glm::vec4> Value;
+            std::variant<int, glm::vec2, glm::vec3, glm::vec4, glm::mat4> Value;
         };
 
         struct MaterialSettings {
@@ -60,30 +55,20 @@ namespace OZZ {
 
         void Bind();
 
-        void SetShader(std::shared_ptr<Shader> inShader) {
-            this->shader = std::move(inShader);
-        }
+        void SetShader(std::shared_ptr<Shader> inShader) { this->shader = std::move(inShader); }
 
-        [[nodiscard]] std::shared_ptr<Shader> GetShader() const {
-            return shader;
-        }
+        [[nodiscard]] std::shared_ptr<Shader> GetShader() const { return shader; }
 
         void AddTextureMapping(const TextureMapping& mapping);
         void RemoveTextureMapping(const std::string& slotName);
         void AddUniformSetting(const UniformSetting& setting);
         void RemoveUniformSetting(const std::string& name);
 
-        [[nodiscard]] const std::vector<TextureMapping>& GetTextureMappings() const {
-            return textureMappings;
-        }
+        [[nodiscard]] const std::vector<TextureMapping>& GetTextureMappings() const { return textureMappings; }
 
-        MaterialSettings& GetSettings() {
-            return settings;
-        }
+        MaterialSettings& GetSettings() { return settings; }
 
-        [[nodiscard]] const MaterialSettings& GetSettings() const {
-            return settings;
-        }
+        [[nodiscard]] const MaterialSettings& GetSettings() const { return settings; }
 
     private:
         std::shared_ptr<Shader> shader;
@@ -92,4 +77,4 @@ namespace OZZ {
 
         MaterialSettings settings;
     };
-} // OZZ
+} // namespace OZZ

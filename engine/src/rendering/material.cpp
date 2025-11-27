@@ -3,6 +3,9 @@
 //
 
 #include "lights/rendering/material.h"
+
+#include "glm/gtc/type_ptr.hpp"
+
 #include <algorithm>
 #include <glad/glad.h>
 
@@ -39,6 +42,8 @@ namespace OZZ {
                 shader->SetVec3(Name, std::get<glm::vec3>(Value));
             } else if (std::holds_alternative<glm::vec4>(Value)) {
                 shader->SetVec4(Name, std::get<glm::vec4>(Value));
+            } else if (std::holds_alternative<glm::mat4>(Value)) {
+                shader->SetMat4(Name, std::get<glm::mat4>(Value));
             }
         }
     }

@@ -29,10 +29,6 @@ namespace OZZ::scene {
 
     class Scene {
     public:
-        struct SceneParams {
-            glm::vec3 ClearColor = {0.392f, 0.584f, 0.929f};
-        };
-
         // Should be called at the end of the derived class Init function
         virtual void InitScene(std::shared_ptr<InputSubsystem> inInput);
 
@@ -50,9 +46,6 @@ namespace OZZ::scene {
         GameWorld* GetWorld();
 
         [[nodiscard]] virtual OZZ::Renderable* GetSceneGraph() const = 0;
-
-    public:
-        SceneParams Params{};
 
     protected:
         std::unique_ptr<SceneLayerManager> layerManager;

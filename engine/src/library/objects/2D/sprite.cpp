@@ -21,7 +21,11 @@ namespace OZZ::game::scene {
         sceneObject.Mat = std::make_unique<Material>();
         sceneObject.Mat->SetShader(shader);
         sceneObject.Mesh = std::make_shared<IndexVertexBuffer>();
-        auto vertices = std::vector<Vertex>(quadVertices.begin(), quadVertices.end());
+        auto vertices = OZZ::quadVertices | std::views::transform([](Vertex v) {
+                            v.position *= 0.5f;
+                            return v;
+                        }) |
+                        std::ranges::to<std::vector<Vertex>>();
         auto indices = std::vector<uint32_t>(quadIndices.begin(), quadIndices.end());
         sceneObject.Mesh->UploadData(vertices, indices);
 
@@ -73,7 +77,8 @@ namespace OZZ::game::scene {
         objects.emplace_back(sceneObject);
 
         // let's add the needed debug shapes here
-        if (bDrawDebug) {
+        // TODO: fix debug draw
+        if (bDrawDebug && false) {
             // The static lazy initialization of this is a bit ugly. Likely there should be a resource manager available
             // somehow that can initialize and cache these resources. For now, this will do -- but will likely break if
             // changing scenes. These are very small things to sit in memory so it might not be a problem that these

@@ -3,6 +3,9 @@
 //
 
 #include "lights/rendering/renderables/renderable_viewport.h"
+
+#include "glm/ext/matrix_transform.hpp"
+#include "lights/rendering/shapes.h"
 #include "lights/rendering/vertex.h"
 
 #include <array>
@@ -18,34 +21,34 @@ namespace OZZ {
         // TODO: @paulm -- quad to render to
         const auto quadBuffer = std::make_shared<IndexVertexBuffer>();
 
-        auto vertices = std::array<Vertex, 4>{Vertex{
-                                                  // Bottom Left
-                                                  .position = {-1.f, 1.f, 0.f},
-                                                  .uv = {0.f, 1.f},
-                                              },
-                                              Vertex{
-                                                  // Top Left
-                                                  .position = {-1.f, -1.f, 0.f},
-                                                  .uv = {0.f, 0.f},
-                                              },
-                                              Vertex{
-                                                  // Top Right
-                                                  .position = {1.f, -1.f, 0.f},
-                                                  .uv = {1.f, 0.f},
-                                              },
-                                              Vertex{
-                                                  // Bottom Right
-                                                  .position = {1.f, 1.f, 0.f},
-                                                  .uv = {1.f, 1.f},
-                                              }};
+        auto vertices = std::array<const Vertex, 4>{Vertex{
+                                                        // Bottom Left
+                                                        .position = {-1.f, 1.f, 0.f},
+                                                        .uv = {0.f, 1.f},
+                                                    },
+                                                    Vertex{
+                                                        // Top Left
+                                                        .position = {-1.f, -1.f, 0.f},
+                                                        .uv = {0.f, 0.f},
+                                                    },
+                                                    Vertex{
+                                                        // Top Right
+                                                        .position = {1.f, -1.f, 0.f},
+                                                        .uv = {1.f, 0.f},
+                                                    },
+                                                    Vertex{
+                                                        // Bottom Right
+                                                        .position = {1.f, 1.f, 0.f},
+                                                        .uv = {1.f, 1.f},
+                                                    }};
 
         auto indices = std::array<unsigned int, 6>{0, 1, 3, 2, 3, 1};
-        quadBuffer->UploadData(vertices, indices);
+        quadBuffer->UploadData(OZZ::quadVertices, OZZ::quadIndices);
 
         const auto shader = std::make_shared<Shader>(VertexShader, FragmentShader, true);
         const auto material = std::make_shared<Material>();
         material->SetShader(shader);
-        sceneObject = {.Transform = glm::mat4(1.0f), .Mesh = quadBuffer, .Mat = material};
+        sceneObject = {.Transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.25)), .Mesh = quadBuffer, .Mat = material};
     }
 
     bool RenderableViewport::render() {
