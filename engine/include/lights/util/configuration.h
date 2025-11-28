@@ -1,11 +1,13 @@
+
+#pragma once
+
 #include <utility>
 
 //
 // Created by ozzadar on 2025-05-08.
 //
+#include <spdlog/spdlog.h>
 #include <toml.hpp>
-
-#pragma once
 
 namespace OZZ {
 

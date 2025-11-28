@@ -3,14 +3,15 @@
 //
 
 #include "lights/util/image.h"
-#include <stb_image.h>
-#include <stb_image_write.h>
-#include <spdlog/spdlog.h>
 #include <algorithm>
 #include <lights/util/configuration.h>
+#include <spdlog/spdlog.h>
+#include <stb_image.h>
+#include <stb_image_write.h>
 
 namespace OZZ {
-    std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>> Image::MergeImages(const std::vector<std::unique_ptr<Image>>& images) {
+    std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>>
+    Image::MergeImages(const std::vector<std::unique_ptr<Image>>& images) {
         // let's assume a max width of 4096
         constexpr int maxTextureDimension = 4096;
 
@@ -55,10 +56,10 @@ namespace OZZ {
                     // copy the pixel data
                     for (int channel = 0; channel < maxChannels; channel++) {
                         if (channel < image->GetChannels()) {
-                            result->data[(currentY * result->width) + currentX + channel] = image->GetData()[(y * image->GetWidth() * image
-                                ->GetChannels()) + (x * image->GetChannels()) + channel];
-                        }
-                        else {
+                            result->data[(currentY * result->width) + currentX + channel] =
+                                image->GetData()[(y * image->GetWidth() * image->GetChannels()) +
+                                                 (x * image->GetChannels()) + channel];
+                        } else {
                             result->data[(currentY * result->width) + currentX + channel] = 0; // fill with 0's
                         }
                     }
@@ -74,7 +75,9 @@ namespace OZZ {
 
     Image::Image(const path& texturePath, int desiredChannels) {
         stbi_set_flip_vertically_on_load(true);
-        if (auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, desiredChannels)) {
+        stbi_info(texturePath.string().c_str(), &width, &height, &channels);
+
+        if (auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, channels)) {
             data = std::vector<unsigned char>(iData, iData + width * height * channels);
             stbi_image_free(iData);
         }
@@ -121,16 +124,14 @@ namespace OZZ {
                     std::swap(data[i + j], data[(width * height * stepSize - 1) - (i + j)]);
                 }
             }
-        }
-        else if (bVertical) {
+        } else if (bVertical) {
             // loop through each row, from the bottom, rebuilding the image
             for (int i = 0; i < height / 2; i++) {
                 for (int j = 0; j < width * stepSize; j++) {
                     std::swap(data[i * width * stepSize + j], data[(height - 1 - i) * width * stepSize + j]);
                 }
             }
-        }
-        else if (bHorizontal) {
+        } else if (bHorizontal) {
             // loop through each column, from the right, rebuilding the image
             for (int i = 0; i < width / 2; i++) {
                 for (int j = 0; j < height * stepSize; j++) {
@@ -149,9 +150,8 @@ namespace OZZ {
         // save the image
         if (stbi_write_png(imagePath.string().c_str(), width, height, channels, data.data(), width * channels) == 0) {
             spdlog::error("Could not save image to file: {}", imagePath.string());
-        }
-        else {
+        } else {
             spdlog::info("Saved image to file: {}", imagePath.string());
         }
     }
-}
+} // namespace OZZ
