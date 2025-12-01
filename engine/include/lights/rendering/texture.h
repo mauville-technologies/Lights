@@ -22,9 +22,13 @@ namespace OZZ {
 
         uint32_t GetId() const { return textureId; };
 
+        bool IsLoaded() const { return bLoaded.load(); };
+
     private:
         uint32_t textureId;
         int width{0};
         int height{0};
+
+        std::atomic<bool> bLoaded{false};
     };
 } // namespace OZZ

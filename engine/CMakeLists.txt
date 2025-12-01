@@ -49,6 +49,7 @@ set(SOURCES
 
         src/scene/scene.cpp
         src/scene/scene_layer_manager.cpp
+        src/scene/resource_manager.cpp
 
         src/text/font_loader.cpp
 

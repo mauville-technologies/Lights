@@ -12,9 +12,10 @@
 namespace OZZ::platform::SDL3 {
     class SDLWindow final : public IPlatformWindow {
     public:
-        void CreateWindow(const std::string &title, int width, int height) override;
-        void * GetProcAddress() override;
-        void InitInput(WindowCallbacks &&inCallbacks) override;
+        void CreateWindow(const std::string& title, int width, int height) override;
+        void CreateContextWindow(IPlatformWindow* parentWindow) override;
+        void* GetProcAddress() override;
+        void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;
         void MakeContextCurrent() override;
         void Present() override;
@@ -23,18 +24,22 @@ namespace OZZ::platform::SDL3 {
         void SetFullscreen(bool fullscreen) override;
         void SetTextMode(bool bIsTextMode) override;
 
+        [[nodiscard]] bool IsValid() const override { return bIsValid; };
+
     private:
         void addGamepad(int sdlIndex);
         void clearGamepad(int sdlIndex);
+
     private:
-        SDL_Window* window { nullptr };
-        SDL_GLContext glContext { nullptr };
+        SDL_Window* window{nullptr};
+        SDL_GLContext glContext{nullptr};
 
         WindowCallbacks callbacks;
 
-        std::unordered_map<EDeviceID, SDL_Gamepad*> gamepads {};
-        std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> gamepadIDs { -1 };
+        std::unordered_map<EDeviceID, SDL_Gamepad*> gamepads{};
+        std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> gamepadIDs{-1};
+        bool bIsValid{false};
     };
-} // OZZ
+} // namespace OZZ::platform::SDL3
 
 #endif

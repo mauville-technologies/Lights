@@ -4,9 +4,10 @@
 #include "lights/scene/scene.h"
 
 namespace OZZ {
-    void scene::Scene::InitScene(std::shared_ptr<InputSubsystem> inInput) {
+    void scene::Scene::InitScene(std::shared_ptr<InputSubsystem> inInput, ResourceManager* inResourceManager) {
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
+        resourceManager = inResourceManager;
 
         const auto theWorld = GetWorld();
         theWorld->Init({

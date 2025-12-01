@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "resource_manager.h"
+
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
@@ -30,7 +32,7 @@ namespace OZZ::scene {
     class Scene {
     public:
         // Should be called at the end of the derived class Init function
-        virtual void InitScene(std::shared_ptr<InputSubsystem> inInput);
+        virtual void InitScene(std::shared_ptr<InputSubsystem> inInput, ResourceManager* inResourceManager);
 
         virtual void Tick(float DeltaTime);
 
@@ -48,8 +50,9 @@ namespace OZZ::scene {
         [[nodiscard]] virtual OZZ::Renderable* GetSceneGraph() const = 0;
 
     protected:
-        std::unique_ptr<SceneLayerManager> layerManager;
-        std::shared_ptr<InputSubsystem> input;
+        std::unique_ptr<SceneLayerManager> layerManager{nullptr};
+        std::shared_ptr<InputSubsystem> input{nullptr};
+        ResourceManager* resourceManager{nullptr};
 
     private:
         std::shared_ptr<GameWorld> world;

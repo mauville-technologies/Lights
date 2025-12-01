@@ -79,9 +79,7 @@ namespace OZZ::game {
     class LightsGame {
     public:
         explicit LightsGame(const std::filesystem::path& configFilePath)
-            : params(Configuration<GameParameters>(configFilePath)) {
-            spdlog::info("thing");
-        }
+            : params(Configuration<GameParameters>(configFilePath)) {}
 
         ~LightsGame() {
             scene.reset();
@@ -92,6 +90,7 @@ namespace OZZ::game {
 
         void Run() {
             bRunning = true;
+
             initInput();
             initWindow();
             initAudio();
@@ -178,15 +177,17 @@ namespace OZZ::game {
 
         void initInput() { input = std::make_shared<InputSubsystem>(); }
 
-        void initScene() {
-            scene = std::make_unique<SceneType>();
-            scene->InitScene(input);
-            scene->WindowResized(window->GetSize());
-        }
-
         void initRenderer() {
             renderer = std::make_unique<Renderer>();
             renderer->Init();
+
+            resourceManager = std::make_unique<scene::ResourceManager>(window.get());
+        }
+
+        void initScene() {
+            scene = std::make_unique<SceneType>();
+            scene->InitScene(input, resourceManager.get());
+            scene->WindowResized(window->GetSize());
         }
 
         // TODO: The viewport will probably live in a render target
@@ -194,6 +195,7 @@ namespace OZZ::game {
 
         void drawScene(OZZ::scene::Scene* scene) {
             // renderer->RenderScene(scene);
+            window->MakeContextCurrent();
             renderer->ExecuteSceneGraph(scene->GetSceneGraph());
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
@@ -210,5 +212,7 @@ namespace OZZ::game {
 
         std::unique_ptr<OZZ::scene::Scene> scene{nullptr};
         std::unique_ptr<Renderer> renderer{nullptr};
+
+        std::unique_ptr<scene::ResourceManager> resourceManager{nullptr};
     };
 } // namespace OZZ::game

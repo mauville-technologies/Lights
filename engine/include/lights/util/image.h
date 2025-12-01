@@ -3,19 +3,20 @@
 //
 
 #pragma once
-#include <vector>
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace OZZ {
     class Image {
     public:
         // returnss a tuple of (gridSize, imageSize, image)
-        static std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>> MergeImages(const std::vector<std::unique_ptr<Image>>& images);
+        static std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>>
+        MergeImages(const std::vector<std::unique_ptr<Image>>& images);
 
         using path = std::filesystem::path;
         Image() = default;
-        explicit Image(const path& texturePath, int desiredChannels = 4);
+        explicit Image(const path& texturePath);
         Image(const unsigned char* inData, int inWidth, int inHeight, int inChannels);
         ~Image();
 
@@ -27,27 +28,17 @@ namespace OZZ {
         void FillColor(const glm::vec4& color, const glm::vec2& size);
         void FlipPixels(bool bVertical = true, bool bHorizontal = true);
 
-        [[nodiscard]] inline const std::vector<unsigned char>& GetData() const {
-            return data;
-        }
+        [[nodiscard]] inline const std::vector<unsigned char>& GetData() const { return data; }
 
-        [[nodiscard]] inline int GetWidth() const {
-            return width;
-        }
+        [[nodiscard]] inline int GetWidth() const { return width; }
 
-        [[nodiscard]] inline int GetHeight() const {
-            return height;
-        }
+        [[nodiscard]] inline int GetHeight() const { return height; }
 
-        [[nodiscard]] inline int GetChannels() const {
-            return channels;
-        }
+        [[nodiscard]] inline int GetChannels() const { return channels; }
 
         void SaveToFile(std::filesystem::path imagePath);
 
-        inline bool IsValid() const {
-            return !data.empty() && width > 0 && height > 0 && channels > 0;
-        }
+        inline bool IsValid() const { return !data.empty() && width > 0 && height > 0 && channels > 0; }
 
     private:
         std::vector<unsigned char> data{};
@@ -55,4 +46,4 @@ namespace OZZ {
         int height{0};
         int channels{0};
     };
-}
+} // namespace OZZ

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <lights/input/input_keys.h>
-#include <string>
 #include <functional>
 #include <glm/glm.hpp>
+#include <lights/input/input_keys.h>
+#include <string>
 
 #if OZZ_PLATFORM_WINDOWS
 #undef CreateWindow
@@ -37,7 +37,8 @@ namespace OZZ::platform {
     class IPlatformWindow {
     public:
         virtual ~IPlatformWindow() = default;
-        virtual void CreateWindow(const std::string &title, int width, int height) = 0;
+        virtual void CreateWindow(const std::string& title, int width, int height) = 0;
+        virtual void CreateContextWindow(IPlatformWindow* parentWindow) = 0;
         virtual void* GetProcAddress() = 0;
         virtual void InitInput(WindowCallbacks&& callbacks) = 0;
         virtual void Poll() = 0;
@@ -47,15 +48,17 @@ namespace OZZ::platform {
         virtual void SetSize(int width, int height) = 0;
         virtual void SetFullscreen(bool fullscreen) = 0;
         virtual void SetTextMode(bool bIsTextMode) = 0;
+        [[nodiscard]] virtual bool IsValid() const = 0;
 
         [[nodiscard]] const auto& GetKeyStates() const { return keyStates; }
+
         [[nodiscard]] const auto& GetControllerState() const { return controllerState; }
+
         [[nodiscard]] const auto& GetMouseButtonStates() const { return mouseButtonStates; }
 
-
     protected:
-        KeyStateArrayType keyStates {};
-        MouseButtonStateArrayType mouseButtonStates {};
+        KeyStateArrayType keyStates{};
+        MouseButtonStateArrayType mouseButtonStates{};
         ControllerStateMap controllerState;
     };
-}
+} // namespace OZZ::platform

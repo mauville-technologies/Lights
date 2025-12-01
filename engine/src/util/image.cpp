@@ -73,7 +73,7 @@ namespace OZZ {
         return {glm::vec2{numCols, numRows}, glm::vec2{maxWidth, maxHeight}, std::move(result)};
     }
 
-    Image::Image(const path& texturePath, int desiredChannels) {
+    Image::Image(const path& texturePath) {
         stbi_set_flip_vertically_on_load(true);
         stbi_info(texturePath.string().c_str(), &width, &height, &channels);
 

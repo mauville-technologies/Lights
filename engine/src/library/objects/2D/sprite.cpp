@@ -29,7 +29,7 @@ namespace OZZ::game::scene {
         auto indices = std::vector<uint32_t>(quadIndices.begin(), quadIndices.end());
         sceneObject.Mesh->UploadData(vertices, indices);
 
-        SetTexture(texture, inConstructionParams.TextureImageChannels);
+        SetTexture(texture);
         SetScale({1.f, 1.f, 1.f});
     }
 
@@ -200,8 +200,8 @@ namespace OZZ::game::scene {
         return objects;
     }
 
-    void Sprite::SetTexture(const std::filesystem::path& inPath, uint8_t imageChannels) {
-        const auto image = std::make_unique<Image>(inPath, imageChannels);
+    void Sprite::SetTexture(const std::filesystem::path& inPath) {
+        const auto image = std::make_unique<Image>(inPath);
         const auto texture = std::make_shared<Texture>();
         texture->UploadData(image.get());
 

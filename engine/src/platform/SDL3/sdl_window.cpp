@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ::platform::SDL3 {
-    void SDLWindow::CreateWindow(const std::string &title, int width, int height) {
+    void SDLWindow::CreateWindow(const std::string& title, int width, int height) {
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD) < 0) {
             spdlog::error("Failed to initialize SDL: {}", SDL_GetError());
@@ -43,15 +43,47 @@ namespace OZZ::platform::SDL3 {
         }
 
         MakeContextCurrent();
+
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         SDL_ShowWindow(window);
+        bIsValid = true;
     }
 
-    void *SDLWindow::GetProcAddress() {
-        return reinterpret_cast<void *>(SDL_GL_GetProcAddress);
+    void SDLWindow::CreateContextWindow(IPlatformWindow* parentWindow) {
+        if (!parentWindow) {
+            spdlog::error("Must provide a valid parent window.");
+            return;
+        }
+        // ensure the parent window is an SDL Window
+        const auto sdlWindow = dynamic_cast<SDLWindow*>(parentWindow);
+        if (!sdlWindow) {
+            spdlog::error("Not SDL window");
+            return;
+        }
+        sdlWindow->MakeContextCurrent();
+
+        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+        window = SDL_CreateWindow("", 0, 0, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+        if (!window) {
+            spdlog::error("Failed to create window: {}", SDL_GetError());
+            return;
+        }
+
+        glContext = SDL_GL_CreateContext(window);
+        if (!glContext) {
+            spdlog::error("Failed to create OpenGL context: {}", SDL_GetError());
+            return;
+        }
+        sdlWindow->MakeContextCurrent();
+
+        bIsValid = true;
     }
 
-    void SDLWindow::InitInput(WindowCallbacks &&inCallbacks) {
+    void* SDLWindow::GetProcAddress() {
+        return reinterpret_cast<void*>(SDL_GL_GetProcAddress);
+    }
+
+    void SDLWindow::InitInput(WindowCallbacks&& inCallbacks) {
         callbacks = std::move(inCallbacks);
     }
 
@@ -80,7 +112,7 @@ namespace OZZ::platform::SDL3 {
                         continue;
                     }
                     auto deviceID = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), it));
-                    if (auto &controller = controllerState[deviceID]; controller[button] != newButtonState) {
+                    if (auto& controller = controllerState[deviceID]; controller[button] != newButtonState) {
                         controller[button] = newButtonState;
                         if (callbacks.OnKeyPressed) {
                             callbacks.OnKeyPressed({deviceID, button}, newButtonState);
@@ -151,7 +183,7 @@ namespace OZZ::platform::SDL3 {
             }
         }
 
-        for (const auto &[deviceID, gamepad] : gamepads) {
+        for (const auto& [deviceID, gamepad] : gamepads) {
             if (gamepad) {
                 // Update the controller state
                 for (int i = SDL_GAMEPAD_AXIS_LEFTX; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
@@ -195,7 +227,7 @@ namespace OZZ::platform::SDL3 {
     }
 
     void SDLWindow::addGamepad(int sdlIndex) {
-        if (auto *newGamepad = SDL_OpenGamepad(sdlIndex)) {
+        if (auto* newGamepad = SDL_OpenGamepad(sdlIndex)) {
             // Device ID is the next available index
             const auto availableIndexIterator = std::ranges::find(gamepadIDs, -1);
             if (availableIndexIterator == gamepadIDs.end()) {

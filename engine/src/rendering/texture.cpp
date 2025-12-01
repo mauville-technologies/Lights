@@ -18,6 +18,8 @@ namespace OZZ {
     void Texture::Reserve(const glm::ivec2 Size) {
         width = Size.x;
         height = Size.y;
+        // Reserve is generally used for rendertargets and FBOs. We mark it as loaded so we can let rendering happen
+        bLoaded.store(true);
         Bind();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
@@ -45,9 +47,14 @@ namespace OZZ {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, image->GetData().data());
         glGenerateMipmap(GL_TEXTURE_2D);
+        bLoaded.store(true);
     }
 
     void Texture::Bind() {
+        if (auto loaded = IsLoaded(); !loaded) {
+            spdlog::error("Attempted to bind unloaded texture {}", textureId);
+            return;
+        }
         glBindTexture(GL_TEXTURE_2D, textureId);
 
         // TODO: Separate sampler params from the texture

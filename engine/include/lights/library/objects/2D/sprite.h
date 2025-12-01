@@ -10,7 +10,6 @@
 
 namespace OZZ::game::scene {
     struct SpriteConstructionParams {
-        uint8_t TextureImageChannels{4};
         std::filesystem::path VertexShaderPath{"assets/shaders/engine/sprite.vert"};
         std::filesystem::path FragShaderPath{"assets/shaders/engine/sprite.frag"};
     };
@@ -38,7 +37,7 @@ namespace OZZ::game::scene {
          * @param inPath Path to the texture
          * @param imageChannels Number of channels on the source image
          */
-        void SetTexture(const std::filesystem::path& inPath, uint8_t imageChannels);
+        void SetTexture(const std::filesystem::path& inPath);
 
         /**
          * Get the material directly. Probably unneeded unless running custom shader

@@ -3,8 +3,8 @@
 //
 
 #include "lights/platform/window.h"
-#include <spdlog/spdlog.h>
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
 
 #ifdef OZZ_GLFW
 #include "platform/GLFW/glfw_window.h"
@@ -13,7 +13,6 @@
 #ifdef OZZ_SDL3
 #include "platform/SDL3/sdl_window.h"
 #endif
-
 
 namespace OZZ {
     Window::Window(platform::WindowCallbacks&& inCallbacks) {
@@ -50,7 +49,7 @@ namespace OZZ {
     void Window::PollEvents() {
         window->Poll();
 
-        //TODO: Add mouse and joystick input
+        // TODO: Add mouse and joystick input
     }
 
     void Window::MakeContextCurrent() {}
@@ -76,4 +75,25 @@ namespace OZZ {
             window->SetTextMode(bIsTextMode);
         }
     }
-} // OZZ
+
+    ContextWindow::ContextWindow(const Window* parentContext) {
+        if (!parentContext) {
+            spdlog::error("Invalid parent context provided to context window");
+            return;
+        }
+#ifdef OZZ_GLFW
+        window = std::make_unique<platform::glfw::GLFWWindow>();
+#endif
+
+#ifdef OZZ_SDL3
+        window = std::make_unique<platform::SDL3::SDLWindow>();
+#endif
+
+        window->CreateContextWindow(parentContext->window.get());
+    }
+
+    void ContextWindow::MakeContextCurrent() {
+        if (window)
+            window->MakeContextCurrent();
+    }
+} // namespace OZZ
