@@ -120,6 +120,21 @@ namespace OZZ::game {
                 if (input) {
                     input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
                 }
+
+                // Determine next wake time (next tick or next render) and sleep a bit to avoid busy-waiting.
+                const auto nextTickTime = lastTickTime + renderRate;
+                const auto nextRenderTime = lastRenderTime + renderRate;
+                const auto wakeTime = std::min(nextTickTime, nextRenderTime);
+
+                const auto now = std::chrono::high_resolution_clock::now();
+                if (wakeTime > now) {
+                    const auto sleepDuration = wakeTime - now;
+                    constexpr auto maxSleep = std::chrono::milliseconds(10); // cap to stay responsive
+                    std::this_thread::sleep_for(
+                        std::min(std::chrono::duration_cast<std::chrono::milliseconds>(sleepDuration), maxSleep));
+                } else {
+                    std::this_thread::yield();
+                }
             }
         }
 

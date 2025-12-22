@@ -12,8 +12,7 @@
 #include "lights/text/font_loader.h"
 #include "spdlog/spdlog.h"
 
-ClayUILayer::ClayUILayer(OZZ::GameWorld* inWorld, const std::shared_ptr<OZZ::InputSubsystem>& inInput)
-    : inputSubsystem(inInput) {}
+ClayUILayer::ClayUILayer(OZZ::GameWorld* inWorld, OZZ::InputSubsystem* inInput) : inputSubsystem(inInput) {}
 
 ClayUILayer::~ClayUILayer() {
     shutdownClay();
@@ -162,27 +161,6 @@ void ClayUILayer::RenderTargetResized(const glm::ivec2 size) {
     reinitializeClay();
 }
 
-std::vector<OZZ::scene::SceneObject> ClayUILayer::GetSceneObjects() {
-    auto sceneObjects = std::vector<OZZ::scene::SceneObject>();
-
-    ScissorDef scissor{};
-    for (const auto command : std::span(clayRenderCommandArray.internalArray, clayRenderCommandArray.length)) {
-        if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
-            scissor.bHasScissor = true;
-            scissor.ScissorBox = command.boundingBox;
-        }
-
-        if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_END) {
-            scissor.bHasScissor = false;
-        }
-
-        refreshSceneObject(command.id, command, scissor);
-        if (uiSceneObjects.contains(command.id))
-            sceneObjects.emplace_back(uiSceneObjects[command.id]);
-    }
-    return sceneObjects;
-}
-
 void ClayUILayer::RegisterFont(const uint16_t& fontId, const std::filesystem::path& fontPath) {
     fontRegistry[fontId] = fontPath;
 }
@@ -257,8 +235,8 @@ void ClayUILayer::reinitializeClay() {
 }
 
 void ClayUILayer::buildShaders() {
-    uiShader = std::make_shared<OZZ::Shader>("assets/shaders/ui/clay.vert", "assets/shaders/ui/clay.frag");
-    textShader = std::make_shared<OZZ::Shader>("assets/shaders/ui/clay.vert", "assets/shaders/ui/font.frag");
+    uiShader = std::make_shared<OZZ::Shader>(VertexShader, FragmentShader, true);
+    textShader = std::make_shared<OZZ::Shader>(VertexShader, FontFragmentShader, true);
 
     const auto emptyImage = std::make_shared<OZZ::Image>();
     emptyImage->FillColor(glm::vec4(0.f, 0.f, 0.f, 0.f), glm::vec2(1.f, 1.f));
@@ -429,6 +407,27 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
     uiSceneObjects[id] = OZZ::scene::SceneObject{.Transform = transform, .Mesh = mesh, .Mat = material};
 }
 
+std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
+    auto sceneObjects = std::vector<OZZ::scene::SceneObject>();
+
+    ScissorDef scissor{};
+    for (const auto command : std::span(clayRenderCommandArray.internalArray, clayRenderCommandArray.length)) {
+        if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
+            scissor.bHasScissor = true;
+            scissor.ScissorBox = command.boundingBox;
+        }
+
+        if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_END) {
+            scissor.bHasScissor = false;
+        }
+
+        refreshSceneObject(command.id, command, scissor);
+        if (uiSceneObjects.contains(command.id))
+            sceneObjects.emplace_back(uiSceneObjects[command.id]);
+    }
+    return sceneObjects;
+}
+
 bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand) {
     return std::memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
 }
@@ -517,7 +516,7 @@ bool ClayUILayer::render() {
     renderTarget->Begin();
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    for (auto& object : GetSceneObjects()) {
+    for (auto& object : getSceneObjects()) {
         auto& [transform, objMesh, objMat] = object;
         objMat->Bind();
         objMat->GetShader()->SetMat4("view", GetCamera().ViewMatrix);
