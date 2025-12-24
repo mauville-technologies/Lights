@@ -157,28 +157,38 @@ namespace OZZ {
         RightStickY,
         LeftTrigger,
         RightTrigger,
+
+        // These are for binary inputs
+        LeftStickXLeft,
+        LeftStickXRight,
+        LeftStickYUp,
+        LeftStickYDown,
+        RightStickXLeft,
+        RightStickXRight,
+        RightStickYUp,
+        RightStickYDown,
         ButtonCount
     };
 
     enum class EMouseButton : uint8_t { Left, Right, Middle, Back, Forward, Extra0, Extra1, Extra2, ButtonCount };
 
-    constexpr int operator+(const EKey &key) {
+    constexpr int operator+(const EKey& key) {
         return static_cast<int>(key);
     }
 
-    constexpr int operator+(const EControllerButton &button) {
+    constexpr int operator+(const EControllerButton& button) {
         return static_cast<int>(button);
     }
 
-    constexpr int operator+(const EKeyState &state) {
+    constexpr int operator+(const EKeyState& state) {
         return static_cast<int>(state);
     }
 
-    constexpr int operator+(const EMouseButton &button) {
+    constexpr int operator+(const EMouseButton& button) {
         return static_cast<int>(button);
     }
 
-    constexpr int operator+(const EDeviceID &deviceId) {
+    constexpr int operator+(const EDeviceID& deviceId) {
         return static_cast<int>(deviceId);
     }
 
@@ -191,10 +201,10 @@ namespace OZZ {
         EDeviceID DeviceID = EDeviceID::Unknown;
         std::variant<EKey, EControllerButton, EMouseButton> Key = EKey::KeyCount;
 
-        bool operator==(const InputKey &other) const { return DeviceID == other.DeviceID && Key == other.Key; }
+        bool operator==(const InputKey& other) const { return DeviceID == other.DeviceID && Key == other.Key; }
     };
 } // namespace OZZ
 
-std::ostream &operator<<(std::ostream &out, const OZZ::EKeyState &state);
+std::ostream& operator<<(std::ostream& out, const OZZ::EKeyState& state);
 
-std::ostream &operator<<(std::ostream &out, const OZZ::EKey &key);
+std::ostream& operator<<(std::ostream& out, const OZZ::EKey& key);

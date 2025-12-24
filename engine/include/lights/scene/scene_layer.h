@@ -29,6 +29,7 @@ namespace OZZ::scene {
         virtual ~SceneLayer() = default;
 
         virtual void Init() {};
+        virtual void DeInit() {};
 
         virtual void PhysicsTick(float DeltaTime) {};
 

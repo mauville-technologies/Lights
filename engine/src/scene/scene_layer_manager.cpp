@@ -31,6 +31,7 @@ namespace OZZ::scene {
                 // remove the layer from the names and layers by emptying the slot. We keep the slots empty for re-use
                 // to avoid invalidating the indices
                 layerNames[index] = "";
+                layers[index]->DeInit();
                 layers[index].reset();
             }
         }

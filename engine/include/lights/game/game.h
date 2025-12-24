@@ -121,6 +121,8 @@ namespace OZZ::game {
                     input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
                 }
 
+                // TODO: Look at this https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
+
                 // Determine next wake time (next tick or next render) and sleep a bit to avoid busy-waiting.
                 const auto nextTickTime = lastTickTime + renderRate;
                 const auto nextRenderTime = lastRenderTime + renderRate;
