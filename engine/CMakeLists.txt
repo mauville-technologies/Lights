@@ -54,6 +54,7 @@ set(SOURCES
         src/text/font_loader.cpp
 
         src/util/image.cpp
+        src/util/ring_buffer.cpp
 )
 
 add_library(lights_engine STATIC ${SOURCES})
