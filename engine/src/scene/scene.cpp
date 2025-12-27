@@ -37,6 +37,9 @@ namespace OZZ {
         // the render targets should resize even if they're not active so that when they become active again they're
         // correct
         for (const auto& Layer : GetAllLayers()) {
+            if (!Layer)
+                // when a layer is removed, we don't shrink the array in order to preserve index order
+                continue;
             Layer->RenderTargetResized(size);
         }
     }

@@ -49,10 +49,14 @@ namespace OZZ::scene {
 
         [[nodiscard]] virtual OZZ::Renderable* GetSceneGraph() const = 0;
 
+        [[nodiscard]] bool HasSceneEnded() const { return bEnded; }
+
     protected:
         std::unique_ptr<SceneLayerManager> layerManager{nullptr};
         std::shared_ptr<InputSubsystem> input{nullptr};
         ResourceManager* resourceManager{nullptr};
+
+        bool bEnded{false};
 
     private:
         std::shared_ptr<GameWorld> world;

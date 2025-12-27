@@ -103,6 +103,11 @@ namespace OZZ::game {
             const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
             while (bRunning) {
+                if (scene->HasSceneEnded()) {
+                    bRunning = false;
+                    continue;
+                }
+
                 {
                     auto currentTime = std::chrono::high_resolution_clock::now();
                     // Tick and render all scenes
