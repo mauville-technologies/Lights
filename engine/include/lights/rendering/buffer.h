@@ -3,7 +3,10 @@
 //
 
 #pragma once
+#include "lights/util/ring_buffer.h"
 #include "vertex.h"
+
+#include <deque>
 #include <memory>
 #include <span>
 #include <vector>
@@ -16,7 +19,6 @@ namespace OZZ {
         ~Buffer();
 
         void UploadData(const void* data, size_t size);
-
         void Bind() const;
 
     private:
@@ -29,7 +31,6 @@ namespace OZZ {
         IndexVertexBuffer();
         ~IndexVertexBuffer();
 
-        // void UploadData(std::span<Vertex> vertices, std::span<uint32_t> indices);
         void UploadData(std::span<const Vertex> vertices, std::span<const uint32_t> indices);
 
         void Bind() const;
@@ -43,5 +44,39 @@ namespace OZZ {
 
         std::unique_ptr<Buffer> vertexBuffer;
         std::unique_ptr<Buffer> indexBuffer;
+    };
+
+    class GPUStagingBuffer {
+    public:
+        struct InFlightRegion {
+            size_t Offset;
+            size_t Size;
+            GLsync Fence;
+        };
+
+        explicit GPUStagingBuffer(size_t numBytes);
+        ~GPUStagingBuffer();
+
+        [[nodiscard]] std::byte* GetAllocatedPointer(const util::RingBufferAllocation& allocation) const;
+
+        void Bind() const;
+        void Unbind() const;
+        [[nodiscard]] util::RingBufferAllocation GetSlice(size_t size);
+        void RegisterInFlight(InFlightRegion&& inFlight);
+        void Tick();
+
+        [[nodiscard]] size_t GetSize() const { return size; }
+
+    protected:
+        // Unused probably
+        [[nodiscard]] std::pair<std::byte*, size_t> GetBuffer() const;
+
+    private:
+        uint32_t pbo{0};
+        std::byte* mappedPointer;
+        size_t size;
+
+        std::unique_ptr<util::RingBuffer> ringBuffer;
+        std::deque<InFlightRegion> inFlightRegions;
     };
 } // namespace OZZ

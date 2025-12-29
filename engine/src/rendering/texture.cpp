@@ -45,7 +45,37 @@ namespace OZZ {
                 spdlog::warn("Unsupported image format. Defaulting to RGBA");
         }
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, image->GetData().data());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, image->GetDataPointer());
+        glGenerateMipmap(GL_TEXTURE_2D);
+        bLoaded.store(true);
+    }
+
+    void Texture::UploadData(Image* image, size_t offset) {
+
+        width = image->GetWidth();
+        height = image->GetHeight();
+
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        int format = GL_RGBA;
+
+        switch (image->GetChannels()) {
+            case 1:
+                format = GL_RED;
+                break;
+            case 3:
+                format = GL_RGB;
+                break;
+            case 4:
+                format = GL_RGBA;
+                break;
+            default:
+                spdlog::warn("Unsupported image format. Defaulting to RGBA");
+        }
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
+        glTexSubImage2D(
+            GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, reinterpret_cast<const void*>(offset));
         glGenerateMipmap(GL_TEXTURE_2D);
         bLoaded.store(true);
     }

@@ -8,20 +8,33 @@
 
 namespace OZZ::util {
     struct RingBufferAllocation {
-        std::byte* buffer{nullptr};
+        size_t offset{0};
         size_t size{0};
 
-        [[nodiscard]] bool IsValid() const { return buffer != nullptr && size > 0; }
+        [[nodiscard]] bool IsValid() const { return size > 0; }
     };
 
     class RingBuffer {
     public:
-        explicit RingBuffer(size_t size);
+        /**
+         * Creates and maintains its own array of bytes
+         * @param inSize requested size
+         */
+        explicit RingBuffer(size_t inSize);
 
-        RingBufferAllocation Allocate(const size_t size);
+        /**
+         * Uses externally managed byte blob
+         * @param buffer pointer to blob
+         * @param inSize size of blob
+         */
+        explicit RingBuffer(std::byte* buffer, size_t inSize);
+
+        RingBufferAllocation Allocate(size_t reqSize);
         bool Consume(size_t size);
 
         std::span<const std::byte> GetView(size_t offset, size_t size);
+
+        std::byte* GetBuffer() const { return pointer; }
 
         [[nodiscard]] bool IsEmpty() const;
         [[nodiscard]] size_t Size() const;
@@ -30,6 +43,10 @@ namespace OZZ::util {
 
     private:
         std::vector<std::byte> ringBuffer;
+
+        std::byte* pointer;
+        size_t size;
+
         std::byte* head;
         std::byte* tail;
     };

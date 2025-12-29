@@ -5,14 +5,16 @@
 #include "lights/scene/resource_manager.h"
 
 #include "lights/rendering/texture.h"
+#include "lights/util/memory_literals.h"
 
 #include <deque>
 #include <spdlog/spdlog.h>
 #include <utility>
 
 namespace OZZ::scene {
-    ResourceManager::ResourceManager(Window* parentContextWindow)
-        : contextWindow(std::make_unique<ContextWindow>(parentContextWindow)) {
+    ResourceManager::ResourceManager() {
+        constexpr size_t bufferSizeInBytes = 256_MiB;
+        stagingBuffer = std::make_unique<GPUStagingBuffer>(bufferSizeInBytes);
         jobThread = std::jthread([this](const std::stop_token& tok) {
             run(tok);
         });
@@ -25,9 +27,24 @@ namespace OZZ::scene {
 
     std::shared_ptr<Texture> ResourceManager::LoadTexture(const std::filesystem::path& path) {
         auto newTexture = std::make_shared<Texture>();
-        queueJob([newTexture = newTexture, path = std::move(path)] {
-            const auto image = std::make_unique<Image>(path);
-            newTexture->UploadData(image.get());
+        queueJob([this, path = std::move(path), newTexture] {
+            const auto info = Image::GetImageInfo(path);
+            // get staging buffer slice
+            const auto slice = stagingBuffer->GetSlice(info.SizeInBytes());
+            auto ptr = stagingBuffer->GetAllocatedPointer(slice);
+            const auto image = std::make_shared<Image>(ExternalBuffer, path, ptr);
+
+            {
+                std::lock_guard lock(renderJobsMutex);
+                renderJobs.emplace_back([this, newTexture, image, slice]() {
+                    stagingBuffer->Bind();
+                    newTexture->UploadData(image.get(), slice.offset);
+                    stagingBuffer->Unbind();
+
+                    stagingBuffer->RegisterInFlight(
+                        {slice.offset, slice.size, glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)});
+                });
+            }
         });
         return newTexture;
     }
@@ -40,6 +57,20 @@ namespace OZZ::scene {
         return newTexture;
     }
 
+    void ResourceManager::Tick() {
+        stagingBuffer->Tick();
+        std::deque<std::function<void()>> local;
+        {
+            std::lock_guard lock(renderJobsMutex);
+            local.swap(renderJobs);
+        }
+        while (!local.empty()) {
+            auto job = local.front();
+            job();
+            local.pop_front();
+        }
+    }
+
     void ResourceManager::queueJob(const std::function<void()>& job) {
         {
             auto queueLock = std::scoped_lock(queueMutex);
@@ -49,13 +80,7 @@ namespace OZZ::scene {
     }
 
     void ResourceManager::run(const std::stop_token& tok) {
-        if (!contextWindow) {
-            spdlog::error("Resource manager provided invalid context window");
-            return;
-        }
-
         // we bind the context so that we can do opengl things on the different thread
-        contextWindow->MakeContextCurrent();
         while (true) {
             std::function<void()> job;
             {

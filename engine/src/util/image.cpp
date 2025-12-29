@@ -12,6 +12,11 @@
 namespace OZZ {
     std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>>
     Image::MergeImages(const std::vector<std::unique_ptr<Image>>& images) {
+        for (auto& image : images) {
+            // all images must be owning to perform a merge
+            assert(image->bOwnsData);
+        }
+
         // let's assume a max width of 4096
         constexpr int maxTextureDimension = 4096;
 
@@ -73,6 +78,12 @@ namespace OZZ {
         return {glm::vec2{numCols, numRows}, glm::vec2{maxWidth, maxHeight}, std::move(result)};
     }
 
+    Image::ImageInfo Image::GetImageInfo(const path& imagePath) {
+        ImageInfo result{};
+        stbi_info(imagePath.string().c_str(), &result.Width, &result.Height, &result.Channels);
+        return result;
+    }
+
     Image::Image(const path& texturePath) {
         stbi_set_flip_vertically_on_load(true);
         stbi_info(texturePath.string().c_str(), &width, &height, &channels);
@@ -92,6 +103,20 @@ namespace OZZ {
         width = inWidth;
         height = inHeight;
         channels = inChannels;
+    }
+
+    Image::Image(ExternalBufferTag, const path& texturePath, std::byte* inExternalBuffer) {
+        bOwnsData = false;
+        externalBuffer = inExternalBuffer;
+
+        // TODO: finish implementation
+        stbi_set_flip_vertically_on_load(true);
+        stbi_info(texturePath.string().c_str(), &width, &height, &channels);
+
+        if (auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, channels)) {
+            memcpy(externalBuffer, iData, width * height * channels);
+            stbi_image_free(iData);
+        }
     }
 
     Image::~Image() {

@@ -57,4 +57,74 @@ namespace OZZ {
     void IndexVertexBuffer::Unbind() const {
         glBindVertexArray(0);
     }
+
+    GPUStagingBuffer::GPUStagingBuffer(size_t numBytes) : size(numBytes) {
+        glGenBuffers(1, &pbo);
+        Bind();
+        glBufferStorage(
+            GL_PIXEL_UNPACK_BUFFER, numBytes, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
+        mappedPointer = static_cast<std::byte*>(glMapBufferRange(
+            GL_PIXEL_UNPACK_BUFFER, 0, numBytes, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
+        Unbind();
+
+        assert(mappedPointer && "mapped pointer is null -- failed to generate gpu pbo buffer");
+        ringBuffer = std::make_unique<util::RingBuffer>(static_cast<std::byte*>(mappedPointer), numBytes);
+    }
+
+    GPUStagingBuffer::~GPUStagingBuffer() {
+        Bind();
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        glDeleteBuffers(1, &pbo);
+        Unbind();
+
+        while (!inFlightRegions.empty()) {
+            const auto& inFlight = inFlightRegions.front();
+            glDeleteSync(inFlight.Fence);
+            inFlightRegions.pop_front();
+        }
+
+        ringBuffer.reset();
+    }
+
+    std::pair<std::byte*, size_t> GPUStagingBuffer::GetBuffer() const {
+        return {mappedPointer, size};
+    }
+
+    std::byte* GPUStagingBuffer::GetAllocatedPointer(const util::RingBufferAllocation& allocation) const {
+        return mappedPointer + allocation.offset;
+    }
+
+    void GPUStagingBuffer::Bind() const {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    }
+
+    void GPUStagingBuffer::Unbind() const {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+
+    util::RingBufferAllocation GPUStagingBuffer::GetSlice(const size_t size) {
+        return ringBuffer->Allocate(size);
+    }
+
+    void GPUStagingBuffer::RegisterInFlight(InFlightRegion&& inFlight) {
+        inFlightRegions.push_back(std::move(inFlight));
+    }
+
+    void GPUStagingBuffer::Tick() {
+        // check fences
+        while (!inFlightRegions.empty()) {
+            const auto& front = inFlightRegions.front();
+
+            const GLenum result = glClientWaitSync(front.Fence, 0, 0);
+            if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
+                // pop
+                glDeleteSync(front.Fence);
+                ringBuffer->Consume(front.Size);
+                inFlightRegions.pop_front();
+                continue;
+            }
+            break;
+        }
+    }
 } // namespace OZZ

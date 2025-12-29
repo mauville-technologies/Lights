@@ -5,6 +5,7 @@
 #pragma once
 #include "lights/platform/platform_window.h"
 #include "lights/platform/window.h"
+#include "lights/rendering/buffer.h"
 #include "lights/util/image.h"
 
 #include <deque>
@@ -20,12 +21,17 @@ namespace OZZ {
 namespace OZZ::scene {
     class ResourceManager {
     public:
-        explicit ResourceManager(Window* parentContextWindow);
+        explicit ResourceManager();
         ~ResourceManager();
 
         std::shared_ptr<Texture> LoadTexture(const std::filesystem::path& path);
 
         std::shared_ptr<Texture> LoadTexture(std::shared_ptr<Image> image);
+
+        /**
+         * Runs the render jobs on the main thread
+         */
+        void Tick();
 
     private:
         void queueJob(const std::function<void()>& job);
@@ -37,7 +43,10 @@ namespace OZZ::scene {
         std::condition_variable queueCondition{};
         std::jthread jobThread;
 
-        std::unique_ptr<ContextWindow> contextWindow;
+        std::unique_ptr<GPUStagingBuffer> stagingBuffer;
+
+        std::mutex renderJobsMutex;
+        std::deque<std::function<void()>> renderJobs{};
     };
 
 } // namespace OZZ::scene
