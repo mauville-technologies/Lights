@@ -8,16 +8,32 @@
 #include <vector>
 
 namespace OZZ {
+
+    struct ExternalBufferTag {};
+
+    inline constexpr ExternalBufferTag ExternalBuffer{};
+
     class Image {
     public:
+        struct ImageInfo {
+            int Width;
+            int Height;
+            int Channels;
+
+            int SizeInBytes() const { return Width * Height * Channels; }
+        };
+
         // returnss a tuple of (gridSize, imageSize, image)
         static std::tuple<glm::vec2, glm::vec2, std::unique_ptr<Image>>
         MergeImages(const std::vector<std::unique_ptr<Image>>& images);
 
         using path = std::filesystem::path;
+        static ImageInfo GetImageInfo(const path& imagePath);
+
         Image() = default;
         explicit Image(const path& texturePath);
         Image(const unsigned char* inData, int inWidth, int inHeight, int inChannels);
+        Image(ExternalBufferTag, const path& texturePath, std::byte* inExternalBuffer);
         ~Image();
 
         /**
@@ -28,7 +44,9 @@ namespace OZZ {
         void FillColor(const glm::vec4& color, const glm::vec2& size);
         void FlipPixels(bool bVertical = true, bool bHorizontal = true);
 
-        [[nodiscard]] inline const std::vector<unsigned char>& GetData() const { return data; }
+        [[nodiscard]] inline const void* GetDataPointer() const {
+            return bOwnsData ? static_cast<const void*>(data.data()) : static_cast<const void*>(externalBuffer);
+        }
 
         [[nodiscard]] inline int GetWidth() const { return width; }
 
@@ -41,7 +59,13 @@ namespace OZZ {
         inline bool IsValid() const { return !data.empty() && width > 0 && height > 0 && channels > 0; }
 
     private:
+        [[nodiscard]] inline const std::vector<unsigned char>& GetData() const { return data; }
+
+    private:
         std::vector<unsigned char> data{};
+        bool bOwnsData{true};
+        std::byte* externalBuffer = nullptr;
+
         int width{0};
         int height{0};
         int channels{0};

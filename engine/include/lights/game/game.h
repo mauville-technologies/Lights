@@ -108,6 +108,7 @@ namespace OZZ::game {
                     continue;
                 }
 
+                resourceManager->Tick();
                 {
                     auto currentTime = std::chrono::high_resolution_clock::now();
                     // Tick and render all scenes
@@ -203,7 +204,7 @@ namespace OZZ::game {
             renderer = std::make_unique<Renderer>();
             renderer->Init();
 
-            resourceManager = std::make_unique<scene::ResourceManager>(window.get());
+            resourceManager = std::make_unique<scene::ResourceManager>();
         }
 
         void initScene() {

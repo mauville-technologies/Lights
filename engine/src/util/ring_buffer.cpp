@@ -6,47 +6,51 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ::util {
-    RingBuffer::RingBuffer(const size_t size) : ringBuffer(size) {
-        head = tail = ringBuffer.data();
+    RingBuffer::RingBuffer(const size_t inSize) : ringBuffer(inSize), pointer(ringBuffer.data()), size(inSize) {
+        head = tail = pointer;
     }
 
-    RingBufferAllocation RingBuffer::Allocate(const size_t size) {
-        if (SpaceAvailable() < size) {
+    RingBuffer::RingBuffer(std::byte* buffer, size_t inSize) : ringBuffer(0), pointer(buffer), size(inSize) {
+        head = tail = pointer;
+    }
+
+    RingBufferAllocation RingBuffer::Allocate(const size_t reqSize) {
+        spdlog::info("Space available: {}", SpaceAvailable());
+        if (SpaceAvailable() < reqSize) {
             return {};
         }
+        const size_t headIndex = head - pointer;
+        const size_t tailIndex = tail - pointer;
 
-        if (IsEmpty()) {
-            // whole buffer available, just move head
-            auto* headCopy = head;
-            head = head + size;
-            return {
-                .buffer = headCopy,
-                .size = size,
-            };
-        }
-
-        const auto headIndex = head - ringBuffer.data();
-        const auto tailIndex = tail - ringBuffer.data();
+        // if (IsEmpty() && tail == head && head == pointer) {
+        //     // whole buffer available, just move head
+        //     auto* headCopy = head;
+        //     head = head + reqSize;
+        //     return {
+        //         .offset = headIndex,
+        //         .size = reqSize,
+        //     };
+        // }
 
         // is tail behind the head?
-        if (headIndex > tailIndex) {
+        if (headIndex >= tailIndex) {
             // is there enough free space at the end of the array?
-            if (const auto distanceToEnd = ringBuffer.size() - headIndex; distanceToEnd >= size) {
+            if (const auto distanceToEnd = size - headIndex; distanceToEnd >= reqSize) {
                 auto* headCopy = head;
-                head = head + size;
+                head = head + reqSize;
                 return {
-                    .buffer = headCopy,
-                    .size = size,
+                    .offset = headIndex,
+                    .size = reqSize,
                 };
             }
 
             // check front to tail for space
             const auto distanceToTail = tailIndex;
-            if (distanceToTail > size) {
-                head = ringBuffer.data() + size;
+            if (distanceToTail > reqSize) {
+                head = pointer + reqSize;
                 return {
-                    .buffer = ringBuffer.data(),
-                    .size = size,
+                    .offset = 0,
+                    .size = reqSize,
                 };
             }
 
@@ -57,12 +61,12 @@ namespace OZZ::util {
 
         // Tail ahead of head, check distance to be certain, move head
         const auto spaceAvailable = tailIndex - headIndex - 1;
-        if (spaceAvailable >= size) {
+        if (spaceAvailable >= reqSize) {
             auto* headCopy = head;
-            head = head + size;
+            head = head + reqSize;
             return {
-                .buffer = headCopy,
-                .size = size,
+                .offset = headIndex,
+                .size = reqSize,
             };
         }
 
@@ -76,11 +80,16 @@ namespace OZZ::util {
             spdlog::error("RingBuffer::Consume() -- requesting consumption of more data than was allocated");
             return false;
         }
-        const auto tailIndex = tail - ringBuffer.data();
+        const auto tailIndex = tail - pointer;
         const auto newTailIndex = tailIndex + size;
 
-        tail = ringBuffer.data() + (newTailIndex % Size());
+        tail = pointer + (newTailIndex % Size());
 
+        // if (tail == head) {
+        //     // The whole buffer is available, let's just move the pointer back to the front
+        //     tail = head = pointer;
+        // }
+        spdlog::info("new available: {}", SpaceAvailable());
         return true;
     }
 
@@ -89,7 +98,7 @@ namespace OZZ::util {
             spdlog::warn("Requested ringbuffer view out of bounds.");
             return {};
         }
-        return {ringBuffer.data() + offset, size};
+        return {pointer + offset, size};
     }
 
     bool RingBuffer::IsEmpty() const {
@@ -97,19 +106,19 @@ namespace OZZ::util {
     }
 
     size_t RingBuffer::Size() const {
-        return ringBuffer.size();
+        return size;
     }
 
     size_t RingBuffer::SpaceAvailable() const {
-        const auto headIndex = head - ringBuffer.data();
-        const auto tailIndex = tail - ringBuffer.data();
+        const auto headIndex = head - pointer;
+        const auto tailIndex = tail - pointer;
         const auto size = Size();
         return (tailIndex - headIndex - 1 + size) % size;
     }
 
     size_t RingBuffer::SpaceAllocated() const {
-        const auto headIndex = head - ringBuffer.data();
-        const auto tailIndex = tail - ringBuffer.data();
+        const auto headIndex = head - pointer;
+        const auto tailIndex = tail - pointer;
         const auto size = Size();
         return (headIndex - tailIndex + size) % size;
     }
