@@ -14,6 +14,7 @@ namespace OZZ {
         void Reserve(glm::ivec2 Size);
         void UploadData(Image* image);
         void UploadData(Image* image, size_t offset);
+        void FinalizeUpload();
 
         void Bind();
 

@@ -3,6 +3,7 @@
 //
 
 #include "lights/rendering/texture.h"
+#include "lights/util/memory_literals.h"
 #include "spdlog/spdlog.h"
 #include <glad/glad.h>
 
@@ -21,7 +22,7 @@ namespace OZZ {
         // Reserve is generally used for rendertargets and FBOs. We mark it as loaded so we can let rendering happen
         bLoaded.store(true);
         Bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
     }
 
     void Texture::UploadData(Image* image) {
@@ -73,10 +74,32 @@ namespace OZZ {
                 spdlog::warn("Unsupported image format. Defaulting to RGBA");
         }
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, reinterpret_cast<const void*>(offset));
-        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+        constexpr auto budgetBytes = 256_MiB;
+        auto bytesPerRow = width * image->GetChannels();
+        auto tileBytes = 16ULL * 1024 * 1024;
+
+        auto tileHeight = (tileBytes / bytesPerRow) * bytesPerRow;
+        tileHeight = std::max(1ULL, tileHeight);
+
+        for (unsigned long long y = 0; y < height; y += tileHeight) {
+            auto h = std::min(tileHeight, static_cast<unsigned long long>(height - y));
+            auto newOffset = offset + (y * width * image->GetChannels());
+
+            glTexSubImage2D(GL_TEXTURE_2D,
+                            0,
+                            0,
+                            0,
+                            width,
+                            static_cast<int>(h),
+                            format,
+                            GL_UNSIGNED_BYTE,
+                            reinterpret_cast<const void*>(newOffset));
+        }
+    }
+
+    void Texture::FinalizeUpload() {
         bLoaded.store(true);
     }
 

@@ -7,6 +7,7 @@
 #include "vertex.h"
 
 #include <deque>
+#include <functional>
 #include <memory>
 #include <span>
 #include <vector>
@@ -52,6 +53,7 @@ namespace OZZ {
             size_t Offset;
             size_t Size;
             GLsync Fence;
+            std::function<void()> Callback;
         };
 
         explicit GPUStagingBuffer(size_t numBytes);
