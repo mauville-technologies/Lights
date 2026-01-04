@@ -121,6 +121,7 @@ namespace OZZ {
                 // pop
                 glDeleteSync(front.Fence);
                 ringBuffer->Consume(front.Size);
+                front.Callback();
                 inFlightRegions.pop_front();
                 continue;
             }

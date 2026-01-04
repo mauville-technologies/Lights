@@ -27,7 +27,7 @@ namespace OZZ::scene {
 
     std::shared_ptr<Texture> ResourceManager::LoadTexture(const std::filesystem::path& path) {
         auto newTexture = std::make_shared<Texture>();
-        queueJob([this, path = std::move(path), newTexture] {
+        queueJob([this, path, newTexture] {
             const auto info = Image::GetImageInfo(path);
             // get staging buffer slice
             const auto slice = stagingBuffer->GetSlice(info.SizeInBytes());
@@ -42,7 +42,9 @@ namespace OZZ::scene {
                     stagingBuffer->Unbind();
 
                     stagingBuffer->RegisterInFlight(
-                        {slice.offset, slice.size, glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)});
+                        {slice.offset, slice.size, glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0), [newTexture]() {
+                             newTexture->FinalizeUpload();
+                         }});
                 });
             }
         });
@@ -64,10 +66,22 @@ namespace OZZ::scene {
             std::lock_guard lock(renderJobsMutex);
             local.swap(renderJobs);
         }
+        auto count = 0ULL;
         while (!local.empty()) {
-            auto job = local.front();
-            job();
+            local.front()();
             local.pop_front();
+            count++;
+
+            if (count >= 5)
+                break;
+        }
+
+        if (!local.empty()) {
+            {
+                auto queueLock = std::unique_lock(renderJobsMutex);
+                // put back to front of queue
+                renderJobs.insert(renderJobs.begin(), local.begin(), local.end());
+            }
         }
     }
 
