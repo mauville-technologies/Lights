@@ -16,7 +16,7 @@ namespace OZZ {
 
     class GameObject {
     public:
-        explicit GameObject(uint64_t inId, GameWorld* inWorld, std::shared_ptr<OzzWorld2D>);
+        explicit GameObject(uint64_t inId, GameWorld* inWorld);
         virtual ~GameObject() = default;
         virtual void Tick(float DeltaTime) = 0;
         virtual std::vector<scene::SceneObject> GetSceneObjects() = 0;
@@ -68,8 +68,6 @@ namespace OZZ {
             onParentChanged();
         }
 
-        [[nodiscard]] OzzWorld2D* GetWorld() const { return physicsWorld.get(); }
-
     protected:
         virtual void onPositionChanged() {};
         virtual void onScaleChanged() {};
@@ -77,13 +75,11 @@ namespace OZZ {
         virtual void onParentChanged() {};
 
     private:
-        void updateTransform();
+        virtual void updateTransform();
 
     protected:
         GameWorld* gameWorld;
         GameObject* parent{nullptr};
-
-        std::shared_ptr<OzzWorld2D> physicsWorld{nullptr};
 
         uint64_t id{0};
 

@@ -5,8 +5,8 @@
 #include "lights/game/game_object.h"
 
 namespace OZZ {
-    GameObject::GameObject(const uint64_t inId, GameWorld* inWorld, std::shared_ptr<OzzWorld2D> inPhysicsWorld)
-        : gameWorld(inWorld), physicsWorld(std::move(inPhysicsWorld)), id(inId), position(0.f), scale(1.f), rotation() {
+    GameObject::GameObject(const uint64_t inId, GameWorld* inWorld)
+        : gameWorld(inWorld), id(inId), position(0.f), scale(1.f), rotation() {
         updateTransform();
     }
 
