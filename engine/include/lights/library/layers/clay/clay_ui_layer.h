@@ -17,10 +17,6 @@ namespace OZZ {
     struct FontSet;
 } // namespace OZZ
 
-namespace OZZ {
-    class GameWorld;
-}
-
 class ClayUILayer : public OZZ::scene::SceneLayer, public OZZ::Renderable {
 private:
     const std::string VertexShader = R"(
@@ -127,7 +123,7 @@ void main()
     };
 
 public:
-    explicit ClayUILayer(OZZ::GameWorld* inWorld, OZZ::InputSubsystem* inInput);
+    explicit ClayUILayer(OZZ::InputSubsystem* inInput);
 
     ~ClayUILayer() override;
 

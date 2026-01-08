@@ -8,11 +8,6 @@ namespace OZZ {
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
         resourceManager = inResourceManager;
-
-        const auto theWorld = GetWorld();
-        theWorld->Init({
-            .Gravity = {0.f, -20.f * game::constants::PhysicsUnitPerMeter},
-        });
     }
 
     void scene::Scene::Tick(float DeltaTime) {
@@ -25,7 +20,8 @@ namespace OZZ {
             for (const auto& Layer : activeLayers) {
                 Layer->PhysicsTick(physicsTickRate);
             }
-            GetWorld()->PhysicsTick(physicsTickRate);
+
+            // TODO: @paulm - Physics tick
             accumulator -= physicsTickRate;
         }
         for (const auto& Layer : activeLayers) {
@@ -46,15 +42,5 @@ namespace OZZ {
 
     scene::Scene::~Scene() {
         layerManager.reset();
-
-        if (world)
-            world->DeInit();
-        world.reset();
-    }
-
-    GameWorld* scene::Scene::GetWorld() {
-        if (!world)
-            world = std::make_shared<GameWorld>();
-        return world.get();
     }
 } // namespace OZZ
