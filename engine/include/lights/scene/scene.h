@@ -10,10 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include <lights/game/game_world.h>
 #include <lights/input/input_subsystem.h>
 #include <lights/rendering/renderable.h>
-#include <lights/scene/constants.h>
 #include <lights/scene/scene_layer.h>
 #include <lights/scene/scene_layer_manager.h>
 
@@ -45,8 +43,6 @@ namespace OZZ::scene {
 
         [[nodiscard]] std::vector<SceneLayer*> GetAllLayers() const { return layerManager->GetAllLayers(); }
 
-        GameWorld* GetWorld();
-
         [[nodiscard]] virtual OZZ::Renderable* GetSceneGraph() const = 0;
 
         [[nodiscard]] bool HasSceneEnded() const { return bEnded; }
@@ -59,7 +55,6 @@ namespace OZZ::scene {
         bool bEnded{false};
 
     private:
-        std::shared_ptr<GameWorld> world;
     };
 
 } // namespace OZZ::scene

@@ -12,7 +12,7 @@
 #include "lights/text/font_loader.h"
 #include "spdlog/spdlog.h"
 
-ClayUILayer::ClayUILayer(OZZ::GameWorld* inWorld, OZZ::InputSubsystem* inInput) : inputSubsystem(inInput) {}
+ClayUILayer::ClayUILayer(OZZ::InputSubsystem* inInput) : inputSubsystem(inInput) {}
 
 ClayUILayer::~ClayUILayer() {
     shutdownClay();

@@ -17,7 +17,6 @@ set(SOURCES
 
         src/game/game_object.cpp
         src/game/tiled_map.cpp
-        src/game/game_world.cpp
 
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
@@ -25,12 +24,6 @@ set(SOURCES
         src/library/layers/clay/components/clay_panel.cpp
         src/library/layers/clay/components/clay_canvas_panel.cpp
         src/library/layers/clay/clay_ui_layer.cpp
-        src/library/layers/world_2d_layer.cpp
-        src/library/objects/2D/sprite.cpp
-        src/library/objects/tilemap.cpp
-        src/library/objects/ui/input/button.cpp
-        src/library/objects/ui/input/text_input.cpp
-        src/library/objects/ui/text/text_label.cpp
 
         src/platform/window.cpp
         src/platform/GLFW/glfw_keys.cpp
