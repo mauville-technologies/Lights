@@ -67,6 +67,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(rtaudio_lib)
 
+FetchContent_Declare(
+        EnTT_lib
+        GIT_REPOSITORY https://github.com/skypjack/entt.git
+        GIT_TAG v3.16.0
+)
+
+FetchContent_MakeAvailable(EnTT_lib)
+
 add_subdirectory(asio)
 add_subdirectory(glad)
 add_subdirectory(clay)
@@ -89,6 +97,7 @@ set(LIBS
         freetype
         toml11
         rtaudio
+        EnTT::EnTT
 )
 
 set(THIRD_PARTY_COMPILE_DEFS "")
