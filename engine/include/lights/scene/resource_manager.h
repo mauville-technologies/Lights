@@ -8,6 +8,7 @@
 #include "lights/rendering/buffer.h"
 #include "lights/util/image.h"
 
+#include <condition_variable>
 #include <deque>
 #include <filesystem>
 #include <functional>

@@ -15,7 +15,7 @@ namespace OZZ::util {
     }
 
     RingBufferAllocation RingBuffer::Allocate(const size_t reqSize) {
-        spdlog::info("Space available: {}", SpaceAvailable());
+        spdlog::debug("Ringbuffer allocate: space available: {}", SpaceAvailable());
         if (SpaceAvailable() < reqSize) {
             return {};
         }
@@ -85,11 +85,7 @@ namespace OZZ::util {
 
         tail = pointer + (newTailIndex % Size());
 
-        // if (tail == head) {
-        //     // The whole buffer is available, let's just move the pointer back to the front
-        //     tail = head = pointer;
-        // }
-        spdlog::info("new available: {}", SpaceAvailable());
+        spdlog::debug("Ringbuffer Consume: new available: {}", SpaceAvailable());
         return true;
     }
 
