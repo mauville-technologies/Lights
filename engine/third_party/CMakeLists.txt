@@ -12,24 +12,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(spdlog)
 
-set(ENABLE_MONGODB_AWS_AUTH OFF)
-set(ENABLE_UNINSTALL OFF CACHE BOOL "Disable uninstall target for mongocxx" FORCE)
-FetchContent_Declare(
-        mongocxx
-        GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver.git
-        GIT_TAG r4.0.0
-)
-
-FetchContent_MakeAvailable(mongocxx)
-
-FetchContent_Declare(
-        cryptopp_cmake
-        GIT_REPOSITORY git@github.com:abdes/cryptopp-cmake.git
-        GIT_TAG CRYPTOPP_8_9_0
-)
-
-FetchContent_MakeAvailable(cryptopp_cmake)
-
 FetchContent_Declare(
         glmlib
         GIT_REPOSITORY git@github.com:g-truc/glm.git
@@ -75,29 +57,34 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(EnTT_lib)
 
+set(RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+        nlohmann_lib
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.12.0
+)
+
+FetchContent_MakeAvailable(nlohmann_lib)
+
 add_subdirectory(asio)
 add_subdirectory(glad)
 add_subdirectory(clay)
 add_subdirectory(stb)
-add_subdirectory(imgui)
-add_subdirectory(tileson)
 
 add_library(third_party INTERFACE)
 
 set(LIBS
         asio
         spdlog
-        mongocxx_static
-        cryptopp
         glad
         glm
         stb
         clay
-        tileson
         freetype
         toml11
         rtaudio
         EnTT::EnTT
+        nlohmann_json
 )
 
 set(THIRD_PARTY_COMPILE_DEFS "")
@@ -127,6 +114,7 @@ elseif (OZZ_WINDOWING_SYSTEM STREQUAL "SDL3")
 endif ()
 
 target_link_libraries(third_party INTERFACE ${LIBS})
+
 set_target_properties(third_party PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:third_party,INTERFACE_INCLUDE_DIRECTORIES>)
 target_compile_options(third_party INTERFACE "-w")
 target_compile_definitions(third_party INTERFACE ${THIRD_PARTY_COMPILE_DEFS})

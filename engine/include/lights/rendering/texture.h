@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <atomic>
 #include <lights/util/image.h>
 
 namespace OZZ {

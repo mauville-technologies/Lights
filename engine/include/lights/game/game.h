@@ -103,6 +103,7 @@ namespace OZZ::game {
             const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
             while (bRunning) {
+                auto currentTime = std::chrono::high_resolution_clock::now();
                 if (scene->HasSceneEnded()) {
                     bRunning = false;
                     continue;
@@ -110,9 +111,16 @@ namespace OZZ::game {
 
                 resourceManager->Tick();
                 {
-                    auto currentTime = std::chrono::high_resolution_clock::now();
                     // Tick and render all scenes
-                    scene->Tick(std::chrono::duration<float>(currentTime - lastTickTime).count());
+                    auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
+
+                    // in situations where the tick gets artificially slowed (Steamdeck pause, window move / resize), we
+                    // don't want to have a ridiculous DeltaTime gap.
+                    if (deltaTime > 1.f) {
+                        deltaTime = 0.f;
+                    }
+
+                    scene->Tick(deltaTime);
 
                     if (currentTime - lastRenderTime >= renderRate) {
                         drawScene(scene.get());
@@ -126,23 +134,9 @@ namespace OZZ::game {
                 if (input) {
                     input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
                 }
-
-                // TODO: Look at this https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
-
-                // Determine next wake time (next tick or next render) and sleep a bit to avoid busy-waiting.
-                const auto nextTickTime = lastTickTime + renderRate;
-                const auto nextRenderTime = lastRenderTime + renderRate;
-                const auto wakeTime = std::min(nextTickTime, nextRenderTime);
-
-                const auto now = std::chrono::high_resolution_clock::now();
-                if (wakeTime > now) {
-                    const auto sleepDuration = wakeTime - now;
-                    constexpr auto maxSleep = std::chrono::milliseconds(10); // cap to stay responsive
-                    std::this_thread::sleep_for(
-                        std::min(std::chrono::duration_cast<std::chrono::milliseconds>(sleepDuration), maxSleep));
-                } else {
-                    std::this_thread::yield();
-                }
+                auto frameTime = std::chrono::high_resolution_clock::now();
+                const double sleepsSec = 1.0 / params.Config.FPS - (frameTime - currentTime).count() / 1e9;
+                preciseSleep(sleepsSec);
             }
         }
 
@@ -222,6 +216,38 @@ namespace OZZ::game {
             renderer->ExecuteSceneGraph(scene->GetSceneGraph());
             if (scene == this->scene.get()) {
                 window->SwapBuffers();
+            }
+        }
+
+        void preciseSleep(double seconds) {
+            // ref: https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
+            using namespace std;
+            using namespace std::chrono;
+
+            static double estimate = 5e-3;
+            static double mean = 5e-3;
+            static double m2 = 0;
+            static int64_t count = 1;
+
+            while (seconds > estimate) {
+                auto start = high_resolution_clock::now();
+                this_thread::sleep_for(milliseconds(1));
+                auto end = high_resolution_clock::now();
+
+                double observed = (end - start).count() / 1e9;
+                seconds -= observed;
+
+                ++count;
+                const double delta = observed - mean;
+                mean += delta / count;
+                m2 += delta * (observed - mean);
+                const double stddev = sqrt(m2 / (count - 1));
+                estimate = mean + stddev;
+            }
+
+            // spin lock
+            const auto start = high_resolution_clock::now();
+            while ((high_resolution_clock::now() - start).count() / 1e9 < seconds) {
             }
         }
 

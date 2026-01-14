@@ -4,6 +4,8 @@
 
 #include "lights/scene/scene_layer_manager.h"
 
+#include <algorithm>
+
 namespace OZZ::scene {
     SceneLayerManager::~SceneLayerManager() {
         activeLayers.clear();

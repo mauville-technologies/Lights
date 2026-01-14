@@ -105,7 +105,7 @@ namespace OZZ {
 
     void Texture::Bind() {
         if (auto loaded = IsLoaded(); !loaded) {
-            spdlog::error("Attempted to bind unloaded texture {}", textureId);
+            spdlog::debug("Attempted to bind unloaded texture {}", textureId);
             return;
         }
         glBindTexture(GL_TEXTURE_2D, textureId);
