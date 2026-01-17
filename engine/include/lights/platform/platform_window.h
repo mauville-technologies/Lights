@@ -38,7 +38,6 @@ namespace OZZ::platform {
     public:
         virtual ~IPlatformWindow() = default;
         virtual void CreateWindow(const std::string& title, int width, int height) = 0;
-        virtual void CreateContextWindow(IPlatformWindow* parentWindow) = 0;
         virtual void* GetProcAddress() = 0;
         virtual void InitInput(WindowCallbacks&& callbacks) = 0;
         virtual void Poll() = 0;

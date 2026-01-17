@@ -14,9 +14,9 @@ namespace OZZ::platform::glfw {
     public:
         ~GLFWWindow() override;
 
-        void CreateWindow(const std::string &title, int width, int height) override;
-        void * GetProcAddress() override;
-        void InitInput(WindowCallbacks &&inCallbacks) override;
+        void CreateWindow(const std::string& title, int width, int height) override;
+        void* GetProcAddress() override;
+        void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;
         void MakeContextCurrent() override;
         void Present() override;
@@ -24,15 +24,18 @@ namespace OZZ::platform::glfw {
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
         void SetTextMode(bool bIsTextMode) override;
+        [[nodiscard]] bool IsValid() const override;
+
     private:
         void addController(int index);
         void removeController(int index);
-        
+
     private:
-        GLFWwindow* window { nullptr };
+        GLFWwindow* window{nullptr};
 
         WindowCallbacks callbacks;
 
+        bool bIsValid{false};
     };
-} // OZZ
+} // namespace OZZ::platform::glfw
 #endif

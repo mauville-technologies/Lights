@@ -49,36 +49,6 @@ namespace OZZ::platform::SDL3 {
         bIsValid = true;
     }
 
-    void SDLWindow::CreateContextWindow(IPlatformWindow* parentWindow) {
-        if (!parentWindow) {
-            spdlog::error("Must provide a valid parent window.");
-            return;
-        }
-        // ensure the parent window is an SDL Window
-        const auto sdlWindow = dynamic_cast<SDLWindow*>(parentWindow);
-        if (!sdlWindow) {
-            spdlog::error("Not SDL window");
-            return;
-        }
-        sdlWindow->MakeContextCurrent();
-
-        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-        window = SDL_CreateWindow("", 0, 0, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
-        if (!window) {
-            spdlog::error("Failed to create window: {}", SDL_GetError());
-            return;
-        }
-
-        glContext = SDL_GL_CreateContext(window);
-        if (!glContext) {
-            spdlog::error("Failed to create OpenGL context: {}", SDL_GetError());
-            return;
-        }
-        sdlWindow->MakeContextCurrent();
-
-        bIsValid = true;
-    }
-
     void* SDLWindow::GetProcAddress() {
         return reinterpret_cast<void*>(SDL_GL_GetProcAddress);
     }

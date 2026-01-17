@@ -5,8 +5,8 @@
 #include "glfw_window.h"
 
 #ifdef OZZ_GLFW
-#include <spdlog/spdlog.h>
 #include "glfw_keys.h"
+#include <spdlog/spdlog.h>
 
 namespace OZZ::platform::glfw {
     GLFWWindow::~GLFWWindow() {
@@ -14,7 +14,7 @@ namespace OZZ::platform::glfw {
         glfwTerminate();
     }
 
-    void GLFWWindow::CreateWindow(const std::string &title, int width, int height) {
+    void GLFWWindow::CreateWindow(const std::string& title, int width, int height) {
         if (!glfwInit()) {
             spdlog::error("Failed to initialize GLFW");
             return;
@@ -29,55 +29,57 @@ namespace OZZ::platform::glfw {
             spdlog::error("Failed to create window");
             return;
         }
+
+        bIsValid = true;
     }
 
-    void *GLFWWindow::GetProcAddress() {
-        return reinterpret_cast<void *>(glfwGetProcAddress);
+    void* GLFWWindow::GetProcAddress() {
+        return reinterpret_cast<void*>(glfwGetProcAddress);
     }
 
-    void GLFWWindow::InitInput(WindowCallbacks &&inCallbacks) {
+    void GLFWWindow::InitInput(WindowCallbacks&& inCallbacks) {
         callbacks = std::move(inCallbacks);
         glfwSetWindowUserPointer(window, this);
 
-        glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height) {
-            if (const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window)); win->callbacks.
-                OnWindowResized) {
+        glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+                win->callbacks.OnWindowResized) {
                 win->callbacks.OnWindowResized({width, height});
             }
         });
 
-        glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
-            if (const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window)); win->callbacks.
-                OnKeyPressed) {
+        glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+                win->callbacks.OnKeyPressed) {
                 const GLFWKeyState glfwKeyState(action);
                 win->callbacks.OnKeyPressed({EDeviceID::Keyboard, GLFWKey(key)}, glfwKeyState);
             }
         });
 
         glfwSetJoystickCallback([](int jid, int event) {
-            const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
             if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
                 win->addController(jid);
             } else if (event == GLFW_DISCONNECTED) {
                 win->removeController(jid);
             }
         });
-        glfwSetCharCallback(window, [](GLFWwindow *window, unsigned int codepoint) {
-            if (const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->
-                callbacks.OnTextEvent) {
+        glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int codepoint) {
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+                win->callbacks.OnTextEvent) {
                 win->callbacks.OnTextEvent(codepoint);
             }
         });
-        glfwSetMouseButtonCallback(window, [](GLFWwindow *window, int button, int action, int mods) {
-            if (const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->
-                callbacks.OnKeyPressed) {
+        glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+                win->callbacks.OnKeyPressed) {
                 win->callbacks.OnKeyPressed({EDeviceID::Mouse, static_cast<EMouseButton>(button)},
                                             GLFWKeyState(action));
             }
         });
-        glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xpos, double ypos) {
-            if (const auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(glfwGetCurrentContext())); win->
-                callbacks.OnMouseMove) {
+        glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+                win->callbacks.OnMouseMove) {
                 win->callbacks.OnMouseMove({static_cast<float>(xpos), static_cast<float>(ypos)});
             }
         });
@@ -101,12 +103,18 @@ namespace OZZ::platform::glfw {
         // Get all key states from glfw
         for (int i = 0; i < GLFW_KEY_LAST; ++i) {
             const auto keyIndex = static_cast<int>(GLFWKey(i));
-            if (keyIndex == +EKey::KeyCount) continue;
+            if (keyIndex == +EKey::KeyCount)
+                continue;
             keyStates[keyIndex] = GLFWKeyState(glfwGetKey(window, i));
         }
 
+        for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; ++i) {
+            const auto buttonIndex = static_cast<int>(static_cast<EMouseButton>(i));
+            mouseButtonStates[buttonIndex] = GLFWKeyState(glfwGetMouseButton(window, i));
+        }
+
         // get all controller states
-        for (auto &[index, controller]: controllerState) {
+        for (auto& [index, controller] : controllerState) {
             if (glfwJoystickIsGamepad(+index)) {
                 GLFWgamepadstate gamepadState;
                 if (glfwGetGamepadState(+index, &gamepadState)) {
@@ -142,11 +150,10 @@ namespace OZZ::platform::glfw {
         // There's a bug on mac where for some reason the window needs to be moved
         // or resized in order to properly draw the scene. Doing this here
         // will fix the issue on first load on mac. It's ugly but it works.
-        if (!firstSwap)
-        {
+        if (!firstSwap) {
             firstSwap = true;
             auto size = GetSize();
-            glfwSetWindowSize(window, size.x+1, size.y+1);
+            glfwSetWindowSize(window, size.x + 1, size.y + 1);
             glfwSetWindowSize(window, size.x, size.y);
         }
 #endif
@@ -164,8 +171,8 @@ namespace OZZ::platform::glfw {
             // Only set size if we're in windowed mode
             glfwSetWindowSize(window, width, height);
             // Center the window on the screen
-            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             int xpos = (mode->width - width) / 2;
             int ypos = (mode->height - height) / 2;
             glfwSetWindowPos(window, xpos, ypos);
@@ -174,8 +181,8 @@ namespace OZZ::platform::glfw {
 
     void GLFWWindow::SetFullscreen(bool fullscreen) {
         if (fullscreen) {
-            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
             // Store the current window position and size before going fullscreen
             int xpos, ypos, width, height;
@@ -197,7 +204,10 @@ namespace OZZ::platform::glfw {
         }
     }
 
-    void GLFWWindow::SetTextMode(bool bIsTextMode) {
+    void GLFWWindow::SetTextMode(bool bIsTextMode) {}
+
+    bool GLFWWindow::IsValid() const {
+        return bIsValid;
     }
 
     void GLFWWindow::addController(int index) {
@@ -216,5 +226,5 @@ namespace OZZ::platform::glfw {
             }
         }
     }
-} // OZZ
+} // namespace OZZ::platform::glfw
 #endif

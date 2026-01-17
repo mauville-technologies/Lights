@@ -13,6 +13,7 @@ namespace OZZ::collision {
         bool bCollided;
         std::vector<glm::vec2> ContactPoints;
         glm::vec2 CollisionNormal;
+        float PenetrationDepth{0.f};
 
         static OzzCollisionResult NoCollision() { return {.bCollided = false, .ContactPoints = {}}; }
     };

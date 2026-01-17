@@ -13,7 +13,6 @@ namespace OZZ::platform::SDL3 {
     class SDLWindow final : public IPlatformWindow {
     public:
         void CreateWindow(const std::string& title, int width, int height) override;
-        void CreateContextWindow(IPlatformWindow* parentWindow) override;
         void* GetProcAddress() override;
         void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;

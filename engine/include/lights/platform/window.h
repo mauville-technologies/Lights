@@ -40,13 +40,4 @@ namespace OZZ {
 
         inline static bool bGLADInitialized{false};
     };
-
-    class ContextWindow {
-    public:
-        explicit ContextWindow(const Window* parentContext);
-        void MakeContextCurrent();
-
-    private:
-        std::unique_ptr<platform::IPlatformWindow> window;
-    };
 } // namespace OZZ

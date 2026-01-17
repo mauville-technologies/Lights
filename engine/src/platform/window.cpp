@@ -76,24 +76,4 @@ namespace OZZ {
         }
     }
 
-    ContextWindow::ContextWindow(const Window* parentContext) {
-        if (!parentContext) {
-            spdlog::error("Invalid parent context provided to context window");
-            return;
-        }
-#ifdef OZZ_GLFW
-        window = std::make_unique<platform::glfw::GLFWWindow>();
-#endif
-
-#ifdef OZZ_SDL3
-        window = std::make_unique<platform::SDL3::SDLWindow>();
-#endif
-
-        window->CreateContextWindow(parentContext->window.get());
-    }
-
-    void ContextWindow::MakeContextCurrent() {
-        if (window)
-            window->MakeContextCurrent();
-    }
 } // namespace OZZ
