@@ -1,7 +1,7 @@
 FetchContent_Declare(
         samplerate_lib
         GIT_REPOSITORY https://github.com/libsndfile/libsamplerate
-        GIT_TAG 0.2.2
+        GIT_TAG master
 )
 FetchContent_MakeAvailable(samplerate_lib)
 
