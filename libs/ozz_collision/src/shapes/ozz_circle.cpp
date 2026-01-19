@@ -24,6 +24,7 @@ namespace OZZ::collision::shapes {
                 .PenetrationDepth = penetrationDepth,
             };
         }
+        return OzzCollisionResult::NoCollision();
     }
 
     OzzCollisionResult OzzCircle::IsColliding(const OzzCircle& other) const {
