@@ -14,11 +14,7 @@ namespace OZZ::collision::shapes {
     struct OzzPoint {
         glm::vec2 Position;
 
-        glm::vec2 Scale() const { return {1.f, 1.f}; }
-
-        void SetScale(glm::vec2 scale) {
-            // no-op
-        }
+        glm::vec2 Scale;
 
         // Point on Point
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzPoint& other) const;

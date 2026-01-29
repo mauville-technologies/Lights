@@ -105,9 +105,10 @@ namespace OZZ::collision::shapes {
     }
 
     OzzRectangle::Extents OzzRectangle::GetExtents() const {
-        return {.Left = Position.x - Size.x / 2.f,
-                .Right = Position.x + Size.x / 2.f,
-                .Up = Position.y + Size.y / 2.f,
-                .Down = Position.y - Size.y / 2.f};
+        const glm::vec2 scaledSize = Size * Scale;
+        return {.Left = Position.x - scaledSize.x / 2.f,
+                .Right = Position.x + scaledSize.x / 2.f,
+                .Up = Position.y + scaledSize.y / 2.f,
+                .Down = Position.y - scaledSize.y / 2.f};
     }
 } // namespace OZZ::collision::shapes

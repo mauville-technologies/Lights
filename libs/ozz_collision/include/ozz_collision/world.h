@@ -49,7 +49,7 @@ namespace OZZ {
         glm::vec2 GetScale() const {
             return std::visit(
                 [](auto& shape) {
-                    return shape.Scale();
+                    return shape.Scale;
                 },
                 Data);
         }

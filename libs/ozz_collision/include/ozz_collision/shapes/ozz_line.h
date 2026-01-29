@@ -15,11 +15,7 @@ namespace OZZ::collision::shapes {
         glm::vec2 Position;
         glm::vec2 End;
 
-        glm::vec2 Scale() const { return {1.f, 1.f}; }
-
-        void SetScale(const glm::vec2 scale) {
-            // no op
-        }
+        glm::vec2 Scale;
 
         // Line on Line
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
