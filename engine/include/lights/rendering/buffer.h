@@ -81,4 +81,10 @@ namespace OZZ {
         std::unique_ptr<util::RingBuffer> ringBuffer;
         std::deque<InFlightRegion> inFlightRegions;
     };
+
+    class StorageBuffer {
+    public:
+    private:
+        std::unique_ptr<Buffer> buffer;
+    };
 } // namespace OZZ

@@ -7,7 +7,7 @@
 namespace OZZ {
     Buffer::Buffer(uint32_t bufferType) : type(bufferType) {
         // create the buffer
-        glGenBuffers(1, &vbo);
+        glCreateBuffers(1, &vbo);
     }
 
     Buffer::~Buffer() {
@@ -16,8 +16,7 @@ namespace OZZ {
     }
 
     void Buffer::UploadData(const void* data, size_t size) {
-        Bind();
-        glBufferData(type, size, data, GL_STATIC_DRAW);
+        glNamedBufferData(vbo, size, data, GL_STATIC_DRAW);
     }
 
     void Buffer::Bind() const {
@@ -59,13 +58,11 @@ namespace OZZ {
     }
 
     GPUStagingBuffer::GPUStagingBuffer(size_t numBytes) : size(numBytes) {
-        glGenBuffers(1, &pbo);
-        Bind();
-        glBufferStorage(
-            GL_PIXEL_UNPACK_BUFFER, numBytes, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+        glCreateBuffers(1, &pbo);
+        glNamedBufferStorage(pbo, numBytes, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-        mappedPointer = static_cast<std::byte*>(glMapBufferRange(
-            GL_PIXEL_UNPACK_BUFFER, 0, numBytes, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
+        mappedPointer = static_cast<std::byte*>(
+            glMapNamedBufferRange(pbo, 0, numBytes, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
         Unbind();
 
         assert(mappedPointer && "mapped pointer is null -- failed to generate gpu pbo buffer");
@@ -73,10 +70,8 @@ namespace OZZ {
     }
 
     GPUStagingBuffer::~GPUStagingBuffer() {
-        Bind();
-        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        glUnmapNamedBuffer(pbo);
         glDeleteBuffers(1, &pbo);
-        Unbind();
 
         while (!inFlightRegions.empty()) {
             const auto& inFlight = inFlightRegions.front();
