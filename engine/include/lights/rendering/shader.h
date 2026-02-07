@@ -7,10 +7,23 @@
 #include <glm/glm.hpp>
 
 namespace OZZ {
+    struct ShaderFileParams {
+        std::filesystem::path Vertex;
+        std::filesystem::path Fragment;
+        std::filesystem::path Geometry;
+    };
+
+    struct ShaderSourceParams {
+        std::string Vertex;
+        std::string Fragment;
+        std::string Geometry;
+    };
+
     class Shader {
     public:
         using path = std::filesystem::path;
-        Shader(const std::string& vertex, const std::string& fragment, bool bIsSource = false);
+        Shader(ShaderFileParams&& shaderFiles);
+        Shader(const ShaderSourceParams& shaderSource);
         ~Shader();
 
         void SetInteger(const std::string& name, int value);
@@ -22,7 +35,8 @@ namespace OZZ {
         void Bind();
 
     private:
-        void compile(const std::string& vertexSource, const std::string& fragmentSource);
+        void
+        compile(const std::string& vertexSource, const std::string& fragmentSource, const std::string& geometrySource);
         int getUniformLocation(const std::string& name) const;
 
     private:

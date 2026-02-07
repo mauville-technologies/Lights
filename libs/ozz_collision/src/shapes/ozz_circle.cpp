@@ -9,10 +9,6 @@
 #include "ozz_collision/shapes/ozz_rectangle.h"
 
 namespace OZZ::collision::shapes {
-    // Helper to compute scaled radius (use max of scale components for uniform circle)
-    static float GetScaledRadius(float radius, const glm::vec2& scale) {
-        return radius * glm::max(scale.x, scale.y);
-    }
 
     OzzCollisionResult OzzCircle::IsColliding(const OzzPoint& other) const {
         const float scaledRadius = GetScaledRadius(Radius, Scale);

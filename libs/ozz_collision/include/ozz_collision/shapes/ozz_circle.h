@@ -29,5 +29,10 @@ namespace OZZ::collision::shapes {
 
         // Circle on Line collision
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
+
+        // Helper to compute scaled radius (use max of scale components for uniform circle)
+        static float GetScaledRadius(float radius, const glm::vec2& scale) {
+            return radius * glm::max(scale.x, scale.y);
+        }
     };
 } // namespace OZZ::collision::shapes

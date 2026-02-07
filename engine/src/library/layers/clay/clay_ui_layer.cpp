@@ -156,8 +156,14 @@ void ClayUILayer::reinitializeClay() {
 }
 
 void ClayUILayer::buildShaders() {
-    uiShader = std::make_shared<OZZ::Shader>(VertexShader, FragmentShader, true);
-    textShader = std::make_shared<OZZ::Shader>(VertexShader, FontFragmentShader, true);
+    uiShader = std::make_shared<OZZ::Shader>(OZZ::ShaderSourceParams{
+        .Vertex = VertexShader,
+        .Fragment = FragmentShader,
+    });
+    textShader = std::make_shared<OZZ::Shader>(OZZ::ShaderSourceParams{
+        .Vertex = VertexShader,
+        .Fragment = FontFragmentShader,
+    });
 
     const auto emptyImage = std::make_shared<OZZ::Image>();
     emptyImage->FillColor(glm::vec4(0.f, 0.f, 0.f, 0.f), glm::vec2(1.f, 1.f));

@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "buffer.h"
 #include "shader.h"
 #include "texture.h"
+
 #include <glad/glad.h>
 #include <memory>
 #include <string>
@@ -13,12 +15,6 @@
 #include <variant>
 
 namespace OZZ {
-    struct TextureMapping {
-        std::string SlotName;
-        int SlotNumber;
-        std::shared_ptr<Texture> TextureResource;
-    };
-
     enum class DrawMode { Triangles, Lines, LineLoop, Points };
 
     inline GLenum ToGLEnum(const DrawMode& mode) {
@@ -37,6 +33,17 @@ namespace OZZ {
 
     class Material {
     public:
+        struct TextureMapping {
+            std::string SlotName;
+            int SlotNumber;
+            std::shared_ptr<Texture> TextureResource;
+        };
+
+        struct StorageBufferBindings {
+            uint16_t BindingPoint{std::numeric_limits<uint16_t>::max()};
+            StorageBufferBase* Buffer{nullptr};
+        };
+
         struct UniformSetting {
             std::string Name;
             std::variant<int, glm::vec2, glm::vec3, glm::vec4, glm::mat4> Value;
@@ -63,6 +70,8 @@ namespace OZZ {
         void RemoveTextureMapping(const std::string& slotName);
         void AddUniformSetting(const UniformSetting& setting);
         void RemoveUniformSetting(const std::string& name);
+        void AddStorageBufferBinding(uint16_t bindingPoint, StorageBufferBase* buffer);
+        void RemoveStorageBufferBinding(uint16_t bindingPoint);
 
         [[nodiscard]] const std::vector<TextureMapping>& GetTextureMappings() const { return textureMappings; }
 
@@ -74,6 +83,7 @@ namespace OZZ {
         std::shared_ptr<Shader> shader;
         std::vector<TextureMapping> textureMappings;
         std::vector<UniformSetting> uniformSettings;
+        std::vector<StorageBufferBindings> storageBufferBindings;
 
         MaterialSettings settings;
     };

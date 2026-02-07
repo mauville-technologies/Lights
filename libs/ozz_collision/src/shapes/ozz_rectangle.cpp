@@ -104,8 +104,12 @@ namespace OZZ::collision::shapes {
         return other.IsColliding(*this);
     }
 
+    glm::vec2 OzzRectangle::GetScaledSize() const {
+        return Size * Scale;
+    }
+
     OzzRectangle::Extents OzzRectangle::GetExtents() const {
-        const glm::vec2 scaledSize = Size * Scale;
+        const glm::vec2 scaledSize = GetScaledSize();
         return {.Left = Position.x - scaledSize.x / 2.f,
                 .Right = Position.x + scaledSize.x / 2.f,
                 .Up = Position.y + scaledSize.y / 2.f,

@@ -36,6 +36,8 @@ namespace OZZ::collision::shapes {
         // Rectange on Line
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
 
+        [[nodiscard]] glm::vec2 GetScaledSize() const;
+
         [[nodiscard]] Extents GetExtents() const;
     };
 } // namespace OZZ::collision::shapes

@@ -28,5 +28,17 @@ namespace OZZ::collision::shapes {
 
         // Point on Rectangle
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzRectangle& other) const;
+
+        // Helper to compute scaled endpoints from center
+        static void GetScaledEndpoints(const glm::vec2& position,
+                                       const glm::vec2& end,
+                                       const glm::vec2& scale,
+                                       glm::vec2& outStart,
+                                       glm::vec2& outEnd) {
+            const glm::vec2 center = (position + end) * 0.5f;
+            const glm::vec2 halfExtent = (end - position) * 0.5f * scale;
+            outStart = center - halfExtent;
+            outEnd = center + halfExtent;
+        }
     };
 } // namespace OZZ::collision::shapes

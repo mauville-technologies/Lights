@@ -46,6 +46,12 @@ namespace OZZ {
                 shader->SetMat4(Name, std::get<glm::mat4>(Value));
             }
         }
+
+        for (const auto& storageBuffer : storageBufferBindings) {
+            if (storageBuffer.Buffer) {
+                storageBuffer.Buffer->Bind(storageBuffer.BindingPoint);
+            }
+        }
     }
 
     void Material::AddTextureMapping(const TextureMapping& mapping) {
@@ -88,5 +94,27 @@ namespace OZZ {
                                                  return setting.Name == name;
                                              }),
                               uniformSettings.end());
+    }
+
+    void Material::AddStorageBufferBinding(uint16_t bindingPoint, StorageBufferBase* buffer) {
+        // Check if a binding already exists at this point and update it
+        auto it = std::find_if(storageBufferBindings.begin(),
+                               storageBufferBindings.end(),
+                               [bindingPoint](const StorageBufferBindings& binding) {
+                                   return binding.BindingPoint == bindingPoint;
+                               });
+
+        if (it != storageBufferBindings.end()) {
+            it->Buffer = buffer;
+            return;
+        }
+
+        storageBufferBindings.push_back({bindingPoint, buffer});
+    }
+
+    void Material::RemoveStorageBufferBinding(uint16_t bindingPoint) {
+        std::erase_if(storageBufferBindings, [bindingPoint](const StorageBufferBindings& binding) {
+            return binding.BindingPoint == bindingPoint;
+        });
     }
 } // namespace OZZ

@@ -6,11 +6,12 @@
 #include "lights/util/ring_buffer.h"
 #include "vertex.h"
 
+#include <array>
 #include <deque>
 #include <functional>
 #include <memory>
 #include <span>
-#include <vector>
+#include <spdlog/spdlog.h>
 
 namespace OZZ {
 
@@ -19,12 +20,17 @@ namespace OZZ {
         Buffer(uint32_t bufferType);
         ~Buffer();
 
-        void UploadData(const void* data, size_t size);
+        void UploadData(const void* data, int64_t offset, int64_t uploadSize, bool replace = false);
         void Bind() const;
+
+        [[nodiscard]] size_t GetSize() const { return size; }
+
+        [[nodiscard]] uint32_t GetHandle() const { return vbo; }
 
     private:
         uint32_t vbo;
         uint32_t type;
+        size_t size;
     };
 
     class IndexVertexBuffer {
@@ -82,8 +88,41 @@ namespace OZZ {
         std::deque<InFlightRegion> inFlightRegions;
     };
 
-    class StorageBuffer {
+    class StorageBufferBase {
     public:
+        virtual ~StorageBufferBase() = default;
+        virtual void Bind(uint32_t bindingPoint) const = 0;
+    };
+
+    template <typename T, size_t ElementCount>
+    class StorageBuffer : public StorageBufferBase {
+    public:
+        explicit StorageBuffer() : buffer(std::make_unique<Buffer>(GL_SHADER_STORAGE_BUFFER)) {
+            buffer->UploadData(nullptr, 0, BufferSize, true);
+        }
+
+        ~StorageBuffer() override { buffer.reset(); };
+
+        void Bind(uint32_t bindingPoint) const override {
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, buffer->GetHandle());
+        }
+
+        bool UploadData(const std::array<T, ElementCount>& data) { return UploadData(data.data(), 0, ElementCount); }
+
+        bool UploadData(const T* data, int64_t offset, const size_t numElementsToUpload) {
+            if (numElementsToUpload + offset / sizeof(T) > NumElements) {
+                spdlog::error("Cannot upload {} elements to storage buffer of size {} elements",
+                              numElementsToUpload,
+                              NumElements);
+                return false;
+            }
+            buffer->UploadData(static_cast<const void*>(data), offset, sizeof(T) * numElementsToUpload, false);
+            return true;
+        };
+
+        constexpr static size_t BufferSize = sizeof(T) * ElementCount;
+        constexpr static size_t NumElements = ElementCount;
+
     private:
         std::unique_ptr<Buffer> buffer;
     };

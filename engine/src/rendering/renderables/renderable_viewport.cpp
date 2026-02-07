@@ -45,7 +45,10 @@ namespace OZZ {
         auto indices = std::array<unsigned int, 6>{0, 1, 3, 2, 3, 1};
         quadBuffer->UploadData(OZZ::quadVertices, OZZ::quadIndices);
 
-        const auto shader = std::make_shared<Shader>(VertexShader, FragmentShader, true);
+        const auto shader = std::make_shared<OZZ::Shader>(OZZ::ShaderSourceParams{
+            .Vertex = VertexShader,
+            .Fragment = FragmentShader,
+        });
         const auto material = std::make_shared<Material>();
         material->SetShader(shader);
         sceneObject = {.Transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.25)), .Mesh = quadBuffer, .Mat = material};

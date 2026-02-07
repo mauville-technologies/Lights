@@ -15,8 +15,24 @@ namespace OZZ {
         glDeleteBuffers(1, &vbo);
     }
 
-    void Buffer::UploadData(const void* data, size_t size) {
-        glNamedBufferData(vbo, size, data, GL_STATIC_DRAW);
+    void Buffer::UploadData(const void* data, int64_t offset, int64_t uploadSize, bool replace) {
+        if (replace) {
+            glDeleteBuffers(1, &vbo);
+            vbo = 0;
+            glCreateBuffers(1, &vbo);
+            glNamedBufferStorage(vbo, uploadSize, data, GL_DYNAMIC_STORAGE_BIT);
+            size = uploadSize;
+        } else {
+            if (offset + uploadSize > size) {
+                spdlog::error("Trying to write outside of buffer bounds! Offset: {}, UploadSize: {}, BufferSize: {}",
+                              offset,
+                              uploadSize,
+                              size);
+                return;
+            }
+        }
+
+        glNamedBufferSubData(vbo, offset, uploadSize, data);
     }
 
     void Buffer::Bind() const {
@@ -27,11 +43,6 @@ namespace OZZ {
         glGenVertexArrays(1, &vao);
         vertexBuffer = std::make_unique<Buffer>(GL_ARRAY_BUFFER);
         indexBuffer = std::make_unique<Buffer>(GL_ELEMENT_ARRAY_BUFFER);
-
-        // bind the vao
-        Bind();
-        Vertex::BindAttribPointers();
-        Unbind();
     }
 
     IndexVertexBuffer::~IndexVertexBuffer() {
@@ -42,8 +53,11 @@ namespace OZZ {
     }
 
     void IndexVertexBuffer::UploadData(std::span<const Vertex> vertices, std::span<const uint32_t> indices) {
-        vertexBuffer->UploadData(vertices.data(), vertices.size() * sizeof(Vertex));
-        indexBuffer->UploadData(indices.data(), indices.size() * sizeof(uint32_t));
+        vertexBuffer->UploadData(vertices.data(), 0, vertices.size() * sizeof(Vertex), true);
+        indexBuffer->UploadData(indices.data(), 0, indices.size() * sizeof(uint32_t), true);
+        Bind();
+        Vertex::BindAttribPointers();
+        Unbind();
         indexCount = static_cast<int>(indices.size());
     }
 

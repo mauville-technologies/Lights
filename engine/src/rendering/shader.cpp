@@ -10,28 +10,33 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace OZZ {
-    Shader::Shader(const std::string& vertex, const std::string& fragment, bool bIsSource) : shaderId(0) {
-        if (!bIsSource) {
-            // load files
-            std::ifstream vertexFile(vertex);
-            std::ifstream fragmentFile(fragment);
+    Shader::Shader(ShaderFileParams&& shaderFiles) : shaderId(GL_INVALID_INDEX) {
+        // load files
+        std::ifstream vertexFile(shaderFiles.Vertex);
+        std::ifstream fragmentFile(shaderFiles.Fragment);
 
-            if (!vertexFile.is_open()) {
-                throw std::runtime_error("Failed to open vertex shader file");
-            }
-
-            if (!fragmentFile.is_open()) {
-                throw std::runtime_error("Failed to open fragment shader file");
-            }
-
-            std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
-            std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)),
-                                       std::istreambuf_iterator<char>());
-
-            compile(vertexSource, fragmentSource);
-        } else {
-            compile(vertex, fragment);
+        if (!vertexFile.is_open()) {
+            throw std::runtime_error("Failed to open vertex shader file");
         }
+
+        if (!fragmentFile.is_open()) {
+            throw std::runtime_error("Failed to open fragment shader file");
+        }
+
+        std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
+        std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)), std::istreambuf_iterator<char>());
+        std::string geometrySource;
+
+        if (!shaderFiles.Geometry.empty()) {
+            std::ifstream geometryShader(shaderFiles.Geometry);
+            geometrySource = std::string((std::istreambuf_iterator(geometryShader)), std::istreambuf_iterator<char>());
+        }
+
+        compile(vertexSource, fragmentSource, geometrySource);
+    }
+
+    Shader::Shader(const ShaderSourceParams& shaderSource) {
+        compile(shaderSource.Vertex, shaderSource.Fragment, shaderSource.Geometry);
     }
 
     Shader::~Shader() {
@@ -63,8 +68,10 @@ namespace OZZ {
         glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    void Shader::compile(const std::string& vertexSource, const std::string& fragmentSource) {
-        uint32_t vertex, fragment;
+    void Shader::compile(const std::string& vertexSource,
+                         const std::string& fragmentSource,
+                         const std::string& geometrySource) {
+        uint32_t vertex, fragment, geometry;
 
         int success;
         char infoLog[512];
@@ -86,14 +93,31 @@ namespace OZZ {
         glShaderSource(fragment, 1, &fShaderCode, nullptr);
         glCompileShader(fragment);
         glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-        if (!fragment) {
+        if (!success) {
             glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
             spdlog::error("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n{}", infoLog);
+        }
+
+        // Geometry shader
+        bool bHasGeometry = !geometrySource.empty();
+        if (bHasGeometry) {
+            const char* gShaderCode = geometrySource.c_str();
+            geometry = glCreateShader(GL_GEOMETRY_SHADER);
+            glShaderSource(geometry, 1, &gShaderCode, nullptr);
+            glCompileShader(geometry);
+            glGetShaderiv(geometry, GL_COMPILE_STATUS, &success);
+            if (!success) {
+                glGetShaderInfoLog(geometry, 512, nullptr, infoLog);
+                spdlog::error("ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n{}", infoLog);
+            }
         }
 
         shaderId = glCreateProgram();
         glAttachShader(shaderId, vertex);
         glAttachShader(shaderId, fragment);
+        if (bHasGeometry) {
+            glAttachShader(shaderId, geometry);
+        }
         glLinkProgram(shaderId);
 
         glGetProgramiv(shaderId, GL_LINK_STATUS, &success);
