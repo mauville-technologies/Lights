@@ -66,7 +66,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(nlohmann_lib)
 
-add_subdirectory(asio)
+#add_subdirectory(asio)
 add_subdirectory(glad)
 add_subdirectory(clay)
 add_subdirectory(stb)
@@ -74,7 +74,7 @@ add_subdirectory(stb)
 add_library(third_party INTERFACE)
 
 set(LIBS
-        asio
+        #        asio
         spdlog
         glad
         glm

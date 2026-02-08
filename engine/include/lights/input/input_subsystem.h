@@ -8,7 +8,6 @@
 #include <glm/glm.hpp>
 #include <lights/input/input_keys.h>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace OZZ {

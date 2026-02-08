@@ -15,8 +15,6 @@ set(SOURCES
         src/audio/audio_subsystem.cpp
         src/audio/audio_graph.cpp
 
-        src/game/game_object.cpp
-
         src/input/input_keys.cpp
         src/input/input_subsystem.cpp
 
