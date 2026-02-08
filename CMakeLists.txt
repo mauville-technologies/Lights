@@ -37,5 +37,3 @@ add_subdirectory(libs/ozz_collision)
 add_subdirectory(libs/ozz_typegen)
 add_subdirectory(libs/ozz_audio)
 add_subdirectory(engine)
-
-add_subdirectory(cli_tool)
