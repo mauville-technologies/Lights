@@ -1,4 +1,4 @@
-# Engine Structure
+# Engine Structure Reference
 
 The Lights engine is organized into two main architectural layers to provide both flexibility for low-level
 experimentation and convenience for rapid application development.
@@ -210,3 +210,23 @@ Old includes automatically map to the new structure:
 - `lights/util/*` → `lights/core/util/*`
 - etc.
 
+## In-Repo Libraries (`lights/libs/`)
+
+The engine repository also contains library modules used by the engine and related tools:
+
+- `ozz_binarypacking` - binary packet/type wrappers and serialization-oriented building blocks
+- `ozz_collision` - 2D collision shapes, collision queries, and world stepping
+- `ozz_audio` - audio file loading/conversion utility layer
+- `ozz_typegen` - schema-driven C++ type/header generation utility
+
+See the libraries section for details:
+- [ozz_binarypacking](../libraries/ozz_binarypacking.md)
+- [ozz_collision](../libraries/ozz_collision.md)
+- [ozz_audio](../libraries/ozz_audio.md)
+- [ozz_typegen](../libraries/ozz_typegen.md)
+
+## Third-Party Layout
+
+`engine/third_party` includes local wrapper/build targets (glad, stb, clay, optional asio path), while additional dependencies are fetched via CMake `FetchContent`.
+
+See [Third-Party Overview](../libraries/third_party_overview.md) for high-level dependency integration details.

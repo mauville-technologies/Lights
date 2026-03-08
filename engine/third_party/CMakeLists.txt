@@ -4,13 +4,16 @@ set(GLFW_BUILD_WAYLAND FALSE)
 
 set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: GLFW, SDL3")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.15.0
-)
 
-FetchContent_MakeAvailable(spdlog)
+if (NOT TARGET spdlog)
+    FetchContent_Declare(
+            spdlog_lib
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG v1.15.0
+    )
+
+    FetchContent_MakeAvailable(spdlog_lib)
+endif ()
 
 FetchContent_Declare(
         glmlib
@@ -65,6 +68,21 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(nlohmann_lib)
+if (LOCAL_RENDERING_DIR AND EXISTS "${LOCAL_RENDERING_DIR}")
+    message(STATUS "using local lights directory ${LOCAL_RENDERING_DIR}")
+    FetchContent_Declare(
+            ozz_rendering_lib
+            SOURCE_DIR ${LOCAL_RENDERING_DIR}
+    )
+else ()
+    FetchContent_Declare(
+            ozz_rendering_lib
+            GIT_REPOSITORY https://github.com/mauville-technologies/ozz_rendering.git
+            GIT_TAG master
+    )
+endif ()
+
+FetchContent_MakeAvailable(ozz_rendering_lib)
 
 #add_subdirectory(asio)
 add_subdirectory(glad)
@@ -75,7 +93,6 @@ add_library(third_party INTERFACE)
 
 set(LIBS
         #        asio
-        spdlog
         glad
         glm
         stb
@@ -85,6 +102,7 @@ set(LIBS
         rtaudio
         EnTT::EnTT
         nlohmann_json
+        ozz_rendering
 )
 
 set(THIRD_PARTY_COMPILE_DEFS "")
