@@ -15,13 +15,13 @@ std::optional<OZZ::RenderTarget*> OZZ::Renderable::GetRender(const std::string& 
     return std::nullopt;
 }
 
-bool OZZ::Renderable::Render() {
+bool OZZ::Renderable::Render(rendering::RHIFrameContext& frameContext) {
     if (!HasAllRequiredInputs()) {
         spdlog::warn("Cannot render node {} due to missing inputs", GetRenderableName());
         return false;
     }
 
-    if (render()) {
+    if (render(frameContext)) {
         bRenderedThisFrame = true;
         return true;
     }

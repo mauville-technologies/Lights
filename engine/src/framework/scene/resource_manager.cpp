@@ -14,9 +14,8 @@
 #include <utility>
 
 namespace OZZ::scene {
-    ResourceManager::ResourceManager() {
-        constexpr size_t bufferSizeInBytes = 256_MiB;
-        stagingBuffer = std::make_unique<GPUStagingBuffer>(bufferSizeInBytes);
+    ResourceManager::ResourceManager(rendering::RHIDevice* inDevice)
+        : device(inDevice) {
         jobThread = std::jthread([this](const std::stop_token& tok) {
             run(tok);
         });
@@ -25,40 +24,6 @@ namespace OZZ::scene {
     ResourceManager::~ResourceManager() {
         jobThread.request_stop();
         queueCondition.notify_all();
-    }
-
-    std::shared_ptr<Texture> ResourceManager::LoadTexture(const std::filesystem::path& path) {
-        auto newTexture = std::make_shared<Texture>();
-        queueJob([this, path, newTexture] {
-            const auto info = Image::GetImageInfo(path);
-            // get staging buffer slice
-            const auto slice = stagingBuffer->GetSlice(info.SizeInBytes());
-            auto ptr = stagingBuffer->GetAllocatedPointer(slice);
-            const auto image = std::make_shared<Image>(ExternalBuffer, path, ptr);
-
-            {
-                std::lock_guard lock(renderJobsMutex);
-                renderJobs.emplace_back([this, newTexture, image, slice]() {
-                    stagingBuffer->Bind();
-                    newTexture->UploadData(image.get(), slice.offset);
-                    stagingBuffer->Unbind();
-
-                    stagingBuffer->RegisterInFlight(
-                        {slice.offset, slice.size, glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0), [newTexture]() {
-                             newTexture->FinalizeUpload();
-                         }});
-                });
-            }
-        });
-        return newTexture;
-    }
-
-    std::shared_ptr<Texture> ResourceManager::LoadTexture(std::shared_ptr<Image> image) {
-        auto newTexture = std::make_shared<Texture>();
-        queueJob([newTexture = newTexture, image = std::move(image)] {
-            newTexture->UploadData(image.get());
-        });
-        return newTexture;
     }
 
     bool ResourceManager::LoadSpritesheet(const SpritesheetLocation& location) {
@@ -176,7 +141,6 @@ namespace OZZ::scene {
     }
 
     void ResourceManager::Tick() {
-        stagingBuffer->Tick();
         std::deque<std::function<void()>> local;
         {
             std::lock_guard lock(renderJobsMutex);

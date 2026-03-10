@@ -38,10 +38,10 @@ namespace OZZ {
     constexpr std::array<uint32_t, 8> quadOutlineIndices{0, 1, 1, 2, 2, 3, 3, 0};
 
     constexpr std::array<Vertex, 4> quadVertices{
-        {{.position = {1.0f, 1.0f, 0.0f}, .normal = {0, 0, 1.f}, .uv = {1.0f, 1.0f}},
-         {.position = {1.0f, -1.0f, 0.0f}, .normal = {0, 0, 1.f}, .uv = {1.0f, 0.0f}},
-         {.position = {-1.0f, -1.0f, 0.0f}, .normal = {0, 0, 1.f}, .uv = {0.0f, 0.0f}},
-         {.position = {-1.0f, 1.0f, 0.0f}, .normal = {0, 0, 1.f}, .uv = {0.0f, 1.0f}}}};
+        {{.Position = {1.0f, 1.0f, 0.0f}, .Normal = {0, 0, 1.f}, .UV = {1.0f, 1.0f}},
+         {.Position = {1.0f, -1.0f, 0.0f}, .Normal = {0, 0, 1.f}, .UV = {1.0f, 0.0f}},
+         {.Position = {-1.0f, -1.0f, 0.0f}, .Normal = {0, 0, 1.f}, .UV = {0.0f, 0.0f}},
+         {.Position = {-1.0f, 1.0f, 0.0f}, .Normal = {0, 0, 1.f}, .UV = {0.0f, 1.0f}}}};
     constexpr std::array<uint32_t, 36> cubeIndices{
         // Front
         0,
@@ -135,137 +135,137 @@ namespace OZZ {
     constexpr std::array<Vertex, 24> cubeVertices{
         // FRONT
         Vertex{
-            .position = {0.5f, 0.5f, 0.5f},
-            .normal = {0, 0, 1.f},
-            .uv = {1.f, 1.f},
+            .Position = {0.5f, 0.5f, 0.5f},
+            .Normal = {0, 0, 1.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {0.5f, -0.5f, 0.5f},
-            .normal = {0, 0, 1.f},
-            .uv = {1.f, 0.f},
+            .Position = {0.5f, -0.5f, 0.5f},
+            .Normal = {0, 0, 1.f},
+            .UV = {1.f, 0.f},
         },
         {
-            .position = {-0.5f, -0.5f, 0.5f},
-            .normal = {0, 0, 1.f},
-            .uv = {0.f, 0.f},
+            .Position = {-0.5f, -0.5f, 0.5f},
+            .Normal = {0, 0, 1.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {-0.5f, 0.5f, 0.5f},
-            .normal = {0, 0, 1.f},
-            .uv = {0.f, 1.f},
+            .Position = {-0.5f, 0.5f, 0.5f},
+            .Normal = {0, 0, 1.f},
+            .UV = {0.f, 1.f},
         },
 
         // BACK
         {
-            .position = {-0.5f, 0.5f, -0.5f},
-            .normal = {0, 0, -1.f},
-            .uv = {1.f, 1.f},
+            .Position = {-0.5f, 0.5f, -0.5f},
+            .Normal = {0, 0, -1.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {-0.5f, -0.5f, -0.5f},
-            .normal = {0, 0, -1.f},
-            .uv = {1.f, 0.f},
+            .Position = {-0.5f, -0.5f, -0.5f},
+            .Normal = {0, 0, -1.f},
+            .UV = {1.f, 0.f},
         },
         {
-            .position = {0.5f, -0.5f, -0.5f},
-            .normal = {0, 0, -1.f},
-            .uv = {0.f, 0.f},
+            .Position = {0.5f, -0.5f, -0.5f},
+            .Normal = {0, 0, -1.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {0.5f, 0.5f, -0.5f},
-            .normal = {0, 0, -1.f},
-            .uv = {0.f, 1.f},
+            .Position = {0.5f, 0.5f, -0.5f},
+            .Normal = {0, 0, -1.f},
+            .UV = {0.f, 1.f},
         },
 
         // LEFT
         {
-            .position = {-0.5f, 0.5f, 0.5f},
-            .normal = {-1.f, 0, 0.f},
-            .uv = {1.f, 1.f},
+            .Position = {-0.5f, 0.5f, 0.5f},
+            .Normal = {-1.f, 0, 0.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {-0.5f, -0.5f, 0.5f},
-            .normal = {-1.f, 0, 0.f},
-            .uv = {1.f, 0.f},
+            .Position = {-0.5f, -0.5f, 0.5f},
+            .Normal = {-1.f, 0, 0.f},
+            .UV = {1.f, 0.f},
         },
         {
-            .position = {-0.5f, -0.5f, -0.5f},
-            .normal = {-1.f, 0, 0.f},
-            .uv = {0.f, 0.f},
+            .Position = {-0.5f, -0.5f, -0.5f},
+            .Normal = {-1.f, 0, 0.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {-0.5f, 0.5f, -0.5f},
-            .normal = {-1.f, 0, 0.f},
-            .uv = {0.f, 1.f},
+            .Position = {-0.5f, 0.5f, -0.5f},
+            .Normal = {-1.f, 0, 0.f},
+            .UV = {0.f, 1.f},
         },
 
         // RIGHT
         {
-            .position = {0.5f, 0.5f, -0.5f},
-            .normal = {1.f, 0, 0.f},
-            .uv = {1.f, 1.f},
+            .Position = {0.5f, 0.5f, -0.5f},
+            .Normal = {1.f, 0, 0.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {0.5f, -0.5f, -0.5f},
-            .normal = {1.f, 0, 0.f},
-            .uv = {1.f, 0.f},
+            .Position = {0.5f, -0.5f, -0.5f},
+            .Normal = {1.f, 0, 0.f},
+            .UV = {1.f, 0.f},
         },
 
         {
-            .position = {0.5f, -0.5f, 0.5f},
-            .normal = {1.f, 0, 0.f},
-            .uv = {0.f, 0.f},
+            .Position = {0.5f, -0.5f, 0.5f},
+            .Normal = {1.f, 0, 0.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {0.5f, 0.5f, 0.5f},
-            .normal = {1.f, 0, 0.f},
-            .uv = {0.f, 1.f},
+            .Position = {0.5f, 0.5f, 0.5f},
+            .Normal = {1.f, 0, 0.f},
+            .UV = {0.f, 1.f},
         },
 
         // TOP
         {
-            .position = {0.5f, 0.5f, -0.5f},
-            .normal = {0.f, 1.f, 0.f},
-            .uv = {1.f, 1.f},
+            .Position = {0.5f, 0.5f, -0.5f},
+            .Normal = {0.f, 1.f, 0.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {0.5f, 0.5f, 0.5f},
-            .normal = {0.f, 1.f, 0.f},
-            .uv = {1.f, 0.f},
+            .Position = {0.5f, 0.5f, 0.5f},
+            .Normal = {0.f, 1.f, 0.f},
+            .UV = {1.f, 0.f},
         },
 
         {
-            .position = {-0.5f, 0.5f, 0.5f},
-            .normal = {0.f, 1.f, 0.f},
-            .uv = {0.f, 0.f},
+            .Position = {-0.5f, 0.5f, 0.5f},
+            .Normal = {0.f, 1.f, 0.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {-0.5f, 0.5f, -0.5f},
-            .normal = {0.f, 1.f, 0.f},
-            .uv = {0.f, 1.f},
+            .Position = {-0.5f, 0.5f, -0.5f},
+            .Normal = {0.f, 1.f, 0.f},
+            .UV = {0.f, 1.f},
         },
 
         // BOTTOM
         {
-            .position = {0.5f, -0.5f, 0.5f},
-            .normal = {0.f, -1.f, 0.f},
-            .uv = {1.f, 1.f},
+            .Position = {0.5f, -0.5f, 0.5f},
+            .Normal = {0.f, -1.f, 0.f},
+            .UV = {1.f, 1.f},
         },
         {
-            .position = {0.5f, -0.5f, -0.5f},
-            .normal = {0.f, -1.f, 0.f},
-            .uv = {1.f, 0.f},
+            .Position = {0.5f, -0.5f, -0.5f},
+            .Normal = {0.f, -1.f, 0.f},
+            .UV = {1.f, 0.f},
         },
 
         {
-            .position = {-0.5f, -0.5f, -0.5f},
-            .normal = {0.f, -1.f, 0.f},
-            .uv = {0.f, 0.f},
+            .Position = {-0.5f, -0.5f, -0.5f},
+            .Normal = {0.f, -1.f, 0.f},
+            .UV = {0.f, 0.f},
         },
         {
-            .position = {-0.5f, -0.5f, 0.5f},
-            .normal = {0.f, -1.f, 0.f},
-            .uv = {0.f, 1.f},
+            .Position = {-0.5f, -0.5f, 0.5f},
+            .Normal = {0.f, -1.f, 0.f},
+            .UV = {0.f, 1.f},
         },
     };
 
@@ -297,88 +297,88 @@ namespace OZZ {
 
     constexpr std::array<Vertex, 16> pyramidVertices{// FRONT TRI
                                                      Vertex{
-                                                         .position = {-0.5f, 0.f, 0.5f},
-                                                         .normal = {0, 0.5, 1.f},
-                                                         .uv = {0.f, 0.f},
+                                                         .Position = {-0.5f, 0.f, 0.5f},
+                                                         .Normal = {0, 0.5, 1.f},
+                                                         .UV = {0.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {0.f, 1.f, 0.f},
-                                                         .normal = {0, 0.5, 1.f},
-                                                         .uv = {0.5f, 1.f},
+                                                         .Position = {0.f, 1.f, 0.f},
+                                                         .Normal = {0, 0.5, 1.f},
+                                                         .UV = {0.5f, 1.f},
                                                      },
                                                      {
-                                                         .position = {0.5f, 0.f, 0.5f},
-                                                         .normal = {0, 0.5, 1.f},
-                                                         .uv = {1.f, 0.f},
+                                                         .Position = {0.5f, 0.f, 0.5f},
+                                                         .Normal = {0, 0.5, 1.f},
+                                                         .UV = {1.f, 0.f},
                                                      },
                                                      // RIGHT TRI
                                                      {
-                                                         .position = {0.5f, 0.f, 0.5f},
-                                                         .normal = {1.f, 0.5f, 0.f},
-                                                         .uv = {0.f, 0.f},
+                                                         .Position = {0.5f, 0.f, 0.5f},
+                                                         .Normal = {1.f, 0.5f, 0.f},
+                                                         .UV = {0.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {0.f, 1.f, 0.f},
-                                                         .normal = {1.f, 0.5f, 0.f},
-                                                         .uv = {0.5f, 1.f},
+                                                         .Position = {0.f, 1.f, 0.f},
+                                                         .Normal = {1.f, 0.5f, 0.f},
+                                                         .UV = {0.5f, 1.f},
                                                      },
                                                      {
-                                                         .position = {0.5f, 0.f, -0.5f},
-                                                         .normal = {1.f, 0.5f, 0.f},
-                                                         .uv = {1.f, 0.f},
+                                                         .Position = {0.5f, 0.f, -0.5f},
+                                                         .Normal = {1.f, 0.5f, 0.f},
+                                                         .UV = {1.f, 0.f},
                                                      },
                                                      // BACK TRI
                                                      {
-                                                         .position = {0.5f, 0.f, -0.5f},
-                                                         .normal = {0, 0.5, -1.f},
-                                                         .uv = {0.f, 0.f},
+                                                         .Position = {0.5f, 0.f, -0.5f},
+                                                         .Normal = {0, 0.5, -1.f},
+                                                         .UV = {0.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {0.f, 1.f, 0.f},
-                                                         .normal = {0, 0.5, -1.f},
-                                                         .uv = {0.5f, 1.f},
+                                                         .Position = {0.f, 1.f, 0.f},
+                                                         .Normal = {0, 0.5, -1.f},
+                                                         .UV = {0.5f, 1.f},
                                                      },
                                                      {
-                                                         .position = {-0.5f, 0.f, -0.5f},
-                                                         .normal = {0, 0.5, -1.f},
-                                                         .uv = {1.f, 0.f},
+                                                         .Position = {-0.5f, 0.f, -0.5f},
+                                                         .Normal = {0, 0.5, -1.f},
+                                                         .UV = {1.f, 0.f},
                                                      },
                                                      // LEFT TRI
                                                      {
-                                                         .position = {-0.5f, 0.f, -0.5f},
-                                                         .normal = {-1.f, 0.5f, 0.f},
-                                                         .uv = {0.f, 0.f},
+                                                         .Position = {-0.5f, 0.f, -0.5f},
+                                                         .Normal = {-1.f, 0.5f, 0.f},
+                                                         .UV = {0.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {0.f, 1.f, 0.f},
-                                                         .normal = {-1.f, 0.5f, 0.f},
-                                                         .uv = {0.5f, 1.f},
+                                                         .Position = {0.f, 1.f, 0.f},
+                                                         .Normal = {-1.f, 0.5f, 0.f},
+                                                         .UV = {0.5f, 1.f},
                                                      },
                                                      {
-                                                         .position = {-0.5f, 0.f, 0.5f},
-                                                         .normal = {-1.f, 0.5f, 0.f},
-                                                         .uv = {1.f, 0.f},
+                                                         .Position = {-0.5f, 0.f, 0.5f},
+                                                         .Normal = {-1.f, 0.5f, 0.f},
+                                                         .UV = {1.f, 0.f},
                                                      },
                                                      // Bottom square
                                                      {
-                                                         .position = {-0.5f, 0.f, -0.5f},
-                                                         .normal = {0, -1.f, 0},
-                                                         .uv = {0.f, 0.f},
+                                                         .Position = {-0.5f, 0.f, -0.5f},
+                                                         .Normal = {0, -1.f, 0},
+                                                         .UV = {0.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {-0.5f, 0.f, 0.5f},
-                                                         .normal = {0, -1.f, 0},
-                                                         .uv = {0.f, 1.f},
+                                                         .Position = {-0.5f, 0.f, 0.5f},
+                                                         .Normal = {0, -1.f, 0},
+                                                         .UV = {0.f, 1.f},
                                                      },
                                                      {
-                                                         .position = {0.5f, 0.f, -0.5f},
-                                                         .normal = {0, -1.f, 0},
-                                                         .uv = {1.f, 0.f},
+                                                         .Position = {0.5f, 0.f, -0.5f},
+                                                         .Normal = {0, -1.f, 0},
+                                                         .UV = {1.f, 0.f},
                                                      },
                                                      {
-                                                         .position = {0.5f, 0.f, 0.5f},
-                                                         .normal = {0, -1.f, 0},
-                                                         .uv = {1.f, 1.f},
+                                                         .Position = {0.5f, 0.f, 0.5f},
+                                                         .Normal = {0, -1.f, 0},
+                                                         .UV = {1.f, 1.f},
                                                      }};
 
     static std::pair<std::vector<Vertex>, std::vector<uint32_t>>
@@ -394,9 +394,9 @@ namespace OZZ {
             float y = radius * sinf(static_cast<float>(sectorAngle));
 
             vertices.push_back(Vertex{
-                .position = {x, y, 0.f},
-                .normal = {0, 0, 1.f},
-                .uv = {0.5f + 0.5f * cosf(static_cast<float>(sectorAngle)),
+                .Position = {x, y, 0.f},
+                .Normal = {0, 0, 1.f},
+                .UV = {0.5f + 0.5f * cosf(static_cast<float>(sectorAngle)),
                        0.5f + 0.5f * sinf(static_cast<float>(sectorAngle))},
             });
 
@@ -453,9 +453,9 @@ namespace OZZ {
                 t = (float)i / static_cast<float>(stacks);
 
                 vertices.push_back(Vertex{
-                    .position = {x, y, z},
-                    .normal = {nx, ny, nz},
-                    .uv = {s, t},
+                    .Position = {x, y, z},
+                    .Normal = {nx, ny, nz},
+                    .UV = {s, t},
                 });
             }
         }

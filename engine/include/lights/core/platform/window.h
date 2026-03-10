@@ -15,6 +15,14 @@ namespace OZZ {
         Window(platform::WindowCallbacks&& inCallbacks);
         ~Window();
 
+        bool CreateSurface(void* instance, void* surfaceOut) const {
+            return window->CreateSurface(instance, surfaceOut);
+        }
+
+        virtual std::vector<std::string> GetRequiredInstanceExtensions() {
+            return window->GetRequiredInstanceExtensions();
+        }
+
         void PollEvents();
         void MakeContextCurrent();
         void SwapBuffers();

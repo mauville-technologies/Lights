@@ -80,7 +80,11 @@ namespace OZZ {
 
     Image::ImageInfo Image::GetImageInfo(const path& imagePath) {
         ImageInfo result{};
-        stbi_info(imagePath.string().c_str(), &result.Width, &result.Height, &result.Channels);
+        int width, height, channels;
+        stbi_info(imagePath.string().c_str(), &width, &height, &channels);
+        result.Width = static_cast<uint32_t>(width);
+        result.Height = static_cast<uint32_t>(height);
+        result.Channels = static_cast<uint8_t>(channels);
         return result;
     }
 

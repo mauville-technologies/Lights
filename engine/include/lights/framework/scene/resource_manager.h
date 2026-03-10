@@ -7,6 +7,7 @@
 #include "lights/core/platform/window.h"
 #include "lights/core/rendering/buffer.h"
 #include "lights/core/util/image.h"
+#include "ozz_rendering/rhi_device.h"
 
 #include <condition_variable>
 #include <deque>
@@ -42,11 +43,8 @@ namespace OZZ::scene {
 
     class ResourceManager {
     public:
-        explicit ResourceManager();
+        explicit ResourceManager(rendering::RHIDevice* inDevice);
         ~ResourceManager();
-
-        std::shared_ptr<Texture> LoadTexture(const std::filesystem::path& path);
-        std::shared_ptr<Texture> LoadTexture(std::shared_ptr<Image> image);
 
         bool LoadSpritesheet(const SpritesheetLocation& location);
         const std::unordered_map<std::string, SpritesheetInformation>& GetSpritesheets() const;
@@ -60,12 +58,11 @@ namespace OZZ::scene {
         void run(const std::stop_token& tok);
 
     private:
+        rendering::RHIDevice* device;
         std::mutex queueMutex;
         std::deque<std::function<void()>> queuedJobs{};
         std::condition_variable queueCondition{};
         std::jthread jobThread;
-
-        std::unique_ptr<GPUStagingBuffer> stagingBuffer;
 
         std::mutex renderJobsMutex;
         std::deque<std::function<void()>> renderJobs{};

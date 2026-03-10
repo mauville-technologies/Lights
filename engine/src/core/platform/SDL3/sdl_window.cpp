@@ -8,6 +8,11 @@
 
 #ifdef OZZ_SDL3
 
+#include <volk.h>
+
+#include "SDL3/SDL_vulkan.h"
+#include <SDL3/SDL.h>
+
 #include <spdlog/spdlog.h>
 
 namespace OZZ::platform::SDL3 {
@@ -18,35 +23,56 @@ namespace OZZ::platform::SDL3 {
             return;
         }
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        //
+        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
         window = SDL_CreateWindow(
-            title.c_str(),
-            width,
-            height,
-            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
+            title.c_str(), width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
         if (!window) {
             spdlog::error("Failed to create SDL window: {}", SDL_GetError());
             return;
         }
 
-        glContext = SDL_GL_CreateContext(window);
-        if (!glContext) {
-            spdlog::error("Failed to create OpenGL context: {}", SDL_GetError());
-            SDL_DestroyWindow(window);
-            return;
-        }
+        // glContext = SDL_GL_CreateContext(window);
+        // if (!glContext) {
+        //     spdlog::error("Failed to create OpenGL context: {}", SDL_GetError());
+        //     SDL_DestroyWindow(window);
+        //     return;
+        // }
 
         MakeContextCurrent();
 
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         SDL_ShowWindow(window);
         bIsValid = true;
+    }
+
+    bool SDLWindow::CreateSurface(void* instance, void* surfaceOut) {
+        if (!SDL_Vulkan_CreateSurface(
+                window, static_cast<VkInstance>(instance), nullptr, static_cast<VkSurfaceKHR*>(surfaceOut))) {
+
+            auto error = SDL_GetError();
+            spdlog::error("Failed to create Vulkan surface: {}", error);
+            return false;
+        }
+        return true;
+    }
+
+    std::vector<std::string> SDLWindow::GetRequiredInstanceExtensions() {
+        uint32_t count;
+        auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+        std::vector<std::string> extensionList;
+        if (extensions) {
+            extensionList.reserve(count);
+            for (uint32_t i = 0; i < count; i++) {
+                extensionList.emplace_back(extensions[i]);
+            }
+        }
+        return extensionList;
     }
 
     void* SDLWindow::GetProcAddress() {
@@ -166,12 +192,12 @@ namespace OZZ::platform::SDL3 {
     }
 
     void SDLWindow::MakeContextCurrent() {
-        SDL_GL_MakeCurrent(window, glContext);
-        SDL_GL_SetSwapInterval(0);
+        // SDL_GL_MakeCurrent(window, glContext);
+        // SDL_GL_SetSwapInterval(0);
     }
 
     void SDLWindow::Present() {
-        SDL_GL_SwapWindow(window);
+        // SDL_GL_SwapWindow(window);
     }
 
     glm::ivec2 SDLWindow::GetSize() const {

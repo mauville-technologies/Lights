@@ -28,7 +28,8 @@ namespace OZZ::scene {
     public:
         virtual ~SceneLayer() = default;
 
-        virtual void Init() {};
+        virtual void Init(OZZ::rendering::RHIDevice* inDevice) { device = inDevice; }
+
         virtual void DeInit() {};
 
         virtual void PhysicsTick(float DeltaTime) {};
@@ -46,6 +47,7 @@ namespace OZZ::scene {
                                                  glm::vec3{0.f, 1.f, 0.f});              // Up vector
         }
 
+        rendering::RHIDevice* device;
         Camera LayerCamera{};
         SceneLayerManager* layerManager{nullptr};
     };

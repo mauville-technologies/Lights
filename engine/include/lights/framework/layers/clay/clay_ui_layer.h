@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "lights/framework/input/input_subsystem.h"
 #include "lights/core/rendering/renderable.h"
+#include "lights/framework/input/input_subsystem.h"
 
 #include <clay/clay.h>
 #include <lights/framework/scene/scene_layer.h>
@@ -19,23 +19,41 @@ namespace OZZ {
 
 class ClayUILayer : public OZZ::scene::SceneLayer, public OZZ::Renderable {
 private:
+    struct CameraSettings {
+        glm::mat4 View;
+        glm::mat4 Proj;
+    };
+
+    struct UIComponentSettings {
+        glm::vec4 BackgroundColor;
+        glm::vec4 BorderColor;
+        glm::vec4 BorderWidth;   // left, right, top, bottom
+        glm::vec4 BorderRadiusX; // top-left, top-right, bottom-right, bottom-left
+        glm::vec4 BorderRadiusY; // top-left, top-right, bottom-right, bottom-left
+    };
+
     const std::string VertexShader = R"(
-#version 410 core
+#version 450 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec4 aColor;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec2 aTexCoord;
 
-out vec4 ourColor;
-out vec2 texCoord;
+layout (location = 0) out vec4 ourColor;
+layout (location = 1) out vec2 texCoord;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+layout(set = 0, binding = 0) uniform CameraSettings {
+    mat4 view;
+    mat4 proj;
+} camera;
+
+layout(push_constant) uniform PushConstants {
+    mat4 model;
+} pc;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_Position = camera.proj * camera.view * pc.model * vec4(aPos, 1.0);
     ourColor = aColor;
     texCoord = aTexCoord;
 }
@@ -43,18 +61,21 @@ void main()
 )";
 
     const std::string FragmentShader = R"(
-#version 410 core
-out vec4 FragColor;
+#version 450 core
+layout (location = 0) out vec4 FragColor;
 
-in vec4 ourColor;
-in vec2 texCoord;
+layout (location = 0) in vec4 ourColor;
+layout (location = 1) in vec2 texCoord;
 
-uniform vec4 backgroundColor;
-uniform vec4 borderColor;
-uniform vec4 borderWidth;
-uniform vec4 borderRadiusX;
-uniform vec4 borderRadiusY;
-uniform sampler2D image;
+layout(set = 0, binding = 1) uniform UIComponentSettings {
+    vec4 backgroundColor;
+    vec4 borderColor;
+    vec4 borderWidth;
+    vec4 borderRadiusX;
+    vec4 borderRadiusY;
+} uiSettings;
+
+layout(set = 0, binding = 2) uniform sampler2D image;
 
 float ellipseMask(vec2 uv, vec2 center, float rx, float ry) {
     vec2 norm = (uv - center) / vec2(rx, ry);
@@ -63,6 +84,12 @@ float ellipseMask(vec2 uv, vec2 center, float rx, float ry) {
 
 void main()
 {
+    vec4 backgroundColor = uiSettings.backgroundColor;
+    vec4 borderColor = uiSettings.borderColor;
+    vec4 borderWidth = uiSettings.borderWidth;
+    vec4 borderRadiusX = uiSettings.borderRadiusX;
+    vec4 borderRadiusY = uiSettings.borderRadiusY;
+
     float mask = 1.0;
 
     if (texCoord.x < borderRadiusX.x && texCoord.y < borderRadiusY.x) {
@@ -100,20 +127,27 @@ void main()
 )";
 
     const std::string FontFragmentShader = R"(
-#version 410 core
-out vec4 FragColor;
+#version 450 core
+layout (location = 0) out vec4 FragColor;
 
-in vec3 fragLocalPosition;
-in vec2 texCoord;
+layout (location = 1) in vec2 texCoord;
 
-uniform sampler2D image;
-uniform vec4 borderColor;
-uniform vec4 rectBounds;
+
+layout(set = 0, binding = 1) uniform UIComponentSettings {
+    vec4 backgroundColor;
+    vec4 borderColor;
+    vec4 borderWidth;
+    vec4 borderRadiusX;
+    vec4 borderRadiusY;
+} uiSettings;
+
+
+layout(binding = 2) uniform sampler2D image;
 
 void main()
 {
     vec4 sampled = vec4(1.0, 1.0, 1.0, texture(image, texCoord).r);
-    FragColor = vec4(borderColor) * sampled;
+    FragColor = vec4(uiSettings.borderColor) * sampled;
 }
         )";
 
@@ -127,7 +161,7 @@ public:
 
     ~ClayUILayer() override;
 
-    void Init() override;
+    void Init(OZZ::rendering::RHIDevice* inDevice) override;
 
     void PhysicsTick(float DeltaTime) override;
 
@@ -174,9 +208,10 @@ public:
     std::string GetRenderableName() override { return "ClayUILayer"; }
 
 protected:
-    bool render() override;
+    bool render(OZZ::rendering::RHIFrameContext& frameContext) override;
 
 private:
+    OZZ::rendering::RHIBufferHandle cameraBuffer{OZZ::rendering::RHIBufferHandle::Null()};
     std::function<void()> tickDefinitionFunction;
     OZZ::InputSubsystem* inputSubsystem;
 
@@ -189,13 +224,13 @@ private:
     Clay_RenderCommandArray clayRenderCommandArray{};
 
     std::unique_ptr<OZZ::FontLoader> fontLoader{nullptr};
-
     std::unique_ptr<OZZ::RenderTarget> renderTarget{nullptr};
 
     // Scene objects materials
     std::shared_ptr<OZZ::Shader> uiShader{};
     std::shared_ptr<OZZ::Shader> textShader{};
     std::unordered_map<uint32_t, OZZ::scene::SceneObject> uiSceneObjects{};
+    std::unordered_map<uint32_t, OZZ::rendering::RHIBufferHandle> uiComponentSettings{};
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
 
     std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture>> uiImages{};

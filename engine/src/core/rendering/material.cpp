@@ -6,115 +6,139 @@
 
 #include "glm/gtc/type_ptr.hpp"
 
-#include <algorithm>
-#include <glad/glad.h>
+#include <ranges>
 
 namespace OZZ {
-    void Material::Bind() {
-        shader->Bind();
+    Material::~Material() {
+        for (const auto descriptorSet : descriptorSets | std::views::values) {
+            device->FreeDescriptorSet(descriptorSet);
+        }
+        shader.reset();
+    }
 
-        // TODO: This should be cached and only set if changed
+    void Material::Bind(rendering::RHIFrameContext& frameContext) {
+        if (!shader)
+            return;
+
+        const auto layout = shader->GetLayoutDescriptor();
+        const auto setLayouts = device->GetShaderDescriptorSetLayoutHandles(shader->GetRHIHandle());
+        // Update any dirty descriptor sets
+        for (const auto& [set, binding] : resources) {
+            const auto setLayout = setLayouts[set];
+            // Are they dirty?
+            if (dirtyDescriptorSets[set]) {
+                // Create the set if it doesn't exist
+                if (descriptorSets.contains(set)) {
+                    device->FreeDescriptorSet(descriptorSets[set]);
+                }
+                descriptorSets[set] = device->CreateDescriptorSet(setLayout);
+                const auto descriptorSet = descriptorSets[set];
+                std::vector<rendering::RHIDescriptorWrite> writes;
+                for (const auto& [bindingPoint, resource] : binding) {
+                    if (std::holds_alternative<rendering::RHITextureHandle>(resource)) {
+                        writes.push_back(rendering::RHIDescriptorWrite{
+                            .Binding = bindingPoint,
+                            .Type = layout.Sets[set].Bindings[bindingPoint].Type,
+                            .Image =
+                                {
+                                    .Texture = std::get<rendering::RHITextureHandle>(resource),
+                                },
+                        });
+                    } else if (std::holds_alternative<rendering::RHIBufferHandle>(resource)) {
+                        writes.push_back(rendering::RHIDescriptorWrite{
+                            .Binding = bindingPoint,
+                            .Type = layout.Sets[set].Bindings[bindingPoint].Type,
+                            .Buffer =
+                                {
+                                    .Buffer = std::get<rendering::RHIBufferHandle>(resource),
+                                    .Offset = 0,
+                                    .Range = ~0ULL, // VK_WHOLE_SIZE equivalent
+                                },
+                        });
+                    }
+                }
+                device->UpdateDescriptorSet(descriptorSet, writes);
+                dirtyDescriptorSets[set] = false;
+            }
+        }
+
+        // Bind the descriptor sets
+        shader->Bind(frameContext);
+        const auto pipelineLayout = device->GetShaderPipelineLayoutHandle(shader->GetRHIHandle());
+        for (const auto& [set, descriptorSet] : descriptorSets) {
+            device->BindDescriptorSet(frameContext, pipelineLayout, set, descriptorSet);
+        }
         if (settings.bHasScissor) {
-            glEnable(GL_SCISSOR_TEST);
-            glScissor(static_cast<int>(settings.Scissor.x),
-                      static_cast<int>(settings.Scissor.y),
-                      static_cast<int>(settings.Scissor.z),
-                      static_cast<int>(settings.Scissor.w));
-        } else {
-            glDisable(GL_SCISSOR_TEST);
-        }
-
-        glLineWidth(settings.LineWidth);
-        glPointSize(settings.PointSize);
-
-        for (const auto& mapping : textureMappings) {
-            glActiveTexture(mapping.SlotNumber);
-            shader->SetInteger(mapping.SlotName, mapping.SlotNumber - GL_TEXTURE0);
-            mapping.TextureResource->Bind();
-        }
-
-        for (const auto& [Name, Value] : uniformSettings) {
-            if (std::holds_alternative<int>(Value)) {
-                shader->SetInteger(Name, std::get<int>(Value));
-            } else if (std::holds_alternative<glm::vec2>(Value)) {
-                shader->SetVec2(Name, std::get<glm::vec2>(Value));
-            } else if (std::holds_alternative<glm::vec3>(Value)) {
-                shader->SetVec3(Name, std::get<glm::vec3>(Value));
-            } else if (std::holds_alternative<glm::vec4>(Value)) {
-                shader->SetVec4(Name, std::get<glm::vec4>(Value));
-            } else if (std::holds_alternative<glm::mat4>(Value)) {
-                shader->SetMat4(Name, std::get<glm::mat4>(Value));
-            }
-        }
-
-        for (const auto& storageBuffer : storageBufferBindings) {
-            if (storageBuffer.Buffer) {
-                storageBuffer.Buffer->Bind(storageBuffer.BindingPoint);
-            }
-        }
-    }
-
-    void Material::AddTextureMapping(const TextureMapping& mapping) {
-        // let's clear out any old mapping by this name
-        std::erase_if(textureMappings, [&](const auto& existing) {
-            return existing.SlotName == mapping.SlotName;
-        });
-
-        textureMappings.push_back(mapping);
-    }
-
-    void Material::RemoveTextureMapping(const std::string& slotName) {
-        textureMappings.erase(std::remove_if(textureMappings.begin(),
-                                             textureMappings.end(),
-                                             [slotName](const TextureMapping& mapping) {
-                                                 return mapping.SlotName == slotName;
-                                             }),
-                              textureMappings.end());
-    }
-
-    void Material::AddUniformSetting(const UniformSetting& setting) {
-        // find first setting
-        auto it = std::find_if(uniformSettings.begin(), uniformSettings.end(), [&setting](const UniformSetting& s) {
-            return s.Name == setting.Name;
-        });
-
-        if (it != uniformSettings.end()) {
-            // if found, update the value
-            it->Value = setting.Value;
-            return;
-        }
-
-        uniformSettings.push_back(setting);
-    }
-
-    void Material::RemoveUniformSetting(const std::string& name) {
-        uniformSettings.erase(std::remove_if(uniformSettings.begin(),
-                                             uniformSettings.end(),
-                                             [name](const UniformSetting& setting) {
-                                                 return setting.Name == name;
-                                             }),
-                              uniformSettings.end());
-    }
-
-    void Material::AddStorageBufferBinding(uint16_t bindingPoint, StorageBufferBase* buffer) {
-        // Check if a binding already exists at this point and update it
-        auto it = std::find_if(storageBufferBindings.begin(),
-                               storageBufferBindings.end(),
-                               [bindingPoint](const StorageBufferBindings& binding) {
-                                   return binding.BindingPoint == bindingPoint;
+            device->SetScissor(frameContext,
+                               {
+                                   .X = settings.Scissor.x,
+                                   .Y = settings.Scissor.y,
+                                   .Width = static_cast<uint32_t>(settings.Scissor.z),
+                                   .Height = static_cast<uint32_t>(settings.Scissor.w),
                                });
-
-        if (it != storageBufferBindings.end()) {
-            it->Buffer = buffer;
-            return;
         }
-
-        storageBufferBindings.push_back({bindingPoint, buffer});
     }
 
-    void Material::RemoveStorageBufferBinding(uint16_t bindingPoint) {
-        std::erase_if(storageBufferBindings, [bindingPoint](const StorageBufferBindings& binding) {
-            return binding.BindingPoint == bindingPoint;
-        });
+    bool Material::SetResource(const uint32_t set,
+                               const uint32_t binding,
+                               const std::variant<rendering::RHITextureHandle, rendering::RHIBufferHandle>& resource) {
+        const auto layout = shader->GetLayoutDescriptor();
+        if (layout.SetCount < set) {
+            spdlog::error("Attempted to set resource for set {} which is out of bounds for shader with {} sets.",
+                          set,
+                          layout.SetCount);
+            return false;
+        }
+
+        const auto setLayout = layout.Sets[set];
+        if (setLayout.BindingCount < binding) {
+            spdlog::error("Attempted to set resource for binding {} in set {} which is out of bounds for shader with "
+                          "{} bindings in that set.",
+                          binding,
+                          set,
+                          setLayout.BindingCount);
+            return false;
+        }
+
+        const auto bindingType = setLayout.Bindings[binding].Type;
+        if (bindingType == rendering::DescriptorType::CombinedImageSampler ||
+            bindingType == rendering::DescriptorType::SampledImage ||
+            bindingType == rendering::DescriptorType::StorageImage) {
+            if (!std::holds_alternative<rendering::RHITextureHandle>(resource)) {
+                spdlog::error("Attempted to set non-texture resource for binding {} in set {} which expects a texture.",
+                              binding,
+                              set);
+                return false;
+            }
+        } else if (bindingType == rendering::DescriptorType::UniformBuffer ||
+                   bindingType == rendering::DescriptorType::StorageBuffer) {
+            if (!std::holds_alternative<rendering::RHIBufferHandle>(resource)) {
+                spdlog::error("Attempted to set non-buffer resource for binding {} in set {} which expects a buffer.",
+                              binding,
+                              set);
+                return false;
+            }
+        } else {
+            spdlog::error("Unsupported descriptor type for binding {} in set {}.", binding, set);
+            return false;
+        }
+
+        if (!resources.contains(set)) {
+            resources[set] = {};
+        }
+
+        dirtyDescriptorSets[set] = true;
+        resources[set][binding] = resource;
+
+        return true;
+    }
+
+    void Material::RemoveResource(const uint32_t set, const uint32_t binding) {
+        if (resources.contains(set)) {
+            resources[set].erase(binding);
+            if (resources[set].empty()) {
+                resources.erase(set);
+            }
+        }
     }
 } // namespace OZZ

@@ -13,10 +13,11 @@ namespace OZZ::scene {
         layers.clear();
     }
 
-    void SceneLayerManager::Init() {
+    void SceneLayerManager::Init(rendering::RHIDevice* inDevice) {
+        device = inDevice;
         // initialize all layers
         for (const auto& layer : layers) {
-            layer->Init();
+            layer->Init(device);
         }
 
         bIsInitialized = true;

@@ -16,11 +16,11 @@ namespace OZZ {
     class Image {
     public:
         struct ImageInfo {
-            int Width;
-            int Height;
-            int Channels;
+            uint32_t Width;
+            uint32_t Height;
+            uint8_t Channels;
 
-            int SizeInBytes() const { return Width * Height * Channels; }
+            uint64_t SizeInBytes() const { return Width * Height * Channels; }
         };
 
         // returnss a tuple of (gridSize, imageSize, image)

@@ -7,10 +7,16 @@
 #include "lights/core/rendering/material.h"
 
 namespace OZZ::scene {
-    class SceneObject {
-    public:
-        glm::mat4 Transform{1.f}; // Model transformation matrix
-        std::shared_ptr<IndexVertexBuffer> Mesh{nullptr};
+    struct Mesh {
+        rendering::RHIBufferHandle VertexBuffer{rendering::RHIBufferHandle::Null()};
+        rendering::RHIBufferHandle IndexBuffer{rendering::RHIBufferHandle::Null()};
+        uint64_t VertexCount{0};
+        uint64_t IndexCount{0};
+    };
+
+    struct SceneObject {
+        glm::mat4 Transform{1.f};               // Model transformation matrix
+        Mesh MeshData{};                        // Geometry data (vertex/index buffers)
         std::shared_ptr<Material> Mat{nullptr}; // Shader/texture parameters
     };
-}
+} // namespace OZZ::scene

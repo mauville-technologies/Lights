@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "ozz_rendering/rhi_device.h"
 #include "texture.h"
 
 #include <cstdint>
@@ -14,19 +15,20 @@ namespace OZZ {
 
     struct RenderTargetParams {
         RenderTargetType Type{RenderTargetType::Texture};
-        glm::ivec2 Size{1, 1};
+        glm::uvec2 Size{1, 1};
+        glm::vec4 ClearColor{0.f, 0.f, 0.f, 0.f};
 
         bool operator==(const RenderTargetParams& other) const { return Type == other.Type && Size == other.Size; }
     };
 
     class RenderTarget {
     public:
-        explicit RenderTarget(RenderTargetParams&& inParams);
-        virtual ~RenderTarget() = default;
+        explicit RenderTarget(rendering::RHIDevice* inDevice, RenderTargetParams&& inParams);
+        virtual ~RenderTarget();
 
-        void Begin();
+        void Begin(rendering::RHIFrameContext& frameContext);
 
-        void End();
+        void End(rendering::RHIFrameContext& frameContext) const;
 
         [[nodiscard]] RenderTargetType GetType() const { return activeParams.Type; }
 
@@ -34,14 +36,16 @@ namespace OZZ {
 
         std::shared_ptr<Texture> GetTexture() const { return texture; }
 
-        void Resize(glm::ivec2 inSize);
+        void Resize(glm::uvec2 inSize);
 
     private:
-        RenderTargetParams setUpRenderTarget(const RenderTargetParams& inParams);
+        RenderTargetParams setupRenderTarget(const RenderTargetParams& inParams);
 
     private:
-        RenderTargetParams activeParams;
+        rendering::RHIDevice* device;
         std::shared_ptr<Texture> texture;
-        uint32_t framebuffer{0};
+        std::shared_ptr<Texture> depthTexture;
+        rendering::RenderPassDescriptor renderPassDescriptor;
+        RenderTargetParams activeParams;
     };
 } // namespace OZZ

@@ -15,6 +15,7 @@ namespace OZZ::platform::glfw {
         ~GLFWWindow() override;
 
         void CreateWindow(const std::string& title, int width, int height) override;
+
         void* GetProcAddress() override;
         void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;

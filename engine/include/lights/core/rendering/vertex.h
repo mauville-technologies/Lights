@@ -3,29 +3,52 @@
 //
 
 #pragma once
+#include "ozz_rendering/rhi_pipeline_state.h"
+
 #include <glm/glm.hpp>
-#include <glad/glad.h>
 
 namespace OZZ {
     struct Vertex {
-        glm::vec3 position {0.f, 0.f, 0.f};
-        glm::vec4 color {1.f, 1.f, 1.f, 1.f};
-        glm::vec3 normal {0.f, 0.f, 0.f};
-        glm::vec2 uv {0.f, 0.f};
+        glm::vec3 Position{0.f, 0.f, 0.f};
+        glm::vec4 Color{1.f, 1.f, 1.f, 1.f};
+        glm::vec3 Normal{0.f, 0.f, 0.f};
+        glm::vec2 UV{0.f, 0.f};
 
-        inline static void BindAttribPointers() {
-            // Position
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-            // Color
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
-            // Normal
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-            // TexCoords
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+        static OZZ::rendering::VertexInputBindingDescriptor GetBindingDescription() {
+            return {
+                .Binding = 0,
+                .Stride = sizeof(Vertex),
+                .InputRate = OZZ::rendering::VertexInputRate::Vertex,
+            };
+        }
+
+        static std::array<OZZ::rendering::VertexInputAttributeDescriptor, 4> GetAttributeDescriptions() {
+            return {
+                OZZ::rendering::VertexInputAttributeDescriptor{
+                    .Location = 0,
+                    .Binding = 0,
+                    .Format = OZZ::rendering::VertexFormat::Float3,
+                    .Offset = offsetof(Vertex, Position),
+                },
+                OZZ::rendering::VertexInputAttributeDescriptor{
+                    .Location = 1,
+                    .Binding = 0,
+                    .Format = OZZ::rendering::VertexFormat::Float4,
+                    .Offset = offsetof(Vertex, Color),
+                },
+                OZZ::rendering::VertexInputAttributeDescriptor{
+                    .Location = 2,
+                    .Binding = 0,
+                    .Format = OZZ::rendering::VertexFormat::Float3,
+                    .Offset = offsetof(Vertex, Normal),
+                },
+                OZZ::rendering::VertexInputAttributeDescriptor{
+                    .Location = 3,
+                    .Binding = 0,
+                    .Format = OZZ::rendering::VertexFormat::Float2,
+                    .Offset = offsetof(Vertex, UV),
+                },
+            };
         }
     };
-} // OZZ
+} // namespace OZZ

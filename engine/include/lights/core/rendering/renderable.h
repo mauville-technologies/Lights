@@ -20,14 +20,14 @@ namespace OZZ {
 
         std::optional<RenderTarget*> GetRender(const std::string& name);
 
-        bool Render();
+        bool Render(rendering::RHIFrameContext& frameContext);
 
         void ResetFrameState();
 
     protected:
         bool HasAllRequiredInputs();
 
-        virtual bool render() = 0;
+        virtual bool render(rendering::RHIFrameContext& frameContext) = 0;
 
         virtual void newFrame() {}
 

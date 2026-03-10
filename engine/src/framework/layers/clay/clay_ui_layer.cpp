@@ -12,7 +12,8 @@
 
 #include "spdlog/spdlog.h"
 
-ClayUILayer::ClayUILayer(OZZ::InputSubsystem* inInput) : inputSubsystem(inInput) {}
+ClayUILayer::ClayUILayer(OZZ::InputSubsystem* inInput)
+    : inputSubsystem(inInput) {}
 
 ClayUILayer::~ClayUILayer() {
     shutdownClay();
@@ -20,12 +21,30 @@ ClayUILayer::~ClayUILayer() {
 
 auto layoutElement = Clay_LayoutConfig{.padding = {5}};
 
-void ClayUILayer::Init() {
-    SceneLayer::Init();
-    renderTarget = std::make_unique<OZZ::RenderTarget>(OZZ::RenderTargetParams{.Type = OZZ::RenderTargetType::Texture});
+void ClayUILayer::Init(OZZ::rendering::RHIDevice* inDevice) {
+    SceneLayer::Init(inDevice);
+
+    renderTarget = std::make_unique<OZZ::RenderTarget>(inDevice,
+                                                       OZZ::RenderTargetParams{
+                                                           .Type = OZZ::RenderTargetType::Texture,
+                                                           .ClearColor = {1.f, 1.f, 0.f, 0.f},
+                                                       });
     renders.insert(std::make_pair(GetRenderableName(), renderTarget.get()));
     reinitializeClay();
     LayerCamera.ViewMatrix = glm::mat4(1.f);
+
+    // create camera buffer
+    CameraSettings cameraSettings{
+        .View = LayerCamera.ViewMatrix,
+        .Proj = LayerCamera.ProjectionMatrix,
+    };
+
+    cameraBuffer = device->CreateBuffer({
+        .Size = sizeof(CameraSettings),
+        .Usage = OZZ::rendering::BufferUsage::UniformBuffer,
+        .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
+    });
+    device->UpdateBuffer(cameraBuffer, &cameraSettings, sizeof(CameraSettings), 0);
 }
 
 void ClayUILayer::PhysicsTick(float DeltaTime) {
@@ -73,6 +92,12 @@ void ClayUILayer::RenderTargetResized(const glm::ivec2 size) {
 
     LayerCamera.ProjectionMatrix =
         glm::ortho(0.0f, static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 0.0f, -1.0f, 1.0f);
+    // update camera buffer
+    CameraSettings cameraSettings{
+        .View = LayerCamera.ViewMatrix,
+        .Proj = LayerCamera.ProjectionMatrix,
+    };
+    device->UpdateBuffer(cameraBuffer, &cameraSettings, sizeof(CameraSettings), 0);
     if (bClayInitialized) {
         Clay_SetLayoutDimensions(
             Clay_Dimensions{.width = static_cast<float>(size.x), .height = static_cast<float>(size.y)});
@@ -156,18 +181,27 @@ void ClayUILayer::reinitializeClay() {
 }
 
 void ClayUILayer::buildShaders() {
-    uiShader = std::make_shared<OZZ::Shader>(OZZ::ShaderSourceParams{
-        .Vertex = VertexShader,
-        .Fragment = FragmentShader,
-    });
-    textShader = std::make_shared<OZZ::Shader>(OZZ::ShaderSourceParams{
-        .Vertex = VertexShader,
-        .Fragment = FontFragmentShader,
-    });
+    uiShader = std::make_shared<OZZ::Shader>(device,
+                                             OZZ::rendering::ShaderSourceParams{
+                                                 .Vertex = VertexShader,
+                                                 .Fragment = FragmentShader,
+                                             });
+    textShader = std::make_shared<OZZ::Shader>(device,
+                                               OZZ::rendering::ShaderSourceParams{
+                                                   .Vertex = VertexShader,
+                                                   .Fragment = FontFragmentShader,
+                                               });
 
     const auto emptyImage = std::make_shared<OZZ::Image>();
     emptyImage->FillColor(glm::vec4(0.f, 0.f, 0.f, 0.f), glm::vec2(1.f, 1.f));
-    const auto emptyTexture = std::make_shared<OZZ::Texture>();
+    const auto emptyTexture =
+        std::make_shared<OZZ::Texture>(device,
+                                       OZZ::rendering::TextureDescriptor{
+                                           .Width = static_cast<uint32_t>(emptyImage->GetWidth()),
+                                           .Height = static_cast<uint32_t>(emptyImage->GetHeight()),
+                                           .Format = OZZ::rendering::TextureFormat::RGBA8,
+                                           .Usage = OZZ::rendering::TextureUsage::Sampled,
+                                       });
     emptyTexture->UploadData(emptyImage.get());
     uiImages["empty"] = emptyTexture;
 }
@@ -192,10 +226,10 @@ void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderComman
             scissor.bHasScissor != uiSceneObjects.at(id).Mat->GetSettings().bHasScissor ||
             (scissor.bHasScissor &&
              uiSceneObjects.at(id).Mat->GetSettings().Scissor !=
-                 glm::vec4{scissor.ScissorBox.x,
-                           static_cast<float>(screenSize.y) - (scissor.ScissorBox.y + scissor.ScissorBox.height),
-                           scissor.ScissorBox.width,
-                           scissor.ScissorBox.height});
+                 glm::ivec4{scissor.ScissorBox.x,
+                            static_cast<float>(screenSize.y) - (scissor.ScissorBox.y + scissor.ScissorBox.height),
+                            scissor.ScissorBox.width,
+                            scissor.ScissorBox.height});
     }
 
     if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START ||
@@ -224,7 +258,7 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
     std::vector<uint32_t> indices;
     std::shared_ptr<OZZ::Texture> texture = uiImages["empty"];
 
-    const auto material = std::make_shared<OZZ::Material>();
+    const auto material = std::make_shared<OZZ::Material>(device);
     material->SetShader(uiShader);
     material->GetSettings().bHasScissor = scissor.bHasScissor;
     material->GetSettings().Scissor =
@@ -263,7 +297,18 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
             auto* FontSet = fontLoader->GetFontSet(fontPath, fontSize);
             auto fontKey = fontPath.stem().string() + "_" + std::to_string(fontSize);
             if (!uiImages.contains(fontKey)) {
-                auto newTexture = std::make_shared<OZZ::Texture>();
+                auto textureFormat = OZZ::rendering::TextureFormat::RGBA8;
+                if (FontSet->Texture->GetChannels() == 1) {
+                    textureFormat = OZZ::rendering::TextureFormat::R8;
+                }
+                auto newTexture =
+                    std::make_shared<OZZ::Texture>(device,
+                                                   OZZ::rendering::TextureDescriptor{
+                                                       .Width = static_cast<uint32_t>(FontSet->Texture->GetWidth()),
+                                                       .Height = static_cast<uint32_t>(FontSet->Texture->GetHeight()),
+                                                       .Format = textureFormat,
+                                                       .Usage = OZZ::rendering::TextureUsage::Sampled,
+                                                   });
                 newTexture->UploadData(FontSet->Texture.get());
                 uiImages[fontKey] = newTexture;
             }
@@ -294,44 +339,82 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
             break;
         }
     }
-    material->AddUniformSetting({.Name = "backgroundColor",
-                                 .Value = glm::vec4{backgroundColor.r / 255.f,
-                                                    backgroundColor.g / 255.f,
-                                                    backgroundColor.b / 255.f,
-                                                    backgroundColor.a / 255.f}});
 
-    material->AddUniformSetting(
-        {.Name = "borderColor",
-         .Value =
-             glm::vec4{borderColor.r / 255.f, borderColor.g / 255.f, borderColor.b / 255.f, borderColor.a / 255.f}});
+    auto uiSettings = UIComponentSettings{
+        .BackgroundColor =
+            {
+                backgroundColor.r / 255.f,
+                backgroundColor.g / 255.f,
+                backgroundColor.b / 255.f,
+                backgroundColor.a / 255.f,
+            },
+        .BorderColor =
+            {
+                borderColor.r / 255.f,
+                borderColor.g / 255.f,
+                borderColor.b / 255.f,
+                borderColor.a / 255.f,
+            },
+        .BorderWidth =
+            {
+                borderWidth.left / command.boundingBox.width,
+                borderWidth.right / command.boundingBox.width,
+                borderWidth.top / command.boundingBox.height,
+                borderWidth.bottom / command.boundingBox.height,
+            },
+        .BorderRadiusX =
+            {
+                borderRadius.topLeft / command.boundingBox.width,
+                borderRadius.topRight / command.boundingBox.width,
+                borderRadius.bottomRight / command.boundingBox.width,
+                borderRadius.bottomLeft / command.boundingBox.width,
+            },
+        .BorderRadiusY = {borderRadius.topLeft / command.boundingBox.height,
+                          borderRadius.topRight / command.boundingBox.height,
+                          borderRadius.bottomRight / command.boundingBox.height,
+                          borderRadius.bottomLeft / command.boundingBox.height},
+    };
 
-    material->AddUniformSetting({.Name = "borderWidth",
-                                 .Value = glm::vec4{borderWidth.left / command.boundingBox.width,
-                                                    borderWidth.right / command.boundingBox.width,
-                                                    borderWidth.top / command.boundingBox.height,
-                                                    borderWidth.bottom / command.boundingBox.height}});
+    auto uiComponentBuffer = device->CreateBuffer({
+        .Size = sizeof(UIComponentSettings),
+        .Usage = OZZ::rendering::BufferUsage::UniformBuffer,
+        .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
+    });
 
-    material->AddUniformSetting({.Name = "borderRadiusX",
-                                 .Value = glm::vec4{borderRadius.topLeft / command.boundingBox.width,
-                                                    borderRadius.topRight / command.boundingBox.width,
-                                                    borderRadius.bottomRight / command.boundingBox.width,
-                                                    borderRadius.bottomLeft / command.boundingBox.width}});
+    device->UpdateBuffer(uiComponentBuffer, &uiSettings, sizeof(UIComponentSettings), 0);
+    uiComponentSettings[id] = uiComponentBuffer;
 
-    material->AddUniformSetting({.Name = "borderRadiusY",
-                                 .Value = glm::vec4{borderRadius.topLeft / command.boundingBox.height,
-                                                    borderRadius.topRight / command.boundingBox.height,
-                                                    borderRadius.bottomRight / command.boundingBox.height,
-                                                    borderRadius.bottomLeft / command.boundingBox.height}});
+    material->SetResource(0, 0, cameraBuffer);
+    material->SetResource(0, 1, uiComponentBuffer);
+    material->SetResource(0, 2, texture->GetRHIHandle());
 
-    material->AddTextureMapping({.SlotName = "image", .SlotNumber = GL_TEXTURE0, .TextureResource = texture});
-
-    const auto mesh = std::make_shared<OZZ::IndexVertexBuffer>();
-    mesh->UploadData(vertices, indices);
+    const auto vertexBuffer = device->CreateBuffer({
+        .Size = sizeof(OZZ::Vertex) * vertices.size(),
+        .Usage = OZZ::rendering::BufferUsage::VertexBuffer,
+        .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
+    });
+    const auto indexBuffer = device->CreateBuffer({
+        .Size = sizeof(uint32_t) * indices.size(),
+        .Usage = OZZ::rendering::BufferUsage::IndexBuffer,
+        .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
+    });
+    device->UpdateBuffer(vertexBuffer, vertices.data(), sizeof(OZZ::Vertex) * vertices.size(), 0);
+    device->UpdateBuffer(indexBuffer, indices.data(), sizeof(uint32_t) * indices.size(), 0);
 
     glm::mat4 transform{1.f};
     transform = glm::translate(transform, translation);
     transform = glm::scale(transform, scale);
-    uiSceneObjects[id] = OZZ::scene::SceneObject{.Transform = transform, .Mesh = mesh, .Mat = material};
+    uiSceneObjects[id] = OZZ::scene::SceneObject{
+        .Transform = transform,
+        .MeshData =
+            {
+                .VertexBuffer = vertexBuffer,
+                .IndexBuffer = indexBuffer,
+                .VertexCount = vertices.size(),
+                .IndexCount = indices.size(),
+            },
+        .Mat = material,
+    };
 }
 
 std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
@@ -364,10 +447,10 @@ void ClayUILayer::generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
                                      glm::vec2 scale) {
     outIndices = std::vector<uint32_t>{0, 2, 1, 3, 2, 0};
     outVertices =
-        std::vector<OZZ::Vertex>{{.position = {0.f, 0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .uv = {0.f, 0.f}},
-                                 {.position = {scale.x, 0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .uv = {1.f, 0.f}},
-                                 {.position = {scale.x, scale.y, 0.f}, .normal = {0.f, 0.f, 1.f}, .uv = {1.f, 1.f}},
-                                 {.position = {0.f, scale.y, 0.f}, .normal = {0.f, 0.f, 1.f}, .uv = {0.f, 1.f}}};
+        std::vector<OZZ::Vertex>{{.Position = {0.f, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 0.f}},
+                                 {.Position = {scale.x, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 0.f}},
+                                 {.Position = {scale.x, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 1.f}},
+                                 {.Position = {0.f, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 1.f}}};
 }
 
 void ClayUILayer::generateTextMesh(const std::string& text,
@@ -396,27 +479,27 @@ void ClayUILayer::generateTextMesh(const std::string& text,
 
         // first vertex
         auto bottomLeft = OZZ::Vertex{
-            .position = {left, bottom, 0.f},
-            .color = {1.f, 1.f, 1.f, 1.f},
-            .uv = {UV.x, UV.y},
+            .Position = {left, bottom, 0.f},
+            .Color = {1.f, 1.f, 1.f, 1.f},
+            .UV = {UV.x, UV.y},
         };
         // second vertex
         auto bottomRight = OZZ::Vertex{
-            .position = {right, bottom, 0.f},
-            .color = {1.f, 1.f, 1.f, 1.f},
-            .uv = {UV.z, UV.y},
+            .Position = {right, bottom, 0.f},
+            .Color = {1.f, 1.f, 1.f, 1.f},
+            .UV = {UV.z, UV.y},
         };
         // third vertex
         auto topLeft = OZZ::Vertex{
-            .position = {left, top, 0.f},
-            .color = {1.f, 1.f, 1.f, 1.f},
-            .uv = {UV.x, UV.w},
+            .Position = {left, top, 0.f},
+            .Color = {1.f, 1.f, 1.f, 1.f},
+            .UV = {UV.x, UV.w},
         };
         // fourth vertex
         auto topRight = OZZ::Vertex{
-            .position = {right, top, 0.f},
-            .color = {1.f, 1.f, 1.f, 1.f},
-            .uv = {UV.z, UV.w},
+            .Position = {right, top, 0.f},
+            .Color = {1.f, 1.f, 1.f, 1.f},
+            .UV = {UV.z, UV.w},
         };
 
         outVertices.push_back(topLeft);
@@ -435,24 +518,56 @@ void ClayUILayer::generateTextMesh(const std::string& text,
     }
 }
 
-bool ClayUILayer::render() {
+bool ClayUILayer::render(OZZ::rendering::RHIFrameContext& frameContext) {
     if (!renderTarget) {
         spdlog::error("Renderable {} invalid -- no render target", GetRenderableName());
         return false;
     }
-    renderTarget->Begin();
-    glClearColor(0.f, 0.f, 0.f, 0.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderTarget->Begin(frameContext);
+    auto attributeDescriptions = OZZ::Vertex::GetAttributeDescriptions();
+    device->SetGraphicsState(frameContext,
+                             {
+                                 .Rasterization =
+                                     {
+                                         .Cull = OZZ::rendering::CullMode::None,
+                                         .Front = OZZ::rendering::FrontFace::CounterClockwise,
+                                     },
+                                 .ColorBlend = {OZZ::rendering::ColorBlendAttachmentState{
+                                     .BlendEnable = true,
+                                     .SrcColorFactor = OZZ::rendering::BlendFactor::SrcAlpha,
+                                     .DstColorFactor = OZZ::rendering::BlendFactor::OneMinusSrcAlpha,
+                                     .ColorBlendOp = OZZ::rendering::BlendOp::Add,
+                                     .SrcAlphaFactor = OZZ::rendering::BlendFactor::SrcAlpha,
+                                     .DstAlphaFactor = OZZ::rendering::BlendFactor::OneMinusSrcAlpha,
+                                     .AlphaBlendOp = OZZ::rendering::BlendOp::Add,
+                                     .ColorWriteMask = static_cast<OZZ::rendering::ColorComponentFlags>(
+                                         OZZ::rendering::ColorComponent::R | OZZ::rendering::ColorComponent::G |
+                                         OZZ::rendering::ColorComponent::B | OZZ::rendering::ColorComponent::A),
+                                 }},
+                                 .ColorBlendAttachmentCount = 1,
+                                 .VertexInput =
+                                     {
+                                         .Bindings = {OZZ::Vertex::GetBindingDescription()},
+                                         .BindingCount = 1,
+                                         .Attributes = {attributeDescriptions[0],
+                                                        attributeDescriptions[1],
+                                                        attributeDescriptions[2],
+                                                        attributeDescriptions[3]},
+                                         .AttributeCount = attributeDescriptions.size(),
+                                     },
+                             });
     for (auto& object : getSceneObjects()) {
-        auto& [transform, objMesh, objMat] = object;
-        objMat->Bind();
-        objMat->GetShader()->SetMat4("view", GetCamera().ViewMatrix);
-        objMat->GetShader()->SetMat4("projection", GetCamera().ProjectionMatrix);
-        objMat->GetShader()->SetMat4("model", transform);
-        objMesh->Bind();
-        const auto drawMode = ToGLEnum(objMat->GetSettings().Mode);
-        glDrawElements(drawMode, objMesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+        auto& [transform, mesh, objMat] = object;
+        objMat->Bind(frameContext);
+
+        auto pipelineLayout = device->GetShaderPipelineLayoutHandle(objMat->GetShader()->GetRHIHandle());
+        device->SetPushConstants(
+            frameContext, pipelineLayout, OZZ::rendering::ShaderStageFlags::Vertex, 0, sizeof(glm::mat4), &transform);
+        device->BindBuffer(frameContext, mesh.VertexBuffer);
+        device->BindBuffer(frameContext, mesh.IndexBuffer);
+        device->DrawIndexed(frameContext, mesh.IndexCount, 1, 0, 0, 0);
     }
-    renderTarget->End();
+    renderTarget->End(frameContext);
+
     return true;
 }

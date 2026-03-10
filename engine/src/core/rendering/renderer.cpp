@@ -3,7 +3,6 @@
 //
 
 #include "lights/core/rendering/renderer.h"
-#include "glad/glad.h"
 #include "lights/core/rendering/renderables/renderable_viewport.h"
 
 namespace OZZ {
@@ -11,13 +10,17 @@ namespace OZZ {
         viewport = std::make_unique<RenderableViewport>();
     }
 
-    void Renderer::Init() {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glFrontFace(GL_CCW);
-        glEnable(GL_CULL_FACE);
+    Renderer::~Renderer() {
+        viewport.reset();
+        device.reset();
+    }
 
-        viewport->Init();
+    void Renderer::Init(rendering::PlatformContext&& platformContext) {
+        device = rendering::CreateRHIDevice({
+            .Backend = rendering::RHIBackend::Auto,
+            .Context = std::move(platformContext),
+        });
+        viewport->Init(device.get());
     }
 
     void Renderer::ExecuteSceneGraph(Renderable* sceneGraph) {
@@ -42,11 +45,13 @@ namespace OZZ {
             renderNode->ResetFrameState();
         }
 
+        auto frameContext = device->BeginFrame();
         for (const auto node : orderedGraph.value()) {
             auto* renderNode = static_cast<OZZ::Renderable*>(node);
-            if (!renderNode->Render()) {
+            if (!renderNode->Render(frameContext)) {
                 spdlog::error("Failed to render node {}", renderNode->GetRenderableName());
             }
         }
+        device->SubmitAndPresentFrame(std::move(frameContext));
     }
 } // namespace OZZ

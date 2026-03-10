@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "lights/core/util/enums.h"
+#include "ozz_rendering/utils/enums.h"
 #include <functional>
 
 namespace OZZ::util {
@@ -31,7 +31,9 @@ namespace OZZ::util {
         StateMachine(StateType initial,
                      std::array<StateDefs, to_index(StateType::Count)> inDefs,
                      std::vector<Transition<StateType>> inTransitions)
-            : currentState(initial), defs(std::move(inDefs)), transitions(std::move(inTransitions)) {};
+            : currentState(initial)
+            , defs(std::move(inDefs))
+            , transitions(std::move(inTransitions)) {};
 
         const StateType& GetCurrentState() const { return currentState; }
 

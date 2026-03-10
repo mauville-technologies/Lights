@@ -6,64 +6,189 @@
 
 #include "spdlog/spdlog.h"
 
-#include <glad/glad.h>
-
 namespace OZZ {
-    RenderTarget::RenderTarget(RenderTargetParams&& inParams) {
-        activeParams = setUpRenderTarget(inParams);
+
+    RenderTarget::RenderTarget(rendering::RHIDevice* inDevice, RenderTargetParams&& inParams)
+        : device(inDevice) {
+        activeParams = setupRenderTarget(inParams);
     }
 
-    void RenderTarget::Begin() {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    RenderTarget::~RenderTarget() {
+        if (texture) {
+            texture.reset();
+        }
     }
 
-    void RenderTarget::End() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    void RenderTarget::Begin(rendering::RHIFrameContext& frameContext) {
+        if (activeParams.Type == RenderTargetType::Viewport) {
+            auto descriptorCopy = renderPassDescriptor;
+            descriptorCopy.ColorAttachmentCount = 1;
+            descriptorCopy.ColorAttachments[0].Texture = frameContext.GetBackbufferImage();
+            descriptorCopy.DepthAttachment = {
+                .Texture = frameContext.GetBackbufferDepthImage(),
+                .Load = rendering::LoadOp::Clear,
+                .Store = rendering::StoreOp::DontCare,
+                .Clear =
+                    {
+                        .Depth = 1.f,
+                        .Stencil = 0,
+                    },
+                .Layout = rendering::TextureLayout::DepthStencilAttachment,
+            };
+
+            device->BeginRenderPass(frameContext, descriptorCopy);
+            device->SetViewport(frameContext,
+                                {
+                                    .X = 0,
+                                    .Y = 0,
+                                    .Width = static_cast<float>(activeParams.Size.x),
+                                    .Height = static_cast<float>(activeParams.Size.y),
+                                });
+
+            device->SetScissor(frameContext,
+                               {
+                                   .X = 0,
+                                   .Y = 0,
+                                   .Width = activeParams.Size.x,
+                                   .Height = activeParams.Size.y,
+                               });
+            return;
+        }
+        renderPassDescriptor.ColorAttachments->Texture = texture->GetRHIHandle();
+        renderPassDescriptor.ColorAttachmentCount = 1;
+        // Transition the texture to color attachment
+        if (activeParams.Type == RenderTargetType::Texture) {
+            device->TextureResourceBarrier(frameContext,
+                                           rendering::TextureBarrierDescriptor{
+                                               .Texture = texture->GetRHIHandle(),
+                                               .OldLayout = rendering::TextureLayout::Undefined,
+                                               .NewLayout = rendering::TextureLayout::ColorAttachment,
+                                               .SrcStage = rendering::PipelineStage::ColorAttachmentOutput,
+                                               .DstStage = rendering::PipelineStage::ColorAttachmentOutput,
+                                               .SrcAccess = rendering::Access::None,
+                                               .DstAccess = rendering::Access::ColorAttachmentWrite,
+                                           });
+        }
+
+        device->BeginRenderPass(frameContext, renderPassDescriptor);
+        device->SetViewport(frameContext,
+                            {
+                                .X = 0,
+                                .Y = 0,
+                                .Width = static_cast<float>(activeParams.Size.x),
+                                .Height = static_cast<float>(activeParams.Size.y),
+                            });
+
+        device->SetScissor(frameContext,
+                           {
+                               .X = 0,
+                               .Y = 0,
+                               .Width = activeParams.Size.x,
+                               .Height = activeParams.Size.y,
+                           });
     }
 
-    void RenderTarget::Resize(glm::ivec2 inSize) {
-        if (inSize == activeParams.Size && framebuffer) {
-            // don't do anything if the render target matches
+    void RenderTarget::End(rendering::RHIFrameContext& frameContext) const {
+        device->EndRenderPass(frameContext);
+        // Transition the texture to shader read optimal if it's a texture render target
+        if (activeParams.Type == RenderTargetType::Texture) {
+            device->TextureResourceBarrier(frameContext,
+                                           rendering::TextureBarrierDescriptor{
+                                               .Texture = texture->GetRHIHandle(),
+                                               .OldLayout = rendering::TextureLayout::ColorAttachment,
+                                               .NewLayout = rendering::TextureLayout::ShaderReadOnly,
+                                               .SrcStage = rendering::PipelineStage::ColorAttachmentOutput,
+                                               .DstStage = rendering::PipelineStage::FragmentShader,
+                                               .SrcAccess = rendering::Access::ColorAttachmentWrite,
+                                               .DstAccess = rendering::Access::ShaderRead,
+                                               .SubresourceRange =
+                                                   {
+                                                       .Aspect = rendering::TextureAspect::Color,
+                                                       .BaseMipLevel = 0,
+                                                       .LevelCount = 1,
+                                                       .BaseArrayLayer = 0,
+                                                       .LayerCount = 1,
+                                                   },
+                                           });
+        }
+    }
+
+    void RenderTarget::Resize(glm::uvec2 inSize) {
+        if (inSize == activeParams.Size) {
+            // don't do anything if the render target matcheTextureDescriptors
             return;
         }
 
         auto params = activeParams;
         params.Size = inSize;
-        activeParams = setUpRenderTarget(params);
+        activeParams = setupRenderTarget(params);
     }
 
-    RenderTargetParams RenderTarget::setUpRenderTarget(const RenderTargetParams& inParams) {
-        // TODO: @paulm -- might need some sync structures here to make sure that things don't do things when things are
-        // happening
-        if (inParams != activeParams ||
-            ((framebuffer == 0 || !texture) && activeParams.Type == RenderTargetType::Texture)) {
-            // clear existing resources
-            if (texture) {
-                texture.reset();
-            }
-            if (framebuffer) {
-                glDeleteFramebuffers(1, &framebuffer);
-                framebuffer = 0;
-            }
-
-            if (inParams.Type == RenderTargetType::Texture) {
-                glGenFramebuffers(1, &framebuffer);
-                Begin();
-                texture = std::make_unique<OZZ::Texture>();
-                texture->Reserve(inParams.Size);
-                texture->Bind();
-
-                glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture->GetId(), 0);
-                GLenum drawBuffer = GL_COLOR_ATTACHMENT0;
-                glDrawBuffers(1, &drawBuffer);
-                if (auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER); status != GL_FRAMEBUFFER_COMPLETE) {
-                    spdlog::error("Failed to create render target {}", status);
-                }
-                End();
-            } else {
-                framebuffer = 0;
-            }
+    RenderTargetParams RenderTarget::setupRenderTarget(const RenderTargetParams& inParams) {
+        if (texture) {
+            texture.reset();
         }
+        renderPassDescriptor = {
+            .ColorAttachments = {},
+            .ColorAttachmentCount = 0,
+            .DepthAttachment = {},
+            .StencilAttachment = {},
+            .RenderArea =
+                {
+                    .X = 0,
+                    .Y = 0,
+                    .Width = inParams.Size.x,
+                    .Height = inParams.Size.y,
+                },
+            .LayerCount = 1,
+        };
+
+        renderPassDescriptor.ColorAttachmentCount = 1;
+        renderPassDescriptor.ColorAttachments[0] = {
+            // TODO: We may not want to clear all the time -- probably worth putting in params if necessary
+            .Load = rendering::LoadOp::Clear,
+            .Store = rendering::StoreOp::Store,
+            .Clear =
+                {
+                    .R = activeParams.ClearColor.r,
+                    .G = activeParams.ClearColor.g,
+                    .B = activeParams.ClearColor.b,
+                    .A = activeParams.ClearColor.a,
+                },
+            .Layout = rendering::TextureLayout::ColorAttachment,
+        };
+        renderPassDescriptor.DepthAttachment = {
+            .Load = rendering::LoadOp::Clear,
+            .Store = rendering::StoreOp::DontCare,
+            .Clear =
+                {
+                    .Depth = 1.f,
+                    .Stencil = 0,
+                },
+            .Layout = rendering::TextureLayout::DepthStencilAttachment,
+        };
+
+        if (inParams.Type == RenderTargetType::Texture) {
+            texture = std::make_shared<Texture>(
+                device,
+                rendering::TextureDescriptor{
+                    .Width = inParams.Size.x,
+                    .Height = inParams.Size.y,
+                    .Format = rendering::TextureFormat::RGBA8,
+                    .Usage = rendering::TextureUsage::Sampled | rendering::TextureUsage::ColorAttachment,
+                });
+            renderPassDescriptor.ColorAttachments[0].Texture = texture->GetRHIHandle();
+
+            depthTexture = std::make_shared<Texture>(device,
+                                                     rendering::TextureDescriptor{
+                                                         .Width = inParams.Size.x,
+                                                         .Height = inParams.Size.y,
+                                                         .Format = rendering::TextureFormat::D24S8,
+                                                         .Usage = rendering::TextureUsage::DepthAttachment,
+                                                     });
+            renderPassDescriptor.DepthAttachment.Texture = depthTexture->GetRHIHandle();
+        }
+
         return inParams;
     }
 } // namespace OZZ

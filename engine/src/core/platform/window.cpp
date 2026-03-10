@@ -3,7 +3,6 @@
 //
 
 #include "lights/core/platform/window.h"
-#include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
 #ifdef OZZ_GLFW
@@ -34,14 +33,6 @@ namespace OZZ {
 
         window->CreateWindow("Ozzadar", 800, 600);
         window->MakeContextCurrent();
-
-        if (!bGLADInitialized) {
-            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(window->GetProcAddress()))) {
-                spdlog::error("Failed to initialize GLAD");
-                return;
-            }
-            bGLADInitialized = true;
-        }
 
         window->InitInput(std::move(inCallbacks));
     }

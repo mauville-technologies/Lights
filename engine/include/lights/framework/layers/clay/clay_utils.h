@@ -5,6 +5,8 @@
 //
 
 #pragma once
+#include <lights/core/rendering/texture.h>
+#include <memory>
 
 #define CLAY_IMAGE_STRING(Arg) static_cast<void*>(const_cast<char*>(Arg))
 #define CLAY_EXTRACT_IMAGE_STRING(RenderCommand) static_cast<const char*>(RenderCommand.renderData.image.imageData)

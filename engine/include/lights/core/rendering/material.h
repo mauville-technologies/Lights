@@ -8,7 +8,6 @@
 #include "shader.h"
 #include "texture.h"
 
-#include <glad/glad.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -17,74 +16,63 @@
 namespace OZZ {
     enum class DrawMode { Triangles, Lines, LineLoop, Points };
 
-    inline GLenum ToGLEnum(const DrawMode& mode) {
+    inline rendering::PrimitiveTopology ToRHIPrimitiveTopology(const DrawMode& mode) {
         switch (mode) {
             case DrawMode::Points:
-                return GL_POINTS;
+                return rendering::PrimitiveTopology::PointList;
             case DrawMode::Lines:
-                return GL_LINES;
+                return rendering::PrimitiveTopology::LineList;
             case DrawMode::LineLoop:
-                return GL_LINE_LOOP;
+                // Line loop isn't directly supported in modern APIs, so we might need to emulate it with an index
+                // buffer
+                return rendering::PrimitiveTopology::LineList;
             case DrawMode::Triangles:
             default:
-                return GL_TRIANGLES;
+                return rendering::PrimitiveTopology::TriangleList;
         }
     }
 
     class Material {
     public:
-        struct TextureMapping {
-            std::string SlotName;
-            int SlotNumber;
-            std::shared_ptr<Texture> TextureResource;
-        };
-
-        struct StorageBufferBindings {
-            uint16_t BindingPoint{std::numeric_limits<uint16_t>::max()};
-            StorageBufferBase* Buffer{nullptr};
-        };
-
-        struct UniformSetting {
-            std::string Name;
-            std::variant<int, glm::vec2, glm::vec3, glm::vec4, glm::mat4> Value;
-        };
-
         struct MaterialSettings {
             DrawMode Mode{DrawMode::Triangles};
             float LineWidth{1.f};
             float PointSize{1.f};
             bool bHasScissor{false};
-            glm::vec4 Scissor{0, 0, 0, 0};
+            glm::ivec4 Scissor{0, 0, 0, 0};
         };
 
-        Material() = default;
-        ~Material() = default;
+        Material(rendering::RHIDevice* inDevice)
+            : device(inDevice) {}
 
-        void Bind();
+        ~Material();
+
+        void Bind(rendering::RHIFrameContext& frameContext);
 
         void SetShader(std::shared_ptr<Shader> inShader) { this->shader = std::move(inShader); }
 
         [[nodiscard]] std::shared_ptr<Shader> GetShader() const { return shader; }
 
-        void AddTextureMapping(const TextureMapping& mapping);
-        void RemoveTextureMapping(const std::string& slotName);
-        void AddUniformSetting(const UniformSetting& setting);
-        void RemoveUniformSetting(const std::string& name);
-        void AddStorageBufferBinding(uint16_t bindingPoint, StorageBufferBase* buffer);
-        void RemoveStorageBufferBinding(uint16_t bindingPoint);
+        bool SetResource(uint32_t set,
+                         uint32_t binding,
+                         const std::variant<rendering::RHITextureHandle, rendering::RHIBufferHandle>& resource);
 
-        [[nodiscard]] const std::vector<TextureMapping>& GetTextureMappings() const { return textureMappings; }
+        void RemoveResource(uint32_t set, uint32_t binding);
 
         MaterialSettings& GetSettings() { return settings; }
 
         [[nodiscard]] const MaterialSettings& GetSettings() const { return settings; }
 
     private:
-        std::shared_ptr<Shader> shader;
-        std::vector<TextureMapping> textureMappings;
-        std::vector<UniformSetting> uniformSettings;
-        std::vector<StorageBufferBindings> storageBufferBindings;
+        rendering::RHIDevice* device;
+        std::unordered_map<uint32_t, rendering::RHIDescriptorSetHandle> descriptorSets;
+        std::unordered_map<uint32_t, bool> dirtyDescriptorSets;
 
+        std::shared_ptr<Shader> shader;
+        std::unordered_map<
+            uint32_t,
+            std::unordered_map<uint32_t, std::variant<rendering::RHITextureHandle, rendering::RHIBufferHandle>>>
+            resources;
         MaterialSettings settings;
     };
 } // namespace OZZ

@@ -4,8 +4,6 @@ set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(third_party)
 
-find_package(OpenGL REQUIRED)
-
 set(SOURCES
         src/core/algo/graph_node.cpp
 

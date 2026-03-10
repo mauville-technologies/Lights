@@ -14,10 +14,10 @@ namespace OZZ::scene {
     class SceneLayerManager {
     public:
         ~SceneLayerManager();
-        void Init();
+        void Init(rendering::RHIDevice* inDevice);
 
         template <typename T, typename... Args>
-        T* LoadLayer(const std::string& layerName, Args&&... args) {
+        T* LoadLayer(rendering::RHIDevice* inDevice, const std::string& layerName, Args&&... args) {
             bool wasInserted = false;
             auto newLayer = std::make_unique<T>(std::forward<Args>(args)...);
             // First we look for an empty slot to insert the layer
@@ -44,7 +44,7 @@ namespace OZZ::scene {
 
             // if the manager is already initialized, we initialize the new layer
             if (bIsInitialized) {
-                insertedLayer->Init();
+                insertedLayer->Init(inDevice);
             }
             return insertedLayer;
         }
@@ -71,6 +71,7 @@ namespace OZZ::scene {
         std::vector<SceneLayer*> GetAllLayers() const;
 
     private:
+        rendering::RHIDevice* device{nullptr};
         std::set<size_t> activeLayers;
         std::vector<std::string> layerNames;
         std::vector<uint16_t> layerExecutionOrders;

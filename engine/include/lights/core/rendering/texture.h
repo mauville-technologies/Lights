@@ -3,35 +3,32 @@
 //
 
 #pragma once
+#include "ozz_rendering/rhi_device.h"
+
 #include <atomic>
 #include <lights/core/util/image.h>
 
 namespace OZZ {
     class Texture {
     public:
-        Texture();
+        Texture(rendering::RHIDevice* inDevice, rendering::TextureDescriptor&& inDescriptor);
         ~Texture();
 
-        void Reserve(glm::ivec2 Size);
+        void Reserve(glm::uvec2 size);
         void UploadData(Image* image);
-        void UploadData(Image* image, size_t offset);
         void FinalizeUpload();
 
-        void Bind();
+        const rendering::TextureDescriptor& GetDescriptor() const { return descriptor; }
 
-        int GetWidth() const { return width; }
-
-        int GetHeight() const { return height; }
-
-        uint32_t GetId() const { return textureId; };
+        rendering::RHITextureHandle GetRHIHandle() const { return rhiTextureHandle; }
 
         bool IsLoaded() const { return bLoaded.load(); };
 
     private:
-        uint32_t textureId;
-        int width{0};
-        int height{0};
+        rendering::RHIDevice* device;
+        rendering::TextureDescriptor descriptor;
 
+        rendering::RHITextureHandle rhiTextureHandle{rendering::RHITextureHandle::Null()};
         std::atomic<bool> bLoaded{false};
     };
 } // namespace OZZ

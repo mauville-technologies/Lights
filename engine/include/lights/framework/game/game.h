@@ -8,11 +8,11 @@
 #include <toml.hpp>
 
 #include "lights/core/audio/audio_subsystem.h"
-#include "lights/framework/input/input_subsystem.h"
 #include "lights/core/platform/window.h"
 #include "lights/core/rendering/renderer.h"
-#include "lights/framework/scene/scene.h"
 #include "lights/core/util/configuration.h"
+#include "lights/framework/input/input_subsystem.h"
+#include "lights/framework/scene/scene.h"
 
 namespace OZZ::game {
     enum class EWindowMode { Windowed, BorderlessFullscreen };
@@ -196,19 +196,38 @@ namespace OZZ::game {
 
         void initRenderer() {
             renderer = std::make_unique<Renderer>();
-            renderer->Init();
+            renderer->Init({
+                .AppName = "Ozzadar Game",
+                .AppVersion = {0, 1, 0, 0},
+                .EngineName = "Ozzadar Engine",
+                .EngineVersion = {0, 1, 0, 0},
+                .RequiredInstanceExtensions = window->GetRequiredInstanceExtensions(),
+                .GetWindowFramebufferSizeFunction =
+                    [this]() {
+                        return std::make_pair(window->GetSize().x, window->GetSize().y);
+                    },
+                .CreateSurfaceFunction =
+                    [this](void* instance, void* surface) {
+                        return window->CreateSurface(instance, surface);
+                    },
+            });
 
-            resourceManager = std::make_unique<scene::ResourceManager>();
+            resourceManager = std::make_unique<scene::ResourceManager>(renderer->GetDevice());
         }
 
         void initScene() {
             scene = std::make_unique<SceneType>();
-            scene->InitScene(input, resourceManager.get());
+            scene->InitScene(renderer->GetDevice(), input, resourceManager.get());
             scene->WindowResized(window->GetSize());
         }
 
         // TODO: The viewport will probably live in a render target
-        void updateViewport(glm::ivec2 size) { glViewport(0, 0, size.x, size.y); }
+        void updateViewport(glm::uvec2 size) {
+            // TODO: GOTTA REIMPLEMENT THIS
+            if (renderer) {
+                renderer->ViewportResize(size);
+            }
+        }
 
         void drawScene(OZZ::scene::Scene* scene) {
             // renderer->RenderScene(scene);

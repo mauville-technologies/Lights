@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include <lights/framework/input/input_subsystem.h>
 #include <lights/core/rendering/renderable.h>
+#include <lights/framework/input/input_subsystem.h>
 #include <lights/framework/scene/scene_layer.h>
 #include <lights/framework/scene/scene_layer_manager.h>
 
@@ -30,7 +30,9 @@ namespace OZZ::scene {
     class Scene {
     public:
         // Should be called at the end of the derived class Init function
-        virtual void InitScene(std::shared_ptr<InputSubsystem> inInput, ResourceManager* inResourceManager);
+        virtual void InitScene(OZZ::rendering::RHIDevice* inDevice,
+                               std::shared_ptr<InputSubsystem> inInput,
+                               ResourceManager* inResourceManager);
 
         virtual void Tick(float DeltaTime);
 
@@ -48,6 +50,7 @@ namespace OZZ::scene {
         [[nodiscard]] bool HasSceneEnded() const { return bEnded; }
 
     protected:
+        rendering::RHIDevice* device{nullptr};
         std::unique_ptr<SceneLayerManager> layerManager{nullptr};
         std::shared_ptr<InputSubsystem> input{nullptr};
         ResourceManager* resourceManager{nullptr};

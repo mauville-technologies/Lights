@@ -13,6 +13,9 @@ namespace OZZ::platform::SDL3 {
     class SDLWindow final : public IPlatformWindow {
     public:
         void CreateWindow(const std::string& title, int width, int height) override;
+
+        bool CreateSurface(void* instance, void* surfaceOut) override;
+        std::vector<std::string> GetRequiredInstanceExtensions() override;
         void* GetProcAddress() override;
         void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;
@@ -29,6 +32,7 @@ namespace OZZ::platform::SDL3 {
         void addGamepad(int sdlIndex);
         void clearGamepad(int sdlIndex);
 
+    public:
     private:
         SDL_Window* window{nullptr};
         SDL_GLContext glContext{nullptr};

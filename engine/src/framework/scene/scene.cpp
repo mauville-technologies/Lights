@@ -4,7 +4,10 @@
 #include "lights/framework/scene/scene.h"
 
 namespace OZZ {
-    void scene::Scene::InitScene(std::shared_ptr<InputSubsystem> inInput, ResourceManager* inResourceManager) {
+    void scene::Scene::InitScene(OZZ::rendering::RHIDevice* inDevice,
+                                 std::shared_ptr<InputSubsystem> inInput,
+                                 ResourceManager* inResourceManager) {
+        device = inDevice;
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
         resourceManager = inResourceManager;

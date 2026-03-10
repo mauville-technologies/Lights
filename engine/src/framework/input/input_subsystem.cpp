@@ -4,9 +4,7 @@
 
 #include "lights/framework/input/input_subsystem.h"
 
-#include "lights/core/util/enums.h"
-
-#include <cassert>
+#include "ozz_rendering/utils/enums.h"
 
 #include <algorithm>
 #include <spdlog/spdlog.h>

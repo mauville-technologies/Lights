@@ -23,6 +23,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glmlib)
 
+target_compile_definitions(glm INTERFACE
+        GLM_FORCE_DEPTH_ZERO_TO_ONE
+)
+
 FetchContent_Declare(
         freetype2_lib
         GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
@@ -85,7 +89,7 @@ endif ()
 FetchContent_MakeAvailable(ozz_rendering_lib)
 
 #add_subdirectory(asio)
-add_subdirectory(glad)
+#add_subdirectory(glad)
 add_subdirectory(clay)
 add_subdirectory(stb)
 
@@ -93,7 +97,7 @@ add_library(third_party INTERFACE)
 
 set(LIBS
         #        asio
-        glad
+        #        glad
         glm
         stb
         clay
