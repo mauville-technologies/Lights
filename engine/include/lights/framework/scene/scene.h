@@ -55,6 +55,7 @@ namespace OZZ::scene {
         std::shared_ptr<InputSubsystem> input{nullptr};
         ResourceManager* resourceManager{nullptr};
 
+        float physicsAccumulator {0.f};
         bool bEnded{false};
 
     private:

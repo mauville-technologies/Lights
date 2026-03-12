@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <ranges>
 
 #include <lights/framework/scene/scene_layer.h>
@@ -18,6 +19,16 @@ namespace OZZ::scene {
 
         template <typename T, typename... Args>
         T* LoadLayer(rendering::RHIDevice* inDevice, const std::string& layerName, Args&&... args) {
+            for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+                if (name != layerName) {
+                    continue;
+                }
+
+                auto* existingLayer = dynamic_cast<T*>(layers[index].get());
+                assert(existingLayer && "Layer name already exists with a different type.");
+                return existingLayer;
+            }
+
             bool wasInserted = false;
             auto newLayer = std::make_unique<T>(std::forward<Args>(args)...);
             // First we look for an empty slot to insert the layer

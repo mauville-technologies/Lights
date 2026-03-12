@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <spdlog/spdlog.h>
+#include <utility>
 
 namespace OZZ {
     InputSubsystem::InputSubsystem() {}
@@ -252,17 +253,21 @@ namespace OZZ {
 
     void InputSubsystem::RegisterInputMapping(InputMapping&& Mapping) {
         std::string Action = Mapping.Action;
+        for (auto& chord : Mapping.Chords) {
+            chord.EnsureInitialized();
+        }
+
         bool bFound = false;
         for (auto& ExistingMapping : mappings) {
             if (ExistingMapping.Action == Action) {
-                ExistingMapping = Mapping;
+                ExistingMapping = std::move(Mapping);
                 bFound = true;
                 break;
             }
         }
 
         if (!bFound) {
-            mappings.push_back(Mapping);
+            mappings.push_back(std::move(Mapping));
         }
     }
 

@@ -97,18 +97,29 @@ namespace OZZ::game {
             initGL();
             initRenderer();
             initScene();
+            resetSleepStatistics();
 
             auto lastTickTime = std::chrono::high_resolution_clock::now();
             auto lastRenderTime = std::chrono::high_resolution_clock::now();
             const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
             while (bRunning) {
-                auto currentTime = std::chrono::high_resolution_clock::now();
                 if (scene->HasSceneEnded()) {
                     bRunning = false;
                     continue;
                 }
 
+                window->PollEvents();
+                if (!bRunning) {
+                    continue;
+                }
+
+                // Tick on all polled events
+                if (input) {
+                    input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
+                }
+
+                auto currentTime = std::chrono::high_resolution_clock::now();
                 resourceManager->Tick();
                 {
                     // Tick and render all scenes
@@ -128,12 +139,7 @@ namespace OZZ::game {
                     }
                     lastTickTime = currentTime;
                 }
-                window->PollEvents();
 
-                // Tick on all polled events
-                if (input) {
-                    input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
-                }
                 auto frameTime = std::chrono::high_resolution_clock::now();
                 const double sleepsSec = 1.0 / params.Config.FPS - (frameTime - currentTime).count() / 1e9;
                 preciseSleep(sleepsSec);
@@ -243,12 +249,7 @@ namespace OZZ::game {
             using namespace std;
             using namespace std::chrono;
 
-            static double estimate = 5e-3;
-            static double mean = 5e-3;
-            static double m2 = 0;
-            static int64_t count = 1;
-
-            while (seconds > estimate) {
+            while (seconds > sleepEstimate) {
                 auto start = high_resolution_clock::now();
                 this_thread::sleep_for(milliseconds(1));
                 auto end = high_resolution_clock::now();
@@ -256,18 +257,25 @@ namespace OZZ::game {
                 double observed = (end - start).count() / 1e9;
                 seconds -= observed;
 
-                ++count;
-                const double delta = observed - mean;
-                mean += delta / count;
-                m2 += delta * (observed - mean);
-                const double stddev = sqrt(m2 / (count - 1));
-                estimate = mean + stddev;
+                ++sleepCount;
+                const double delta = observed - sleepMean;
+                sleepMean += delta / static_cast<double>(sleepCount);
+                sleepM2 += delta * (observed - sleepMean);
+                const double stddev = sqrt(sleepM2 / static_cast<double>(sleepCount - 1));
+                sleepEstimate = sleepMean + stddev;
             }
 
             // spin lock
             const auto start = high_resolution_clock::now();
             while ((high_resolution_clock::now() - start).count() / 1e9 < seconds) {
             }
+        }
+
+        void resetSleepStatistics() {
+            sleepEstimate = 5e-3;
+            sleepMean = 5e-3;
+            sleepM2 = 0.0;
+            sleepCount = 1;
         }
 
     private:
@@ -282,5 +290,10 @@ namespace OZZ::game {
         std::unique_ptr<Renderer> renderer{nullptr};
 
         std::unique_ptr<scene::ResourceManager> resourceManager{nullptr};
+
+        double sleepEstimate {5e-3};
+        double sleepMean {5e-3};
+        double sleepM2 {0.0};
+        int64_t sleepCount {1};
     };
 } // namespace OZZ::game

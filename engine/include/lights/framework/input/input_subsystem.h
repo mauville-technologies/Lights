@@ -39,7 +39,7 @@ namespace OZZ {
         bool ReceiveEvent(InputKey Key, EKeyState State);
         void EnsureInitialized();
 
-        bool bInitialized;
+        bool bInitialized {false};
     };
 
     struct ActionCallbacks {

@@ -11,21 +11,21 @@ namespace OZZ {
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
         resourceManager = inResourceManager;
+        physicsAccumulator = 0.f;
     }
 
     void scene::Scene::Tick(float DeltaTime) {
-        static constexpr float physicsTickRate = 1.f / 60.f;
-        static float accumulator = 0.f;
-        accumulator += DeltaTime;
+        constexpr float physicsTickRate = 1.f / 60.f;
+        physicsAccumulator += DeltaTime;
 
         const auto& activeLayers = GetActiveLayers();
-        while (accumulator >= physicsTickRate) {
+        while (physicsAccumulator >= physicsTickRate) {
             for (const auto& Layer : activeLayers) {
                 Layer->PhysicsTick(physicsTickRate);
             }
 
             // TODO: @paulm - Physics tick
-            accumulator -= physicsTickRate;
+            physicsAccumulator -= physicsTickRate;
         }
         for (const auto& Layer : activeLayers) {
             Layer->Tick(DeltaTime);
