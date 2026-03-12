@@ -39,7 +39,6 @@ layout (location = 1) in vec4 aColor;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec2 aTexCoord;
 
-layout (location = 0) out vec4 ourColor;
 layout (location = 1) out vec2 texCoord;
 
 layout(set = 0, binding = 0) uniform CameraSettings {
@@ -54,7 +53,6 @@ layout(push_constant) uniform PushConstants {
 void main()
 {
     gl_Position = camera.proj * camera.view * pc.model * vec4(aPos, 1.0);
-    ourColor = aColor;
     texCoord = aTexCoord;
 }
 
@@ -64,7 +62,6 @@ void main()
 #version 450 core
 layout (location = 0) out vec4 FragColor;
 
-layout (location = 0) in vec4 ourColor;
 layout (location = 1) in vec2 texCoord;
 
 layout(set = 0, binding = 1) uniform UIComponentSettings {
@@ -231,6 +228,7 @@ private:
     std::shared_ptr<OZZ::Shader> textShader{};
     std::unordered_map<uint32_t, OZZ::scene::SceneObject> uiSceneObjects{};
     std::unordered_map<uint32_t, OZZ::rendering::RHIBufferHandle> uiComponentSettings{};
+
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
 
     std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture>> uiImages{};

@@ -17,6 +17,7 @@ namespace OZZ {
         RenderTargetType Type{RenderTargetType::Texture};
         glm::uvec2 Size{1, 1};
         glm::vec4 ClearColor{0.f, 0.f, 0.f, 0.f};
+        bool bHasDepth{true};
 
         bool operator==(const RenderTargetParams& other) const { return Type == other.Type && Size == other.Size; }
     };

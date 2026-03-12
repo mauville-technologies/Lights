@@ -157,16 +157,19 @@ namespace OZZ {
                 },
             .Layout = rendering::TextureLayout::ColorAttachment,
         };
-        renderPassDescriptor.DepthAttachment = {
-            .Load = rendering::LoadOp::Clear,
-            .Store = rendering::StoreOp::DontCare,
-            .Clear =
-                {
-                    .Depth = 1.f,
-                    .Stencil = 0,
-                },
-            .Layout = rendering::TextureLayout::DepthStencilAttachment,
-        };
+
+        if (inParams.bHasDepth) {
+            renderPassDescriptor.DepthAttachment = {
+                .Load = rendering::LoadOp::Clear,
+                .Store = rendering::StoreOp::DontCare,
+                .Clear =
+                    {
+                        .Depth = 1.f,
+                        .Stencil = 0,
+                    },
+                .Layout = rendering::TextureLayout::DepthStencilAttachment,
+            };
+        }
 
         if (inParams.Type == RenderTargetType::Texture) {
             texture = std::make_shared<Texture>(
@@ -179,14 +182,16 @@ namespace OZZ {
                 });
             renderPassDescriptor.ColorAttachments[0].Texture = texture->GetRHIHandle();
 
-            depthTexture = std::make_shared<Texture>(device,
-                                                     rendering::TextureDescriptor{
-                                                         .Width = inParams.Size.x,
-                                                         .Height = inParams.Size.y,
-                                                         .Format = rendering::TextureFormat::D24S8,
-                                                         .Usage = rendering::TextureUsage::DepthAttachment,
-                                                     });
-            renderPassDescriptor.DepthAttachment.Texture = depthTexture->GetRHIHandle();
+            if (inParams.bHasDepth) {
+                depthTexture = std::make_shared<Texture>(device,
+                                                         rendering::TextureDescriptor{
+                                                             .Width = inParams.Size.x,
+                                                             .Height = inParams.Size.y,
+                                                             .Format = rendering::TextureFormat::D24S8,
+                                                             .Usage = rendering::TextureUsage::DepthAttachment,
+                                                         });
+                renderPassDescriptor.DepthAttachment.Texture = depthTexture->GetRHIHandle();
+            }
         }
 
         return inParams;

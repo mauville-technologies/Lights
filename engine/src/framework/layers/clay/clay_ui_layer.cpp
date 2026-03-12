@@ -28,10 +28,11 @@ void ClayUILayer::Init(OZZ::rendering::RHIDevice* inDevice) {
                                                        OZZ::RenderTargetParams{
                                                            .Type = OZZ::RenderTargetType::Texture,
                                                            .ClearColor = {1.f, 1.f, 0.f, 0.f},
+                                                           .bHasDepth = false,
                                                        });
     renders.insert(std::make_pair(GetRenderableName(), renderTarget.get()));
     reinitializeClay();
-    LayerCamera.ViewMatrix = glm::mat4(1.f);
+    LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{0, 0, 4}, {0, 0, 0}, {0, 1, 0});
 
     // create camera buffer
     CameraSettings cameraSettings{
@@ -91,13 +92,14 @@ void ClayUILayer::RenderTargetResized(const glm::ivec2 size) {
     }
 
     LayerCamera.ProjectionMatrix =
-        glm::ortho(0.0f, static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 0.0f, -1.0f, 1.0f);
+        glm::ortho(0.0f, static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 0.0f, -1000.0f, 100.0f);
     // update camera buffer
     CameraSettings cameraSettings{
         .View = LayerCamera.ViewMatrix,
         .Proj = LayerCamera.ProjectionMatrix,
     };
     device->UpdateBuffer(cameraBuffer, &cameraSettings, sizeof(CameraSettings), 0);
+
     if (bClayInitialized) {
         Clay_SetLayoutDimensions(
             Clay_Dimensions{.width = static_cast<float>(size.x), .height = static_cast<float>(size.y)});
@@ -139,13 +141,14 @@ void ClayUILayer::reinitializeClay() {
     fontLoader = std::make_unique<OZZ::FontLoader>();
     clayTotalMemorySize = Clay_MinMemorySize();
     clayArena = Clay_CreateArenaWithCapacityAndMemory(clayTotalMemorySize, malloc(clayTotalMemorySize));
-    Clay_Initialize(clayArena,
-                    Clay_Dimensions{static_cast<float>(screenSize.x), static_cast<float>(screenSize.y)},
-                    {[](Clay_ErrorData error) {
-                         // Handle error
-                         spdlog::error("Clay Error: {}", error.errorText.chars);
-                     },
-                     this});
+    auto context = Clay_Initialize(clayArena,
+                                   Clay_Dimensions{static_cast<float>(screenSize.x), static_cast<float>(screenSize.y)},
+                                   {[](Clay_ErrorData error) {
+                                        // Handle error
+                                        spdlog::error("Clay Error: {}", error.errorText.chars);
+                                    },
+                                    this});
+    Clay_SetCurrentContext(context);
     Clay_SetDebugModeEnabled(false);
     Clay_SetMeasureTextFunction(
         [](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) -> Clay_Dimensions {
@@ -208,12 +211,14 @@ void ClayUILayer::buildShaders() {
 
 void ClayUILayer::shutdownClay() {
     if (bClayInitialized) {
+        spdlog::info("Shutting down clay");
         fontRegistry.clear();
         uiShader.reset();
         textShader.reset();
         uiImages.clear();
         free(clayArena.memory);
         clayArena = {};
+        Clay_SetCurrentContext({});
         bClayInitialized = false;
     }
 }
@@ -223,13 +228,12 @@ void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderComman
     if (currentRenderCommand.contains(id)) {
         bBuildSceneObject =
             isRenderCommandChanged(command, currentRenderCommand[id]) ||
-            scissor.bHasScissor != uiSceneObjects.at(id).Mat->GetSettings().bHasScissor ||
-            (scissor.bHasScissor &&
-             uiSceneObjects.at(id).Mat->GetSettings().Scissor !=
-                 glm::ivec4{scissor.ScissorBox.x,
-                            static_cast<float>(screenSize.y) - (scissor.ScissorBox.y + scissor.ScissorBox.height),
-                            scissor.ScissorBox.width,
-                            scissor.ScissorBox.height});
+            (scissor.bHasScissor && uiSceneObjects.at(id).Mat->GetSettings().Scissor != glm::ivec4{
+                                                                                            scissor.ScissorBox.x,
+                                                                                            scissor.ScissorBox.y,
+                                                                                            scissor.ScissorBox.width,
+                                                                                            scissor.ScissorBox.height,
+                                                                                        });
     }
 
     if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START ||
@@ -244,7 +248,7 @@ void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderComman
 
 void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand& command, const ScissorDef& scissor) {
     // cache the command
-    spdlog::debug("Building scene object for command ID: {}", id);
+    spdlog::trace("Building scene object for command ID: {}", id);
     currentRenderCommand[id] = command;
 
     Clay_CornerRadius borderRadius{0, 0, 0, 0};
@@ -253,19 +257,27 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
     Clay_BorderWidth borderWidth{0, 0, 0, 0};
 
     glm::vec3 scale = {command.boundingBox.width, command.boundingBox.height, 1.f};
-    glm::vec3 translation = {command.boundingBox.x, command.boundingBox.y, 0.f};
+    glm::vec3 translation = {command.boundingBox.x, command.boundingBox.y, 0}; // ensure unique Z for proper layering
     std::vector<OZZ::Vertex> vertices;
     std::vector<uint32_t> indices;
     std::shared_ptr<OZZ::Texture> texture = uiImages["empty"];
 
     const auto material = std::make_shared<OZZ::Material>(device);
     material->SetShader(uiShader);
-    material->GetSettings().bHasScissor = scissor.bHasScissor;
-    material->GetSettings().Scissor =
-        glm::vec4{scissor.ScissorBox.x,
-                  static_cast<float>(screenSize.y) - (scissor.ScissorBox.y + scissor.ScissorBox.height),
-                  scissor.ScissorBox.width,
-                  scissor.ScissorBox.height};
+    material->GetSettings().bHasScissor = true;
+    scissor.bHasScissor ? material->GetSettings().Scissor =
+                              glm::vec4{
+                                  scissor.ScissorBox.x,
+                                  scissor.ScissorBox.y,
+                                  scissor.ScissorBox.width,
+                                  scissor.ScissorBox.height,
+                              }
+                        : material->GetSettings().Scissor = glm::vec4{
+                              0,
+                              0,
+                              screenSize.x,
+                              screenSize.y,
+                          };
 
     // build the vertex data
     switch (command.commandType) {
@@ -290,7 +302,7 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
         }
         case CLAY_RENDER_COMMAND_TYPE_TEXT: {
             scale = {1.f, 1.f, 1.f};
-            translation = {translation.x, translation.y, 0.f};
+            // translation = {translation.x, translation.y, 0.f};
             material->SetShader(textShader);
             auto fontPath = fontRegistry[command.renderData.text.fontId];
             auto fontSize = command.renderData.text.fontSize;
@@ -421,6 +433,7 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
     auto sceneObjects = std::vector<OZZ::scene::SceneObject>();
 
     ScissorDef scissor{};
+    uint32_t idx = 0;
     for (const auto command : std::span(clayRenderCommandArray.internalArray, clayRenderCommandArray.length)) {
         if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
             scissor.bHasScissor = true;
@@ -434,12 +447,15 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
         refreshSceneObject(command.id, command, scissor);
         if (uiSceneObjects.contains(command.id))
             sceneObjects.emplace_back(uiSceneObjects[command.id]);
+
+        idx++;
     }
     return sceneObjects;
 }
 
 bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand) {
-    return std::memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
+    const auto hasChanged = std::memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
+    return hasChanged;
 }
 
 void ClayUILayer::generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
@@ -532,12 +548,18 @@ bool ClayUILayer::render(OZZ::rendering::RHIFrameContext& frameContext) {
                                          .Cull = OZZ::rendering::CullMode::None,
                                          .Front = OZZ::rendering::FrontFace::CounterClockwise,
                                      },
+                                 .DepthStencil =
+                                     {
+                                         .DepthTestEnable = false,
+                                         .DepthWriteEnable = false,
+                                         .DepthCompareOp = OZZ::rendering::CompareOp::LessOrEqual,
+                                     },
                                  .ColorBlend = {OZZ::rendering::ColorBlendAttachmentState{
                                      .BlendEnable = true,
                                      .SrcColorFactor = OZZ::rendering::BlendFactor::SrcAlpha,
                                      .DstColorFactor = OZZ::rendering::BlendFactor::OneMinusSrcAlpha,
                                      .ColorBlendOp = OZZ::rendering::BlendOp::Add,
-                                     .SrcAlphaFactor = OZZ::rendering::BlendFactor::SrcAlpha,
+                                     .SrcAlphaFactor = OZZ::rendering::BlendFactor::One,
                                      .DstAlphaFactor = OZZ::rendering::BlendFactor::OneMinusSrcAlpha,
                                      .AlphaBlendOp = OZZ::rendering::BlendOp::Add,
                                      .ColorWriteMask = static_cast<OZZ::rendering::ColorComponentFlags>(
