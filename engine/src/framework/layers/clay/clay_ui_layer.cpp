@@ -86,6 +86,7 @@ void ClayUILayer::Tick(float DeltaTime) {
 }
 
 void ClayUILayer::RenderTargetResized(const glm::ivec2 size) {
+    spdlog::trace("Clay render target resized: {}x{}", size.x, size.y);
     screenSize = size;
     if (renderTarget) {
         renderTarget->Resize(size);

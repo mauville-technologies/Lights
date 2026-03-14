@@ -20,6 +20,8 @@ namespace OZZ {
     }
 
     void RenderTarget::Begin(rendering::RHIFrameContext& frameContext) {
+        if (!frameContext.IsValid())
+            return;
         if (activeParams.Type == RenderTargetType::Viewport) {
             auto descriptorCopy = renderPassDescriptor;
             descriptorCopy.ColorAttachmentCount = 1;
@@ -150,10 +152,10 @@ namespace OZZ {
             .Store = rendering::StoreOp::Store,
             .Clear =
                 {
-                    .R = activeParams.ClearColor.r,
-                    .G = activeParams.ClearColor.g,
-                    .B = activeParams.ClearColor.b,
-                    .A = activeParams.ClearColor.a,
+                    .R = inParams.ClearColor.r,
+                    .G = inParams.ClearColor.g,
+                    .B = inParams.ClearColor.b,
+                    .A = inParams.ClearColor.a,
                 },
             .Layout = rendering::TextureLayout::ColorAttachment,
         };

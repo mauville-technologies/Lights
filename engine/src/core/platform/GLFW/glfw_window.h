@@ -6,7 +6,7 @@
 
 // #define OZZ_GLFW
 #ifdef OZZ_GLFW
-#include "lights/platform/platform_window.h"
+#include "lights/core/platform/platform_window.h"
 #include <GLFW/glfw3.h>
 
 namespace OZZ::platform::glfw {
@@ -30,6 +30,10 @@ namespace OZZ::platform::glfw {
     private:
         void addController(int index);
         void removeController(int index);
+
+    public:
+        bool CreateSurface(void* instance, void* surfaceOut) override;
+        std::vector<std::string> GetRequiredInstanceExtensions() override;
 
     private:
         GLFWwindow* window{nullptr};

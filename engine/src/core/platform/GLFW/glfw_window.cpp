@@ -6,6 +6,7 @@
 
 #ifdef OZZ_GLFW
 #include "glfw_keys.h"
+
 #include <spdlog/spdlog.h>
 
 namespace OZZ::platform::glfw {

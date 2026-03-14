@@ -96,6 +96,7 @@ namespace OZZ::game {
             initAudio();
             initGL();
             initRenderer();
+            updateViewport(window->GetSize()); // initialize viewport to correct window size
             initScene();
             resetSleepStatistics();
 
