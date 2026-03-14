@@ -2,6 +2,13 @@
 // Created by ozzadar on 2025-06-18.
 //
 
+#ifdef OZZ_GLFW
+// volk must be included before GLFW so its include guards prevent the duplicate
+// vulkan.h pull-in that GLFW_INCLUDE_VULKAN would otherwise trigger.
+#include <volk.h>
+#define GLFW_INCLUDE_VULKAN
+#endif
+
 #include "glfw_window.h"
 
 #ifdef OZZ_GLFW
@@ -21,11 +28,10 @@ namespace OZZ::platform::glfw {
             return;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        window = glfwCreateWindow(800, 600, "Ozzadar", nullptr, nullptr);
+        window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
         if (!window) {
             spdlog::error("Failed to create window");
             return;
@@ -58,28 +64,29 @@ namespace OZZ::platform::glfw {
         });
 
         glfwSetJoystickCallback([](int jid, int event) {
-            const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
-            if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
-                win->addController(jid);
-            } else if (event == GLFW_DISCONNECTED) {
-                win->removeController(jid);
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window)) {
+                if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
+                    win->addController(jid);
+                } else if (event == GLFW_DISCONNECTED) {
+                    win->removeController(jid);
+                }
             }
         });
         glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int codepoint) {
-            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
                 win->callbacks.OnTextEvent) {
                 win->callbacks.OnTextEvent(codepoint);
             }
         });
         glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
                 win->callbacks.OnKeyPressed) {
                 win->callbacks.OnKeyPressed({EDeviceID::Mouse, static_cast<EMouseButton>(button)},
                                             GLFWKeyState(action));
             }
         });
         glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
-            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(glfwGetCurrentContext()));
+            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
                 win->callbacks.OnMouseMove) {
                 win->callbacks.OnMouseMove({static_cast<float>(xpos), static_cast<float>(ypos)});
             }
@@ -141,29 +148,16 @@ namespace OZZ::platform::glfw {
     }
 
     void GLFWWindow::MakeContextCurrent() {
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(0);
+        // No-op for Vulkan: GLFW_NO_API means no OpenGL context is created.
     }
 
     void GLFWWindow::Present() {
-#ifdef __APPLE__
-        static bool firstSwap = false;
-        // There's a bug on mac where for some reason the window needs to be moved
-        // or resized in order to properly draw the scene. Doing this here
-        // will fix the issue on first load on mac. It's ugly but it works.
-        if (!firstSwap) {
-            firstSwap = true;
-            auto size = GetSize();
-            glfwSetWindowSize(window, size.x + 1, size.y + 1);
-            glfwSetWindowSize(window, size.x, size.y);
-        }
-#endif
-        glfwSwapBuffers(window);
+        // No-op for Vulkan: presentation is handled by the Vulkan swapchain.
     }
 
     glm::ivec2 GLFWWindow::GetSize() const {
         int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        glfwGetFramebufferSize(window, &width, &height);
         return {width, height};
     }
 
@@ -209,6 +203,29 @@ namespace OZZ::platform::glfw {
 
     bool GLFWWindow::IsValid() const {
         return bIsValid;
+    }
+
+    bool GLFWWindow::CreateSurface(void* instance, void* surfaceOut) {
+        if (glfwCreateWindowSurface(
+                static_cast<VkInstance>(instance), window, nullptr, static_cast<VkSurfaceKHR*>(surfaceOut)) !=
+            VK_SUCCESS) {
+            spdlog::error("Failed to create Vulkan surface");
+            return false;
+        }
+        return true;
+    }
+
+    std::vector<std::string> GLFWWindow::GetRequiredInstanceExtensions() {
+        uint32_t count;
+        const char** extensions = glfwGetRequiredInstanceExtensions(&count);
+        std::vector<std::string> extensionList;
+        if (extensions) {
+            extensionList.reserve(count);
+            for (uint32_t i = 0; i < count; i++) {
+                extensionList.emplace_back(extensions[i]);
+            }
+        }
+        return extensionList;
     }
 
     void GLFWWindow::addController(int index) {
