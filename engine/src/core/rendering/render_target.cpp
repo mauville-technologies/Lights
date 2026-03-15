@@ -179,7 +179,7 @@ namespace OZZ {
                 rendering::TextureDescriptor{
                     .Width = inParams.Size.x,
                     .Height = inParams.Size.y,
-                    .Format = rendering::TextureFormat::RGBA8,
+                    .Format = rendering::TextureFormat::RGBA8_SRGB,
                     .Usage = rendering::TextureUsage::Sampled | rendering::TextureUsage::ColorAttachment,
                 });
             renderPassDescriptor.ColorAttachments[0].Texture = texture->GetRHIHandle();
