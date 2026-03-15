@@ -63,8 +63,9 @@ namespace OZZ::platform::glfw {
             }
         });
 
+        static GLFWWindow* thiz = this;
         glfwSetJoystickCallback([](int jid, int event) {
-            if (const auto win = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window)) {
+            if (const auto win = static_cast<GLFWWindow*>(thiz); thiz) {
                 if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
                     win->addController(jid);
                 } else if (event == GLFW_DISCONNECTED) {
