@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 project(Lights)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
+
 ## function for setting base directory
 function(set_base_dir target base_dir)
     message(STATUS "Setting base directory for ${target} to ${OZZ_OUTPUT_BASE_DIR}/${target}")
@@ -16,8 +18,8 @@ endfunction()
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     # Set optimization flags for different compilers
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        set(CMAKE_CXX_FLAGS_RELEASE "-O3  -flto -ffunction-sections -fdata-sections -DNDEBUG -s")
-        set(CMAKE_C_FLAGS_RELEASE "-O3 -flto -ffunction-sections -fdata-sections -DNDEBUG -s")
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffunction-sections -fdata-sections -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -ffunction-sections -fdata-sections -DNDEBUG")
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         set(CMAKE_CXX_FLAGS_RELEASE "/O2 /GL /Gy /DNDEBUG")
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF /DEBUG:NONE")

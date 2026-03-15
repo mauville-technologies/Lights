@@ -455,7 +455,7 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
 }
 
 bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand) {
-    const auto hasChanged = std::memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
+    const auto hasChanged = memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
     return hasChanged;
 }
 

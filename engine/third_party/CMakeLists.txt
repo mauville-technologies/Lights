@@ -6,6 +6,7 @@ set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
 
 if (NOT TARGET spdlog)
+    set(SPDLOG_USE_STD_FORMAT ON)
     FetchContent_Declare(
             spdlog_lib
             GIT_REPOSITORY https://github.com/gabime/spdlog.git
