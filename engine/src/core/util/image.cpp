@@ -89,7 +89,7 @@ namespace OZZ {
     }
 
     Image::Image(const path& texturePath) {
-        stbi_set_flip_vertically_on_load(true);
+        stbi_set_flip_vertically_on_load(false);
         stbi_info(texturePath.string().c_str(), &width, &height, &channels);
 
         if (auto* iData = stbi_load(texturePath.string().c_str(), &width, &height, &channels, channels)) {
