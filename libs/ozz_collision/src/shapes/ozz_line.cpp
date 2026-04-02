@@ -3,9 +3,9 @@
 //
 
 #include "ozz_collision/shapes/ozz_line.h"
-
 #include "ozz_collision/shapes/ozz_circle.h"
 #include "ozz_collision/shapes/ozz_point.h"
+#include "ozz_collision/shapes/ozz_polygon.h"
 
 namespace OZZ::collision::shapes {
 
@@ -73,5 +73,9 @@ namespace OZZ::collision::shapes {
 
     OzzCollisionResult OzzLine::IsColliding(const OzzRectangle& other) const {
         return OzzCollisionResult::NoCollision();
+    }
+
+    OzzCollisionResult OzzLine::IsColliding(const OzzPolygon& other) const {
+        return other.IsColliding(*this);
     }
 } // namespace OZZ::collision::shapes

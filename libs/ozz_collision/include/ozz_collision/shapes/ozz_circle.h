@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 namespace OZZ::collision::shapes {
+    struct OzzPolygon;
     struct OzzPoint;
     struct OzzRectangle;
     struct OzzLine;
@@ -16,7 +17,7 @@ namespace OZZ::collision::shapes {
         glm::vec2 Position;
         float Radius;
 
-        glm::vec2 Scale;
+        glm::vec2 Scale{1.f, 1.f};
 
         // Circle on Point collision
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzPoint& other) const;
@@ -29,6 +30,8 @@ namespace OZZ::collision::shapes {
 
         // Circle on Line collision
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
+
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzPolygon& other) const;
 
         // Helper to compute scaled radius (use max of scale components for uniform circle)
         static float GetScaledRadius(float radius, const glm::vec2& scale) {

@@ -41,10 +41,19 @@ namespace OZZ::scene {
         const Camera& GetCamera() const { return LayerCamera; }
 
     protected:
+        void LookAtPosition(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up) {
+            LayerCamera.ViewMatrix = glm::lookAt(eye, target, up);
+        }
+
         void LookAtPosition2D(const glm::vec2& position) {
             LayerCamera.ViewMatrix = glm::lookAt(glm::vec3{position.x, position.y, 3.f}, // Camera position
                                                  glm::vec3{position.x, position.y, 0.f}, // Target to look at
                                                  glm::vec3{0.f, 1.f, 0.f});              // Up vector
+        }
+
+        void RotateCamera(float angleDegrees, glm::vec3 axis) {
+            // Rotate the camera around the Z-axis by the specified angle
+            LayerCamera.ViewMatrix = glm::rotate(LayerCamera.ViewMatrix, glm::radians(angleDegrees), axis);
         }
 
         rendering::RHIDevice* device;

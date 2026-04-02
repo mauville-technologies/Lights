@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.20)
 project(ozz_collision)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -6,9 +7,10 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCES
         src/shapes/ozz_circle.cpp
-        src/shapes/ozz_point.cpp
-        src/shapes/ozz_rectangle.cpp
         src/shapes/ozz_line.cpp
+        src/shapes/ozz_point.cpp
+        src/shapes/ozz_polygon.cpp
+        src/shapes/ozz_rectangle.cpp
 
         src/world.cpp
 )

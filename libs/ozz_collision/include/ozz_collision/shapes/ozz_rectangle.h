@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 namespace OZZ::collision::shapes {
+    struct OzzPolygon;
     struct OzzCircle;
     struct OzzPoint;
     struct OzzLine;
@@ -22,7 +23,7 @@ namespace OZZ::collision::shapes {
         glm::vec2 Position;
         glm::vec2 Size;
 
-        glm::vec2 Scale;
+        glm::vec2 Scale{1.f, 1.f};
 
         // Point on Point
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzPoint& other) const;
@@ -35,6 +36,8 @@ namespace OZZ::collision::shapes {
 
         // Rectange on Line
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
+
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzPolygon& other) const;
 
         [[nodiscard]] glm::vec2 GetScaledSize() const;
 

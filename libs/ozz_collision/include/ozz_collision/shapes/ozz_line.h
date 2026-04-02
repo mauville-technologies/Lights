@@ -10,12 +10,13 @@ namespace OZZ::collision::shapes {
     struct OzzCircle;
     struct OzzRectangle;
     struct OzzPoint;
+    struct OzzPolygon;
 
     struct OzzLine {
         glm::vec2 Position;
         glm::vec2 End;
 
-        glm::vec2 Scale;
+        glm::vec2 Scale{1.f, 1.f};
 
         // Line on Line
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzLine& other) const;
@@ -28,6 +29,8 @@ namespace OZZ::collision::shapes {
 
         // Point on Rectangle
         [[nodiscard]] OzzCollisionResult IsColliding(const OzzRectangle& other) const;
+
+        [[nodiscard]] OzzCollisionResult IsColliding(const OzzPolygon& other) const;
 
         // Helper to compute scaled endpoints from center
         static void GetScaledEndpoints(const glm::vec2& position,
