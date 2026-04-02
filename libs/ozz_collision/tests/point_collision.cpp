@@ -6,6 +6,8 @@
 
 #include "ozz_collision/shapes/ozz_point.h"
 #include "ozz_collision/shapes/ozz_circle.h"
+#include "ozz_collision/shapes/ozz_line.h"
+#include "ozz_collision/shapes/ozz_polygon.h"
 #include "ozz_collision/shapes/ozz_rectangle.h"
 
 using namespace OZZ::collision::shapes;
@@ -50,4 +52,28 @@ TEST(OzzPoint, PointxRectangleCollision) {
     EXPECT_TRUE(result1.bCollided);
     EXPECT_FALSE(result2.bCollided);
     EXPECT_TRUE(result3.bCollided);
+}
+TEST(OzzPoint, PointxLineCollision) {
+    // Point sitting on the midpoint of a horizontal line
+    constexpr OzzLine  line    {.Position = {-1.f, 0.f}, .End = {1.f, 0.f}};
+    constexpr OzzPoint onLine  {.Position = { 0.f, 0.f}};
+    constexpr OzzPoint offLine {.Position = { 0.f, 1.f}};
+    constexpr OzzPoint pastEnd {.Position = { 2.f, 0.f}};
+
+    EXPECT_TRUE (OZZ::collision::IsColliding(onLine,  line).bCollided);
+    EXPECT_FALSE(OZZ::collision::IsColliding(offLine, line).bCollided);
+    EXPECT_FALSE(OZZ::collision::IsColliding(pastEnd, line).bCollided);
+}
+
+TEST(OzzPoint, PointxPolygonCollision) {
+    // Unit triangle — CCW
+    const OzzPolygon triangle{
+        .Vertices = {{0.f, 0.f}, {2.f, 0.f}, {1.f, 2.f}},
+    };
+
+    const OzzPoint inside  {.Position = {1.f, 0.5f}};
+    const OzzPoint outside {.Position = {3.f, 0.f  }};
+
+    EXPECT_TRUE (OZZ::collision::IsColliding(inside,  triangle).bCollided);
+    EXPECT_FALSE(OZZ::collision::IsColliding(outside, triangle).bCollided);
 }

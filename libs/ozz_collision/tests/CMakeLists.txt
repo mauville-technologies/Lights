@@ -23,6 +23,7 @@ enable_testing()
 set (SOURCES
         point_collision.cpp
         circle_collision.cpp
+        line_collision.cpp
         rectangle_collision.cpp
         polygon_collision.cpp
 )
