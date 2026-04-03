@@ -9,6 +9,7 @@
 #include "lights/core/rendering/vertex.h"
 
 #include <array>
+#include <lights/core/util/profiling.h>
 
 namespace OZZ {
     RenderableViewport::RenderableViewport() {}
@@ -86,6 +87,7 @@ namespace OZZ {
     }
 
     bool RenderableViewport::render(rendering::RHIFrameContext& frameContext) {
+        OZZ_PROFILE_SCOPE_N("RenderableViewport::render");
         // There should only be one input, the scene
         if (inputs.size() != 1) {
             spdlog::error("RenderableViewport expects exactly one input (the scene). Got {} inputs.", inputs.size());

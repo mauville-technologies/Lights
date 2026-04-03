@@ -3,6 +3,7 @@
 //
 
 #include "lights/core/rendering/renderable.h"
+#include "lights/core/util/profiling.h"
 
 std::optional<OZZ::RenderTarget*> OZZ::Renderable::GetRender(const std::string& name) {
     if (bRenderedThisFrame && renders.contains(name)) {
@@ -16,6 +17,7 @@ std::optional<OZZ::RenderTarget*> OZZ::Renderable::GetRender(const std::string& 
 }
 
 bool OZZ::Renderable::Render(rendering::RHIFrameContext& frameContext) {
+    OZZ_PROFILE_FUNCTION;
     if (!HasAllRequiredInputs()) {
         spdlog::warn("Cannot render node {} due to missing inputs", GetRenderableName());
         return false;

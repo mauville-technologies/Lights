@@ -538,6 +538,7 @@ void ClayUILayer::generateTextMesh(const std::string& text,
 }
 
 bool ClayUILayer::render(OZZ::rendering::RHIFrameContext& frameContext) {
+    OZZ_PROFILE_SCOPE_N("ClayUILayer::render");
     if (!renderTarget) {
         spdlog::error("Renderable {} invalid -- no render target", GetRenderableName());
         return false;
