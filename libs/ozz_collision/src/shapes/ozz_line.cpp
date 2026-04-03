@@ -36,7 +36,7 @@ namespace OZZ::collision::shapes {
             const glm::vec2 normal  = glm::normalize(glm::vec2(-d.y, d.x));
             return OzzCollisionResult{
                 .bCollided        = true,
-                .ContactPoints    = {contact},
+                .ContactPoints    = {contact}, .ContactPointCount = 1,
                 .CollisionNormal  = normal,
                 .PenetrationDepth = 0.f,
             };
@@ -68,7 +68,7 @@ namespace OZZ::collision::shapes {
 
             // return the collision result
             return OzzCollisionResult{
-                .bCollided = true, .ContactPoints = {other.Position}, .CollisionNormal = lineNormal};
+                .bCollided = true, .ContactPoints = {other.Position}, .ContactPointCount = 1, .CollisionNormal = lineNormal};
         }
         return OzzCollisionResult::NoCollision();
     }
@@ -149,7 +149,7 @@ namespace OZZ::collision::shapes {
             if (segmentsIntersect(scaledStart, scaledEnd, edge.a, edge.b, contact)) {
                 return OzzCollisionResult{
                     .bCollided        = true,
-                    .ContactPoints    = {contact},
+                    .ContactPoints    = {contact}, .ContactPointCount = 1,
                     .CollisionNormal  = edge.normal,
                     .PenetrationDepth = 0.f,
                 };

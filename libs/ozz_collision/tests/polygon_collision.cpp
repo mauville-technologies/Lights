@@ -249,7 +249,7 @@ TEST(OzzPolygon, HexCircle_ResultFields) {
     const auto result = OZZ::collision::IsColliding(unitHex, top);
 
     EXPECT_TRUE(result.bCollided);
-    EXPECT_FALSE(result.ContactPoints.empty());
+    EXPECT_GT(result.ContactPointCount, 0);
     EXPECT_GT(result.PenetrationDepth, 0.f);
     // Normal is the edge perpendicular — just verify it's a unit vector
     EXPECT_NEAR(glm::length(result.CollisionNormal), 1.f, 0.001f);
@@ -304,7 +304,7 @@ TEST(OzzPolygon, HexRectangle_ContactPointsReturned) {
     const OzzRectangle straddle{.Position = {0.866f, 0.f}, .Size = {0.4f, 0.4f}};
     const auto result = OZZ::collision::IsColliding(unitHex, straddle);
     EXPECT_TRUE(result.bCollided);
-    EXPECT_FALSE(result.ContactPoints.empty());
+    EXPECT_GT(result.ContactPointCount, 0);
 }
 
 TEST(OzzPolygon, HexRectangle_OffsetPolygon) {
@@ -353,7 +353,7 @@ TEST(OzzPolygon, HexLine_ContactPointReturned) {
     const OzzLine crossing{.Position = {0.f, 0.f}, .End = {2.f, 0.f}};
     const auto result = OZZ::collision::IsColliding(unitHex, crossing);
     EXPECT_TRUE(result.bCollided);
-    EXPECT_FALSE(result.ContactPoints.empty());
+    EXPECT_GT(result.ContactPointCount, 0);
 }
 
 // ── Hex: polygon collisions ───────────────────────────────────────────────────
@@ -405,7 +405,7 @@ TEST(OzzPolygon, HexPolygon_ContactPointsReturned) {
     shifted.Position.x = 0.8f;
     const auto result = OZZ::collision::IsColliding(unitHex, shifted);
     EXPECT_TRUE(result.bCollided);
-    EXPECT_FALSE(result.ContactPoints.empty());
+    EXPECT_GT(result.ContactPointCount, 0);
 }
 
 // ── Polygon edge cases ────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@
 
 namespace OZZ::collision::shapes {
     OzzCollisionResult OzzPoint::IsColliding(const OzzPoint& other) const {
-        return OzzCollisionResult{.bCollided = Position == other.Position, .ContactPoints = {Position}};
+        return OzzCollisionResult{.bCollided = Position == other.Position, .ContactPoints = {Position}, .ContactPointCount = 1};
     }
 
     OzzCollisionResult OzzPoint::IsColliding(const OzzCircle& other) const {

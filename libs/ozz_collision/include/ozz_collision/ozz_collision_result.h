@@ -3,19 +3,29 @@
 //
 
 #pragma once
+#include <array>
+#include <cstdint>
 #include <glm/glm.hpp>
-#include <vector>
 
 namespace OZZ::collision {
     // TODO: If I add more shapes, I might need more information. If I start handling physics, I'll need to add more
     // information
     struct OzzCollisionResult {
-        bool bCollided;
-        std::vector<glm::vec2> ContactPoints;
-        glm::vec2 CollisionNormal;
+        static constexpr uint8_t MaxContactPoints = 8;
+
+        bool bCollided{false};
+        std::array<glm::vec2, MaxContactPoints> ContactPoints{};
+        uint8_t ContactPointCount{0};
+        glm::vec2 CollisionNormal{};
         float PenetrationDepth{0.f};
 
-        static OzzCollisionResult NoCollision() { return {.bCollided = false, .ContactPoints = {}}; }
+        static OzzCollisionResult NoCollision() { return {.bCollided = false}; }
+
+        void AddContactPoint(glm::vec2 point) {
+            if (ContactPointCount < MaxContactPoints) {
+                ContactPoints[ContactPointCount++] = point;
+            }
+        }
     };
 
     template <typename Collider, typename Collidee>

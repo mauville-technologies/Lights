@@ -6,6 +6,7 @@
 
 #include "ozz_collision/ozz_collision_result.h"
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace OZZ::collision::shapes {
     struct OzzCircle;

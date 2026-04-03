@@ -68,7 +68,7 @@ namespace OZZ::collision::shapes {
 
         return OzzCollisionResult{
             .bCollided = true,
-            .ContactPoints = {other.Position},
+            .ContactPoints = {other.Position}, .ContactPointCount = 1,
             .CollisionNormal = bestNormal,
             .PenetrationDepth = minDist,
         };
@@ -81,10 +81,8 @@ namespace OZZ::collision::shapes {
 
         // Test every edge of the polygon as a line segment against the circle.
         // Vertices are already transformed to world space so we use Scale={1,1}.
-        std::vector<glm::vec2> contactPoints;
-        glm::vec2 bestNormal{};
+        OzzCollisionResult accumulated{.bCollided = false};
         float maxPenetration = 0.f;
-        bool anyEdgeCollides = false;
 
         for (auto current = 0; current < Vertices.size(); current++) {
             const auto next = (current + 1) % Vertices.size();
@@ -97,24 +95,20 @@ namespace OZZ::collision::shapes {
             const auto result = edge.IsColliding(other);
 
             if (result.bCollided) {
-                anyEdgeCollides = true;
-                for (const auto& cp : result.ContactPoints) {
-                    contactPoints.push_back(cp);
+                accumulated.bCollided = true;
+                for (uint8_t i = 0; i < result.ContactPointCount; ++i) {
+                    accumulated.AddContactPoint(result.ContactPoints[i]);
                 }
                 if (result.PenetrationDepth > maxPenetration) {
                     maxPenetration = result.PenetrationDepth;
-                    bestNormal = result.CollisionNormal;
+                    accumulated.CollisionNormal = result.CollisionNormal;
                 }
             }
         }
 
-        if (anyEdgeCollides) {
-            return OzzCollisionResult{
-                .bCollided = true,
-                .ContactPoints = contactPoints,
-                .CollisionNormal = bestNormal,
-                .PenetrationDepth = maxPenetration,
-            };
+        if (accumulated.bCollided) {
+            accumulated.PenetrationDepth = maxPenetration;
+            return accumulated;
         }
 
         // Edge tests miss the case where the circle is fully inside the polygon
@@ -123,7 +117,7 @@ namespace OZZ::collision::shapes {
         if (centerResult.bCollided) {
             return OzzCollisionResult{
                 .bCollided = true,
-                .ContactPoints = {other.Position},
+                .ContactPoints = {other.Position}, .ContactPointCount = 1,
                 .CollisionNormal = centerResult.CollisionNormal,
                 .PenetrationDepth = centerResult.PenetrationDepth + other.Radius,
             };
@@ -137,10 +131,8 @@ namespace OZZ::collision::shapes {
             return Position + v * Scale;
         };
 
-        std::vector<glm::vec2> contactPoints;
-        glm::vec2 bestNormal{};
+        OzzCollisionResult accumulated{.bCollided = false};
         float maxPenetration = 0.f;
-        bool anyEdgeCollides = false;
 
         for (auto current = 0; current < Vertices.size(); current++) {
             const auto next = (current + 1) % Vertices.size();
@@ -153,24 +145,20 @@ namespace OZZ::collision::shapes {
             const auto result = edge.IsColliding(other);
 
             if (result.bCollided) {
-                anyEdgeCollides = true;
-                for (const auto& cp : result.ContactPoints) {
-                    contactPoints.push_back(cp);
+                accumulated.bCollided = true;
+                for (uint8_t i = 0; i < result.ContactPointCount; ++i) {
+                    accumulated.AddContactPoint(result.ContactPoints[i]);
                 }
                 if (result.PenetrationDepth > maxPenetration) {
                     maxPenetration = result.PenetrationDepth;
-                    bestNormal = result.CollisionNormal;
+                    accumulated.CollisionNormal = result.CollisionNormal;
                 }
             }
         }
 
-        if (anyEdgeCollides) {
-            return OzzCollisionResult{
-                .bCollided = true,
-                .ContactPoints = contactPoints,
-                .CollisionNormal = bestNormal,
-                .PenetrationDepth = maxPenetration,
-            };
+        if (accumulated.bCollided) {
+            accumulated.PenetrationDepth = maxPenetration;
+            return accumulated;
         }
 
         // Handle the case where the rectangle is fully inside the polygon
@@ -179,7 +167,7 @@ namespace OZZ::collision::shapes {
         if (centerResult.bCollided) {
             return OzzCollisionResult{
                 .bCollided = true,
-                .ContactPoints = {other.Position},
+                .ContactPoints = {other.Position}, .ContactPointCount = 1,
                 .CollisionNormal = centerResult.CollisionNormal,
                 .PenetrationDepth = centerResult.PenetrationDepth,
             };
@@ -191,10 +179,8 @@ namespace OZZ::collision::shapes {
     OzzCollisionResult OzzPolygon::IsColliding(const OzzLine& other) const {
         auto worldVertex = [&](const glm::vec2& v) { return Position + v * Scale; };
 
-        std::vector<glm::vec2> contactPoints;
-        glm::vec2 bestNormal{};
+        OzzCollisionResult accumulated{.bCollided = false};
         float maxPenetration = 0.f;
-        bool anyEdgeCollides = false;
 
         for (auto current = 0; current < Vertices.size(); current++) {
             const auto next = (current + 1) % Vertices.size();
@@ -207,24 +193,20 @@ namespace OZZ::collision::shapes {
             const auto result = edge.IsColliding(other);
 
             if (result.bCollided) {
-                anyEdgeCollides = true;
-                for (const auto& cp : result.ContactPoints) {
-                    contactPoints.push_back(cp);
+                accumulated.bCollided = true;
+                for (uint8_t i = 0; i < result.ContactPointCount; ++i) {
+                    accumulated.AddContactPoint(result.ContactPoints[i]);
                 }
                 if (result.PenetrationDepth > maxPenetration) {
                     maxPenetration = result.PenetrationDepth;
-                    bestNormal     = result.CollisionNormal;
+                    accumulated.CollisionNormal = result.CollisionNormal;
                 }
             }
         }
 
-        if (anyEdgeCollides) {
-            return OzzCollisionResult{
-                .bCollided        = true,
-                .ContactPoints    = contactPoints,
-                .CollisionNormal  = bestNormal,
-                .PenetrationDepth = maxPenetration,
-            };
+        if (accumulated.bCollided) {
+            accumulated.PenetrationDepth = maxPenetration;
+            return accumulated;
         }
 
         // Handle line fully inside the polygon — check either endpoint
@@ -234,7 +216,7 @@ namespace OZZ::collision::shapes {
         if (endpointResult.bCollided) {
             return OzzCollisionResult{
                 .bCollided        = true,
-                .ContactPoints    = {lineStart},
+                .ContactPoints    = {lineStart}, .ContactPointCount = 1,
                 .CollisionNormal  = endpointResult.CollisionNormal,
                 .PenetrationDepth = endpointResult.PenetrationDepth,
             };
@@ -246,10 +228,8 @@ namespace OZZ::collision::shapes {
     OzzCollisionResult OzzPolygon::IsColliding(const OzzPolygon& other) const {
         auto worldVertex = [&](const glm::vec2& v) { return Position + v * Scale; };
 
-        std::vector<glm::vec2> contactPoints;
-        glm::vec2 bestNormal{};
+        OzzCollisionResult accumulated{.bCollided = false};
         float maxPenetration = 0.f;
-        bool anyEdgeCollides = false;
 
         // Test each edge of this polygon against the other polygon (via line<->line decomposition).
         for (auto current = 0; current < Vertices.size(); current++) {
@@ -263,23 +243,20 @@ namespace OZZ::collision::shapes {
             const auto result = other.IsColliding(edge);
 
             if (result.bCollided) {
-                anyEdgeCollides = true;
-                for (const auto& cp : result.ContactPoints)
-                    contactPoints.push_back(cp);
+                accumulated.bCollided = true;
+                for (uint8_t i = 0; i < result.ContactPointCount; ++i) {
+                    accumulated.AddContactPoint(result.ContactPoints[i]);
+                }
                 if (result.PenetrationDepth > maxPenetration) {
                     maxPenetration = result.PenetrationDepth;
-                    bestNormal     = result.CollisionNormal;
+                    accumulated.CollisionNormal = result.CollisionNormal;
                 }
             }
         }
 
-        if (anyEdgeCollides) {
-            return OzzCollisionResult{
-                .bCollided        = true,
-                .ContactPoints    = contactPoints,
-                .CollisionNormal  = bestNormal,
-                .PenetrationDepth = maxPenetration,
-            };
+        if (accumulated.bCollided) {
+            accumulated.PenetrationDepth = maxPenetration;
+            return accumulated;
         }
 
         // Fully-enclosed cases: one polygon sits entirely inside the other.
@@ -291,7 +268,7 @@ namespace OZZ::collision::shapes {
             if (result.bCollided) {
                 return OzzCollisionResult{
                     .bCollided        = true,
-                    .ContactPoints    = {otherWorldVertex(other.Vertices[0])},
+                    .ContactPoints    = {otherWorldVertex(other.Vertices[0])}, .ContactPointCount = 1,
                     .CollisionNormal  = result.CollisionNormal,
                     .PenetrationDepth = result.PenetrationDepth,
                 };
@@ -303,7 +280,7 @@ namespace OZZ::collision::shapes {
             if (result.bCollided) {
                 return OzzCollisionResult{
                     .bCollided        = true,
-                    .ContactPoints    = {worldVertex(Vertices[0])},
+                    .ContactPoints    = {worldVertex(Vertices[0])}, .ContactPointCount = 1,
                     .CollisionNormal  = result.CollisionNormal,
                     .PenetrationDepth = result.PenetrationDepth,
                 };

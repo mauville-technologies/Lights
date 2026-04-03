@@ -22,7 +22,7 @@ namespace OZZ::collision::shapes {
 
             return OzzCollisionResult{
                 .bCollided = true,
-                .ContactPoints = {Position},
+                .ContactPoints = {Position}, .ContactPointCount = 1,
                 .CollisionNormal = collisionNormal,
                 .PenetrationDepth = penetrationDepth,
             };
@@ -44,7 +44,7 @@ namespace OZZ::collision::shapes {
 
         return OzzCollisionResult{
             .bCollided = distance <= sumRadii,
-            .ContactPoints = {contactPoint},
+            .ContactPoints = {contactPoint}, .ContactPointCount = 1,
             .CollisionNormal = normalizedVec,
             .PenetrationDepth = penetrationDepth,
         };
@@ -64,7 +64,7 @@ namespace OZZ::collision::shapes {
                                                   : glm::vec2{0.f, 1.f};
             const float penetrationDepth = scaledRadius - distance;
             return {.bCollided = true,
-                    .ContactPoints = {closestPoint},
+                    .ContactPoints = {closestPoint}, .ContactPointCount = 1,
                     .CollisionNormal = collisionNormal,
                     .PenetrationDepth = penetrationDepth};
         }
