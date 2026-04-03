@@ -2,11 +2,13 @@
 // Created by ozzadar on 2025-10-26.
 //
 #include "lights/framework/scene/scene.h"
+#include "lights/core/util/profiling.h"
 
 namespace OZZ {
     void scene::Scene::InitScene(OZZ::rendering::RHIDevice* inDevice,
                                  std::shared_ptr<InputSubsystem> inInput,
                                  ResourceManager* inResourceManager) {
+        OZZ_PROFILE_FUNCTION;
         device = inDevice;
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
@@ -15,6 +17,7 @@ namespace OZZ {
     }
 
     void scene::Scene::Tick(float DeltaTime) {
+        OZZ_PROFILE_FUNCTION;
         constexpr float physicsTickRate = 1.f / 60.f;
         physicsAccumulator += DeltaTime;
 

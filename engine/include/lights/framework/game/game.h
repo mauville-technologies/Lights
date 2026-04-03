@@ -13,6 +13,7 @@
 #include "lights/core/util/configuration.h"
 #include "lights/framework/input/input_subsystem.h"
 #include "lights/framework/scene/scene.h"
+#include <lights/core/util/profiling.h>
 
 namespace OZZ::game {
     enum class EWindowMode { Windowed, BorderlessFullscreen };
@@ -105,6 +106,7 @@ namespace OZZ::game {
             const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
             while (bRunning) {
+                OZZ_PROFILE_SCOPE_N("GameLoop");
                 if (scene->HasSceneEnded()) {
                     bRunning = false;
                     continue;
@@ -144,6 +146,7 @@ namespace OZZ::game {
                 auto frameTime = std::chrono::high_resolution_clock::now();
                 const double sleepsSec = 1.0 / params.Config.FPS - (frameTime - currentTime).count() / 1e9;
                 preciseSleep(sleepsSec);
+                OZZ_FRAME_MARK;
             }
         }
 
@@ -237,6 +240,7 @@ namespace OZZ::game {
         }
 
         void drawScene(OZZ::scene::Scene* scene) {
+            OZZ_PROFILE_FUNCTION;
             // renderer->RenderScene(scene);
             window->MakeContextCurrent();
             renderer->ExecuteSceneGraph(scene->GetSceneGraph());

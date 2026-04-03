@@ -4,6 +4,7 @@
 
 #include "lights/core/rendering/renderer.h"
 #include "lights/core/rendering/renderables/renderable_viewport.h"
+#include "lights/core/util/profiling.h"
 
 namespace OZZ {
     Renderer::Renderer() {
@@ -16,6 +17,7 @@ namespace OZZ {
     }
 
     void Renderer::Init(rendering::PlatformContext&& platformContext) {
+        OZZ_PROFILE_FUNCTION;
         device = rendering::CreateRHIDevice({
             .Backend = rendering::RHIBackend::Auto,
             .Context = std::move(platformContext),
@@ -24,6 +26,7 @@ namespace OZZ {
     }
 
     void Renderer::ExecuteSceneGraph(Renderable* sceneGraph) {
+        OZZ_PROFILE_FUNCTION;
         // Clear current connections
         GraphNode::ClearConnections(viewport.get());
 

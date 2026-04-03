@@ -6,6 +6,7 @@
 
 #include "lights/core/rendering/texture.h"
 #include "lights/core/util/memory_literals.h"
+#include "lights/core/util/profiling.h"
 
 #include <deque>
 #include <fstream>
@@ -27,6 +28,7 @@ namespace OZZ::scene {
     }
 
     bool ResourceManager::LoadSpritesheet(const SpritesheetLocation& location) {
+        OZZ_PROFILE_FUNCTION;
         const auto& [jsonPath, texturePath] = location;
         spdlog::info("Parsing spritesheet {}", jsonPath.string());
         // Load json file
@@ -141,6 +143,7 @@ namespace OZZ::scene {
     }
 
     void ResourceManager::Tick() {
+        OZZ_PROFILE_FUNCTION;
         std::deque<std::function<void()>> local;
         {
             std::lock_guard lock(renderJobsMutex);

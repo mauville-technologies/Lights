@@ -3,6 +3,7 @@
 //
 
 #include "lights/core/rendering/shader.h"
+#include "lights/core/util/profiling.h"
 #include "spdlog/spdlog.h"
 #include <fstream>
 
@@ -11,11 +12,13 @@
 namespace OZZ {
     Shader::Shader(rendering::RHIDevice* inDevice, rendering::ShaderFileParams&& shaderFiles)
         : device(inDevice) {
+        OZZ_PROFILE_FUNCTION;
         rhiShaderHandle = device->CreateShader(std::move(shaderFiles));
     }
 
     Shader::Shader(rendering::RHIDevice* inDevice, rendering::ShaderSourceParams&& shaderSource)
         : device(inDevice) {
+        OZZ_PROFILE_FUNCTION;
         rhiShaderHandle = device->CreateShader(std::move(shaderSource));
     }
 
@@ -26,6 +29,7 @@ namespace OZZ {
     }
 
     void Shader::Bind(rendering::RHIFrameContext& frameContext) {
+        OZZ_PROFILE_FUNCTION;
         device->BindShader(frameContext, rhiShaderHandle);
     }
 

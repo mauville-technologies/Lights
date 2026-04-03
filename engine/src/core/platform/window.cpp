@@ -3,6 +3,7 @@
 //
 
 #include "lights/core/platform/window.h"
+#include "lights/core/util/profiling.h"
 #include <spdlog/spdlog.h>
 
 #ifdef OZZ_GLFW
@@ -38,6 +39,7 @@ namespace OZZ {
     }
 
     void Window::PollEvents() {
+        OZZ_PROFILE_FUNCTION;
         window->Poll();
 
         // TODO: Add mouse and joystick input
@@ -46,6 +48,7 @@ namespace OZZ {
     void Window::MakeContextCurrent() {}
 
     void Window::SwapBuffers() {
+        OZZ_PROFILE_FUNCTION;
         window->Present();
     }
 

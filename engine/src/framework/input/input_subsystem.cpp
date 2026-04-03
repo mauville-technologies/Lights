@@ -3,6 +3,7 @@
 //
 
 #include "lights/framework/input/input_subsystem.h"
+#include "lights/core/util/profiling.h"
 
 #include "ozz_rendering/utils/enums.h"
 
@@ -57,6 +58,7 @@ namespace OZZ {
     void InputSubsystem::Tick(const KeyStateArrayType& inKeyStates,
                               const ControllerStateMap& inControllerStates,
                               const MouseButtonStateArrayType& inMouseButtonStates) {
+        OZZ_PROFILE_FUNCTION;
 
         // TODO: We'll want this to be more efficient in the future
         const auto previousControllerStates = controllerStates;

@@ -4,6 +4,7 @@
 
 #include <lights/core/rendering/shapes.h>
 #include <lights/core/text/font_loader.h>
+#include <lights/core/util/profiling.h>
 #include <lights/framework/layers/clay/clay_ui_layer.h>
 #include <lights/framework/layers/clay/clay_utils.h>
 
@@ -53,6 +54,7 @@ void ClayUILayer::PhysicsTick(float DeltaTime) {
 }
 
 void ClayUILayer::Tick(float DeltaTime) {
+    OZZ_PROFILE_FUNCTION;
     SceneLayer::Tick(DeltaTime);
 
     const auto mousePosition = inputSubsystem->GetMousePosition();

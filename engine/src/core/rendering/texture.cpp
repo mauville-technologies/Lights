@@ -4,6 +4,7 @@
 
 #include "lights/core/rendering/texture.h"
 #include "lights/core/util/memory_literals.h"
+#include "lights/core/util/profiling.h"
 #include "spdlog/spdlog.h"
 
 namespace OZZ {
@@ -14,6 +15,7 @@ namespace OZZ {
     Texture::Texture(rendering::RHIDevice* inDevice, rendering::TextureDescriptor&& inDescriptor)
         : device(inDevice)
         , descriptor(inDescriptor) {
+        OZZ_PROFILE_FUNCTION;
         auto descriptorCopy = descriptor;
         rhiTextureHandle = device->CreateTexture(std::move(descriptorCopy));
     }
@@ -37,6 +39,7 @@ namespace OZZ {
     }
 
     void Texture::UploadData(Image* image) {
+        OZZ_PROFILE_FUNCTION;
         if (image->GetWidth() != descriptor.Width || image->GetHeight() != descriptor.Height) {
             spdlog::error("Attempted to upload image data with mismatched dimensions. Expected {}x{}, got {}x{}",
                           descriptor.Width,

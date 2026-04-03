@@ -3,6 +3,7 @@
 //
 
 #include "lights/core/rendering/render_target.h"
+#include "lights/core/util/profiling.h"
 
 #include "spdlog/spdlog.h"
 
@@ -20,6 +21,7 @@ namespace OZZ {
     }
 
     void RenderTarget::Begin(rendering::RHIFrameContext& frameContext) {
+        OZZ_PROFILE_FUNCTION;
         if (!frameContext.IsValid())
             return;
         if (activeParams.Type == RenderTargetType::Viewport) {
@@ -91,6 +93,7 @@ namespace OZZ {
     }
 
     void RenderTarget::End(rendering::RHIFrameContext& frameContext) const {
+        OZZ_PROFILE_FUNCTION;
         device->EndRenderPass(frameContext);
         // Transition the texture to shader read optimal if it's a texture render target
         if (activeParams.Type == RenderTargetType::Texture) {

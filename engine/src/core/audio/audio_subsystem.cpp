@@ -3,12 +3,14 @@
 //
 
 #include <lights/core/audio/audio_subsystem.h>
+#include <lights/core/util/profiling.h>
 
 #include <samplerate.h>
 #include "spdlog/spdlog.h"
 
 namespace OZZ::lights::audio {
     void AudioSubsystem::Init(AudioSubsystemSettings &&inSettings) {
+        OZZ_PROFILE_FUNCTION;
         spdlog::info("Initializing Audio Subsystem...");
 
         settings = std::move(inSettings);

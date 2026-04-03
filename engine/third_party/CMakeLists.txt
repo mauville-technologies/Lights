@@ -89,6 +89,21 @@ endif ()
 
 FetchContent_MakeAvailable(ozz_rendering_lib)
 
+# Tracy Profiler -- only active in Debug builds
+set(TRACY_ENABLE OFF CACHE BOOL "Enable Tracy profiling" FORCE)
+set(TRACY_ON_DEMAND ON CACHE BOOL "Tracy on-demand mode" FORCE)
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy profiling" FORCE)
+endif ()
+
+FetchContent_Declare(
+        tracy_lib
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_TAG v0.13.1
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tracy_lib)
+
 #add_subdirectory(asio)
 #add_subdirectory(glad)
 add_subdirectory(clay)
@@ -108,6 +123,7 @@ set(LIBS
         EnTT::EnTT
         nlohmann_json
         ozz_rendering
+        TracyClient
 )
 
 set(THIRD_PARTY_COMPILE_DEFS "")
@@ -134,6 +150,10 @@ elseif (OZZ_WINDOWING_SYSTEM STREQUAL "SDL3")
     FetchContent_MakeAvailable(SDL_Lib)
     list(APPEND LIBS SDL3::SDL3)
     list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
+endif ()
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_PROFILING_ENABLED)
 endif ()
 
 target_link_libraries(third_party INTERFACE ${LIBS})

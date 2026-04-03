@@ -3,6 +3,7 @@
 //
 
 #include "lights/core/rendering/material.h"
+#include "lights/core/util/profiling.h"
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -17,6 +18,7 @@ namespace OZZ {
     }
 
     void Material::Bind(rendering::RHIFrameContext& frameContext) {
+        OZZ_PROFILE_FUNCTION;
         if (!shader)
             return;
 
