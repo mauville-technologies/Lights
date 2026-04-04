@@ -73,6 +73,23 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(nlohmann_lib)
+
+# Tracy Profiler -- only active in Debug builds
+# Must come before ozz_rendering so its if(TARGET TracyClient) check succeeds.
+set(TRACY_ENABLE OFF CACHE BOOL "Enable Tracy profiling" FORCE)
+set(TRACY_ON_DEMAND ON CACHE BOOL "Tracy on-demand mode" FORCE)
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy profiling" FORCE)
+endif ()
+
+FetchContent_Declare(
+        tracy_lib
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_TAG v0.13.1
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tracy_lib)
+
 if (LOCAL_RENDERING_DIR AND EXISTS "${LOCAL_RENDERING_DIR}")
     message(STATUS "using local lights directory ${LOCAL_RENDERING_DIR}")
     FetchContent_Declare(
@@ -88,21 +105,6 @@ else ()
 endif ()
 
 FetchContent_MakeAvailable(ozz_rendering_lib)
-
-# Tracy Profiler -- only active in Debug builds
-set(TRACY_ENABLE OFF CACHE BOOL "Enable Tracy profiling" FORCE)
-set(TRACY_ON_DEMAND ON CACHE BOOL "Tracy on-demand mode" FORCE)
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy profiling" FORCE)
-endif ()
-
-FetchContent_Declare(
-        tracy_lib
-        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-        GIT_TAG v0.13.1
-        GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(tracy_lib)
 
 #add_subdirectory(asio)
 #add_subdirectory(glad)
