@@ -12,6 +12,11 @@ set(SOURCES
         src/shapes/ozz_polygon.cpp
         src/shapes/ozz_rectangle.cpp
 
+        src/raycast/ozz_plane3d.cpp
+        src/raycast/ozz_raycast.cpp
+
+        src/projection/ozz_shape_projection.cpp
+
         src/world.cpp
 )
 add_library(ozz_collision STATIC

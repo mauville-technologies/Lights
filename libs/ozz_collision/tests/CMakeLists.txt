@@ -26,6 +26,8 @@ set (SOURCES
         line_collision.cpp
         rectangle_collision.cpp
         polygon_collision.cpp
+        raycast_tests.cpp
+        projection_tests.cpp
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
 
