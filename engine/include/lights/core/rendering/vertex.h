@@ -5,6 +5,7 @@
 #pragma once
 #include "ozz_rendering/rhi_pipeline_state.h"
 
+#include <array>
 #include <glm/glm.hpp>
 
 namespace OZZ {
