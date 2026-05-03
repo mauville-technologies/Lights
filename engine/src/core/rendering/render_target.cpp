@@ -8,6 +8,19 @@
 #include "spdlog/spdlog.h"
 
 namespace OZZ {
+    namespace {
+        [[nodiscard]] rendering::TextureAspect GetTextureAspect(const rendering::TextureFormat format) {
+            switch (format) {
+                case rendering::TextureFormat::D32Float:
+                    return rendering::TextureAspect::Depth;
+                case rendering::TextureFormat::D24S8:
+                    return static_cast<rendering::TextureAspect>(static_cast<int>(rendering::TextureAspect::Depth) |
+                                                                 static_cast<int>(rendering::TextureAspect::Stencil));
+                default:
+                    return rendering::TextureAspect::Color;
+            }
+        }
+    } // namespace
 
     RenderTarget::RenderTarget(rendering::RHIDevice* inDevice, RenderTargetParams&& inParams)
         : device(inDevice) {
@@ -72,6 +85,26 @@ namespace OZZ {
                                                .SrcAccess = rendering::Access::None,
                                                .DstAccess = rendering::Access::ColorAttachmentWrite,
                                            });
+            if (activeParams.bHasDepth && depthTexture) {
+                device->TextureResourceBarrier(frameContext,
+                                               rendering::TextureBarrierDescriptor{
+                                                   .Texture = depthTexture->GetRHIHandle(),
+                                                   .OldLayout = rendering::TextureLayout::Undefined,
+                                                   .NewLayout = rendering::TextureLayout::DepthStencilAttachment,
+                                                   .SrcStage = rendering::PipelineStage::None,
+                                                   .DstStage = rendering::PipelineStage::AllGraphics,
+                                                   .SrcAccess = rendering::Access::None,
+                                                   .DstAccess = rendering::Access::DepthStencilAttachmentWrite,
+                                                   .SubresourceRange =
+                                                       {
+                                                           .Aspect = GetTextureAspect(depthTexture->GetDescriptor().Format),
+                                                           .BaseMipLevel = 0,
+                                                           .LevelCount = 1,
+                                                           .BaseArrayLayer = 0,
+                                                           .LayerCount = 1,
+                                                       },
+                                               });
+            }
         }
 
         device->BeginRenderPass(frameContext, renderPassDescriptor);
@@ -112,9 +145,29 @@ namespace OZZ {
                                                        .BaseMipLevel = 0,
                                                        .LevelCount = 1,
                                                        .BaseArrayLayer = 0,
-                                                       .LayerCount = 1,
-                                                   },
-                                           });
+                                                        .LayerCount = 1,
+                                                    },
+                                            });
+            if (activeParams.bHasDepth && activeParams.bDepthShaderReadable && depthTexture) {
+                device->TextureResourceBarrier(frameContext,
+                                               rendering::TextureBarrierDescriptor{
+                                                   .Texture = depthTexture->GetRHIHandle(),
+                                                   .OldLayout = rendering::TextureLayout::DepthStencilAttachment,
+                                                   .NewLayout = rendering::TextureLayout::ShaderReadOnly,
+                                                   .SrcStage = rendering::PipelineStage::AllGraphics,
+                                                   .DstStage = rendering::PipelineStage::FragmentShader,
+                                                   .SrcAccess = rendering::Access::DepthStencilAttachmentWrite,
+                                                   .DstAccess = rendering::Access::ShaderRead,
+                                                   .SubresourceRange =
+                                                       {
+                                                           .Aspect = GetTextureAspect(depthTexture->GetDescriptor().Format),
+                                                           .BaseMipLevel = 0,
+                                                           .LevelCount = 1,
+                                                           .BaseArrayLayer = 0,
+                                                           .LayerCount = 1,
+                                                       },
+                                               });
+            }
         }
     }
 
@@ -166,7 +219,7 @@ namespace OZZ {
         if (inParams.bHasDepth) {
             renderPassDescriptor.DepthAttachment = {
                 .Load = rendering::LoadOp::Clear,
-                .Store = rendering::StoreOp::DontCare,
+                .Store = inParams.bDepthShaderReadable ? rendering::StoreOp::Store : rendering::StoreOp::DontCare,
                 .Clear =
                     {
                         .Depth = 1.f,
@@ -182,7 +235,7 @@ namespace OZZ {
                 rendering::TextureDescriptor{
                     .Width = inParams.Size.x,
                     .Height = inParams.Size.y,
-                    .Format = rendering::TextureFormat::RGBA8_SRGB,
+                    .Format = inParams.ColorFormat,
                     .Usage = rendering::TextureUsage::Sampled | rendering::TextureUsage::ColorAttachment,
                 });
             renderPassDescriptor.ColorAttachments[0].Texture = texture->GetRHIHandle();
@@ -190,11 +243,25 @@ namespace OZZ {
             if (inParams.bHasDepth) {
                 depthTexture = std::make_shared<Texture>(device,
                                                          rendering::TextureDescriptor{
-                                                             .Width = inParams.Size.x,
-                                                             .Height = inParams.Size.y,
-                                                             .Format = rendering::TextureFormat::D24S8,
-                                                             .Usage = rendering::TextureUsage::DepthAttachment,
-                                                         });
+                                                              .Width = inParams.Size.x,
+                                                              .Height = inParams.Size.y,
+                                                              .Format = inParams.bDepthShaderReadable
+                                                                            ? rendering::TextureFormat::D32Float
+                                                                            : rendering::TextureFormat::D24S8,
+                                                              .Usage = inParams.bDepthShaderReadable
+                                                                           ? rendering::TextureUsage::Sampled |
+                                                                                 rendering::TextureUsage::DepthAttachment
+                                                                           : rendering::TextureUsage::DepthAttachment,
+                                                              .Sampler =
+                                                                  {
+                                                                      .MinFilter = rendering::TextureFilter::Nearest,
+                                                                      .MagFilter = rendering::TextureFilter::Nearest,
+                                                                      .WrapU = rendering::TextureWrap::ClampToEdge,
+                                                                      .WrapV = rendering::TextureWrap::ClampToEdge,
+                                                                      .WrapW = rendering::TextureWrap::ClampToEdge,
+                                                                      .GenerateMipmaps = false,
+                                                                  },
+                                                           });
                 renderPassDescriptor.DepthAttachment.Texture = depthTexture->GetRHIHandle();
             }
         }

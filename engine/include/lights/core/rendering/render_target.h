@@ -17,7 +17,9 @@ namespace OZZ {
         RenderTargetType Type{RenderTargetType::Texture};
         glm::uvec2 Size{1, 1};
         glm::vec4 ClearColor{0.f, 0.f, 0.f, 0.f};
+        rendering::TextureFormat ColorFormat{rendering::TextureFormat::RGBA8_SRGB};
         bool bHasDepth{true};
+        bool bDepthShaderReadable{false};
 
         bool operator==(const RenderTargetParams& other) const { return Type == other.Type && Size == other.Size; }
     };
@@ -36,6 +38,7 @@ namespace OZZ {
         [[nodiscard]] glm::ivec2 GetSize() const { return activeParams.Size; }
 
         std::shared_ptr<Texture> GetTexture() const { return texture; }
+        std::shared_ptr<Texture> GetDepthTexture() const { return depthTexture; }
 
         void Resize(glm::uvec2 inSize);
 
