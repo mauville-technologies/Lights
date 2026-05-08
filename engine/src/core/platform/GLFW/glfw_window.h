@@ -25,6 +25,7 @@ namespace OZZ::platform::glfw {
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
         void SetTextMode(bool bIsTextMode) override;
+        void Show() override;
         [[nodiscard]] bool IsValid() const override;
 
     private:

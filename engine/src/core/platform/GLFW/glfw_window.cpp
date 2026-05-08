@@ -30,6 +30,7 @@ namespace OZZ::platform::glfw {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
         if (!window) {
@@ -38,6 +39,10 @@ namespace OZZ::platform::glfw {
         }
 
         bIsValid = true;
+    }
+
+    void GLFWWindow::Show() {
+        glfwShowWindow(window);
     }
 
     void* GLFWWindow::GetProcAddress() {

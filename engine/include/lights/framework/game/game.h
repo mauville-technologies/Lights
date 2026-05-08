@@ -99,6 +99,7 @@ namespace OZZ::game {
             initRenderer();
             updateViewport(window->GetSize()); // initialize viewport to correct window size
             initScene();
+            window->Show();
             resetSleepStatistics();
 
             auto lastTickTime = std::chrono::high_resolution_clock::now();

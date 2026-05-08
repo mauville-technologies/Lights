@@ -47,7 +47,6 @@ namespace OZZ::platform::SDL3 {
         MakeContextCurrent();
 
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        SDL_ShowWindow(window);
         bIsValid = true;
     }
 
@@ -212,6 +211,10 @@ namespace OZZ::platform::SDL3 {
 
     void SDLWindow::SetFullscreen(const bool fullscreen) {
         SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : false);
+    }
+
+    void SDLWindow::Show() {
+        SDL_ShowWindow(window);
     }
 
     void SDLWindow::SetTextMode(const bool bIsTextMode) {

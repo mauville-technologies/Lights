@@ -49,6 +49,7 @@ namespace OZZ::platform {
         virtual void SetSize(int width, int height) = 0;
         virtual void SetFullscreen(bool fullscreen) = 0;
         virtual void SetTextMode(bool bIsTextMode) = 0;
+        virtual void Show() = 0;
         [[nodiscard]] virtual bool IsValid() const = 0;
 
         [[nodiscard]] const auto& GetKeyStates() const { return keyStates; }
