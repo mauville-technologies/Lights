@@ -7,6 +7,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "lights/framework/scene/scene_object.h"
 #include <glm/glm.hpp>
+#include <string>
 #include <vector>
 
 namespace OZZ::scene {
@@ -24,6 +25,7 @@ namespace OZZ::scene {
         SceneLayer() = default;
 
         void SetLayerManager(class SceneLayerManager* manager = nullptr) { layerManager = manager; }
+        void SetLayerName(const std::string& name) { layerName = name; }
 
     public:
         virtual ~SceneLayer() = default;
@@ -39,6 +41,8 @@ namespace OZZ::scene {
         virtual void RenderTargetResized(glm::ivec2 size) = 0;
 
         const Camera& GetCamera() const { return LayerCamera; }
+
+        void SetLoadingProgress(float progress, std::string statusText = "");
 
     protected:
         void LookAtPosition(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up) {
@@ -59,5 +63,6 @@ namespace OZZ::scene {
         rendering::RHIDevice* device;
         Camera LayerCamera{};
         SceneLayerManager* layerManager{nullptr};
+        std::string layerName;
     };
 } // namespace OZZ::scene

@@ -36,6 +36,7 @@ set(SOURCES
         src/core/rendering/texture.cpp
 
         src/framework/scene/scene.cpp
+        src/framework/scene/scene_layer.cpp
         src/framework/scene/scene_layer_manager.cpp
         src/framework/scene/resource_manager.cpp
 

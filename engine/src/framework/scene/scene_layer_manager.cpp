@@ -8,9 +8,21 @@
 
 namespace OZZ::scene {
     SceneLayerManager::~SceneLayerManager() {
+        for (auto& t : asyncLoadingThreads) {
+            if (t.joinable()) t.join();
+        }
         activeLayers.clear();
         layerNames.clear();
         layers.clear();
+    }
+
+    void SceneLayerManager::InitLayerAsync(const std::string& layerName, rendering::RHIDevice* inDevice) {
+        auto* layer = GetLayer<SceneLayer>(layerName);
+        if (!layer) return;
+        asyncLoadingThreads.emplace_back([this, layer, inDevice, layerName]() {
+            layer->Init(inDevice);
+            if (OnLayerLoaded) OnLayerLoaded(layerName);
+        });
     }
 
     void SceneLayerManager::Init(rendering::RHIDevice* inDevice) {
