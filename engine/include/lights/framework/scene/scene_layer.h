@@ -10,6 +10,10 @@
 #include <string>
 #include <vector>
 
+namespace OZZ {
+    class InputSubsystem;
+}
+
 namespace OZZ::scene {
     class Camera {
     public:
@@ -43,6 +47,7 @@ namespace OZZ::scene {
         const Camera& GetCamera() const { return LayerCamera; }
 
         void SetLoadingProgress(float progress, std::string statusText = "");
+        InputSubsystem* getInputSubsystem() const;
 
     protected:
         void LookAtPosition(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up) {

@@ -33,7 +33,7 @@ namespace OZZ::scene {
             layer->Init(device);
         }
         bIsInitialized = true;
-        LoadLayer<ClayUILayer>(device, "ClayUI", inputSubsystem);
+        LoadLayer<ClayUILayer>(device, "ClayUI");
         SetLayerActive("ClayUI", true);
     }
 

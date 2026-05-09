@@ -5,6 +5,7 @@
 #include <lights/core/rendering/shapes.h>
 #include <lights/core/text/font_loader.h>
 #include <lights/core/util/profiling.h>
+#include <lights/framework/input/input_subsystem.h>
 #include <lights/framework/layers/clay/clay_ui_layer.h>
 #include <lights/framework/layers/clay/clay_utils.h>
 
@@ -13,8 +14,7 @@
 
 #include "spdlog/spdlog.h"
 
-ClayUILayer::ClayUILayer(OZZ::InputSubsystem* inInput)
-    : inputSubsystem(inInput) {}
+ClayUILayer::ClayUILayer() {}
 
 ClayUILayer::~ClayUILayer() {
     shutdownClay();
@@ -57,8 +57,9 @@ void ClayUILayer::Tick(float DeltaTime) {
     OZZ_PROFILE_FUNCTION;
     SceneLayer::Tick(DeltaTime);
 
-    const auto mousePosition = inputSubsystem->GetMousePosition();
-    const auto mouseState = inputSubsystem->GetKeyState({OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Left});
+    auto* input = getInputSubsystem();
+    const auto mousePosition = input->GetMousePosition();
+    const auto mouseState = input->GetKeyState({OZZ::EDeviceID::Mouse, OZZ::EMouseButton::Left});
 
     static bool colorsGenerated = false;
     static uint16_t randomFontSizes[10] = {};

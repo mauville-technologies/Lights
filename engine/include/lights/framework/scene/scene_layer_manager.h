@@ -129,6 +129,8 @@ namespace OZZ::scene {
         [[nodiscard]] std::vector<SceneLayer*> GetActiveLayers() const;
         std::vector<SceneLayer*> GetAllLayers() const;
 
+        InputSubsystem* GetInputSubsystem() const { return inputSubsystem; }
+
     private:
         void NotifyLayerProgress(const std::string& layerName, float progress, std::string statusText) {
             if (OnLayerProgress) OnLayerProgress(layerName, progress, std::move(statusText));

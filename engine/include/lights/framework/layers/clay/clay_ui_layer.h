@@ -5,7 +5,6 @@
 #pragma once
 
 #include "lights/core/rendering/renderable.h"
-#include "lights/framework/input/input_subsystem.h"
 
 #include <clay/clay.h>
 #include <lights/framework/scene/scene_layer.h>
@@ -154,7 +153,7 @@ void main()
     };
 
 public:
-    explicit ClayUILayer(OZZ::InputSubsystem* inInput);
+    ClayUILayer();
 
     ~ClayUILayer() override;
 
@@ -210,8 +209,6 @@ protected:
 private:
     OZZ::rendering::RHIBufferHandle cameraBuffer{OZZ::rendering::RHIBufferHandle::Null()};
     std::function<void()> tickDefinitionFunction;
-    OZZ::InputSubsystem* inputSubsystem;
-
     glm::ivec2 screenSize{0, 0};
 
     // Clay things
