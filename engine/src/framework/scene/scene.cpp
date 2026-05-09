@@ -14,6 +14,7 @@ namespace OZZ {
         layerManager = std::make_unique<SceneLayerManager>();
         resourceManager = inResourceManager;
         physicsAccumulator = 0.f;
+        layerManager->Init(device, input.get());
     }
 
     void scene::Scene::Tick(float DeltaTime) {

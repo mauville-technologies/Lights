@@ -9,6 +9,7 @@
 #include <ranges>
 #include <thread>
 
+#include <lights/framework/input/input_subsystem.h>
 #include <lights/framework/scene/scene_layer.h>
 #include <set>
 #include <string>
@@ -19,7 +20,7 @@ namespace OZZ::scene {
 
     public:
         ~SceneLayerManager();
-        void Init(rendering::RHIDevice* inDevice);
+        void Init(rendering::RHIDevice* inDevice, InputSubsystem* inInput);
 
         // Delegates — set these before calling InitLayerAsync
         std::function<void(const std::string& layerName, float progress, std::string statusText)> OnLayerProgress;
@@ -134,6 +135,7 @@ namespace OZZ::scene {
         }
 
         rendering::RHIDevice* device{nullptr};
+        InputSubsystem* inputSubsystem{nullptr};
         std::set<size_t> activeLayers;
         std::vector<std::string> layerNames;
         std::vector<uint16_t> layerExecutionOrders;

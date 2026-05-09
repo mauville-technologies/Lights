@@ -3,6 +3,7 @@
 //
 
 #include "lights/framework/scene/scene_layer_manager.h"
+#include "lights/framework/layers/clay/clay_ui_layer.h"
 
 #include <algorithm>
 
@@ -25,14 +26,15 @@ namespace OZZ::scene {
         });
     }
 
-    void SceneLayerManager::Init(rendering::RHIDevice* inDevice) {
+    void SceneLayerManager::Init(rendering::RHIDevice* inDevice, InputSubsystem* inInput) {
         device = inDevice;
-        // initialize all layers
+        inputSubsystem = inInput;
         for (const auto& layer : layers) {
             layer->Init(device);
         }
-
         bIsInitialized = true;
+        LoadLayer<ClayUILayer>(device, "ClayUI", inputSubsystem);
+        SetLayerActive("ClayUI", true);
     }
 
     void SceneLayerManager::RemoveLayer(const std::string& layerName) {
