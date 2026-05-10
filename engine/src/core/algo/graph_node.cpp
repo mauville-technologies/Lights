@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <functional>
 #include <ranges>
+#include <unordered_map>
+#include <unordered_set>
 
 void GraphNode::Connect(GraphNode* from, GraphNode* to) {
     if (!from || !to) {
@@ -48,6 +50,13 @@ void GraphNode::Disconnect(GraphNode* from, GraphNode* to) {
 
 std::optional<std::vector<GraphNode*>> GraphNode::TopologicalSort(GraphNode* root) {
     const auto flattenedGraph = Flatten(root);
+
+    std::unordered_map<GraphNode*, size_t> nodeIndex;
+    nodeIndex.reserve(flattenedGraph.size());
+    for (size_t i = 0; i < flattenedGraph.size(); i++) {
+        nodeIndex[flattenedGraph[i]] = i;
+    }
+
     auto inDegrees = flattenedGraph | std::views::transform([](GraphNode* node) {
                          return node->GetInDegree();
                      }) |
@@ -55,13 +64,9 @@ std::optional<std::vector<GraphNode*>> GraphNode::TopologicalSort(GraphNode* roo
 
     std::vector<GraphNode*> result{};
 
-    auto decreaseInDegreesOnNode = [&inDegrees, &flattenedGraph](GraphNode* node) {
-        // find the node in the graph
-        for (const auto& [i, fNode] : std::views::zip(std::views::iota(0), flattenedGraph)) {
-            if (node == fNode) {
-                inDegrees[i] -= 1;
-                return;
-            }
+    auto decreaseInDegreesOnNode = [&inDegrees, &nodeIndex](GraphNode* node) {
+        if (const auto it = nodeIndex.find(node); it != nodeIndex.end()) {
+            inDegrees[it->second] -= 1;
         }
     };
 
