@@ -230,4 +230,8 @@ private:
 
     std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture>> uiImages{};
     std::unordered_map<uint16_t, std::filesystem::path> fontRegistry{};
+
+    // Reused across buildSceneObject calls to avoid per-frame heap allocations.
+    std::vector<OZZ::Vertex> meshVerticesWorkspace{};
+    std::vector<uint32_t> meshIndicesWorkspace{};
 };

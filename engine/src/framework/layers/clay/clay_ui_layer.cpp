@@ -267,8 +267,10 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
 
     glm::vec3 scale = {command.boundingBox.width, command.boundingBox.height, 1.f};
     glm::vec3 translation = {command.boundingBox.x, command.boundingBox.y, 0}; // ensure unique Z for proper layering
-    std::vector<OZZ::Vertex> vertices;
-    std::vector<uint32_t> indices;
+    meshVerticesWorkspace.clear();
+    meshIndicesWorkspace.clear();
+    auto& vertices = meshVerticesWorkspace;
+    auto& indices = meshIndicesWorkspace;
     std::shared_ptr<OZZ::Texture> texture = uiImages["empty"];
 
     const auto material = std::make_shared<OZZ::Material>(device);
@@ -479,12 +481,11 @@ bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, cons
 void ClayUILayer::generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
                                      std::vector<uint32_t>& outIndices,
                                      glm::vec2 scale) {
-    outIndices = std::vector<uint32_t>{0, 2, 1, 3, 2, 0};
-    outVertices =
-        std::vector<OZZ::Vertex>{{.Position = {0.f, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 0.f}},
-                                 {.Position = {scale.x, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 0.f}},
-                                 {.Position = {scale.x, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 1.f}},
-                                 {.Position = {0.f, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 1.f}}};
+    outIndices.assign({0, 2, 1, 3, 2, 0});
+    outVertices.assign({{.Position = {0.f, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 0.f}},
+                        {.Position = {scale.x, 0.f, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 0.f}},
+                        {.Position = {scale.x, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {1.f, 1.f}},
+                        {.Position = {0.f, scale.y, 0.f}, .Normal = {0.f, 0.f, 1.f}, .UV = {0.f, 1.f}}});
 }
 
 void ClayUILayer::generateTextMesh(const std::string& text,
