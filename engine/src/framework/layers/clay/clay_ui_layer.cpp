@@ -247,6 +247,11 @@ void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderComman
 
     if (bBuildSceneObject) {
         buildSceneObject(id, command, scissor);
+    } else if (command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE &&
+               command.renderData.image.imageData != nullptr) {
+        // WrapTextureForUI creates a heap-allocated shared_ptr wrapper each frame.
+        // When we skip the rebuild, discard the allocation here to avoid leaking it.
+        UnwrapUITexture(command.renderData.image.imageData);
     }
 }
 
@@ -458,8 +463,17 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
 }
 
 bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand) {
-    const auto hasChanged = memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
-    return hasChanged;
+    if (command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE) {
+        // imageData is a per-frame WrapTextureForUI heap allocation whose address changes every
+        // frame even when the underlying texture is identical. Zero it out before comparing so
+        // the scene object is only rebuilt when layout/color/radius actually changes.
+        Clay_RenderCommand a = command;
+        Clay_RenderCommand b = otherCommand;
+        a.renderData.image.imageData = nullptr;
+        b.renderData.image.imageData = nullptr;
+        return memcmp(&a, &b, sizeof(Clay_RenderCommand)) != 0;
+    }
+    return memcmp(&command, &otherCommand, sizeof(Clay_RenderCommand)) != 0;
 }
 
 void ClayUILayer::generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
