@@ -144,6 +144,9 @@ namespace OZZ::scene {
         std::vector<std::unique_ptr<SceneLayer>> layers;
         std::vector<std::thread> asyncLoadingThreads;
 
+        mutable std::vector<SceneLayer*> activeLayersCache;
+        mutable bool bActiveLayersCacheDirty = true;
+
         bool bIsInitialized = false;
     };
 } // namespace OZZ::scene

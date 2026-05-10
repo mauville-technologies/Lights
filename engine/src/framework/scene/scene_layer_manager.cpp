@@ -50,6 +50,7 @@ namespace OZZ::scene {
                 layerNames[index] = "";
                 layers[index]->DeInit();
                 layers[index].reset();
+                bActiveLayersCacheDirty = true;
             }
         }
     }
@@ -62,6 +63,7 @@ namespace OZZ::scene {
                 } else {
                     activeLayers.erase(index);
                 }
+                bActiveLayersCacheDirty = true;
                 return;
             }
         }
@@ -71,29 +73,30 @@ namespace OZZ::scene {
         for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
             if (name == layerName) {
                 layerExecutionOrders[index] = zOrder;
+                bActiveLayersCacheDirty = true;
             }
         }
     }
 
     std::vector<SceneLayer*> SceneLayerManager::GetActiveLayers() const {
-        std::vector<size_t> activeLayerIndices{};
-
-        // list the active layers
-        for (const auto index : activeLayers) {
-            activeLayerIndices.push_back(index);
+        if (!bActiveLayersCacheDirty) {
+            return activeLayersCache;
         }
 
+        std::vector<size_t> activeLayerIndices(activeLayers.begin(), activeLayers.end());
         std::ranges::sort(activeLayerIndices, [this](const size_t a, const size_t b) {
             return layerExecutionOrders[a] < layerExecutionOrders[b];
         });
 
-        std::vector<SceneLayer*> result;
+        activeLayersCache.clear();
         for (const auto index : activeLayerIndices) {
             if (index < layers.size() && layers[index]) {
-                result.push_back(this->layers[index].get());
+                activeLayersCache.push_back(layers[index].get());
             }
         }
-        return result;
+
+        bActiveLayersCacheDirty = false;
+        return activeLayersCache;
     }
 
     std::vector<SceneLayer*> SceneLayerManager::GetAllLayers() const {
