@@ -110,30 +110,20 @@ std::optional<std::vector<GraphNode*>> GraphNode::TopologicalSort(GraphNode* roo
 
 std::vector<GraphNode*> GraphNode::Flatten(GraphNode* root) {
     std::vector<GraphNode*> flattenedNodes{};
-
-    auto hasBeenVisited = [&flattenedNodes](GraphNode* node) {
-        return std::ranges::find(flattenedNodes, node) != flattenedNodes.end();
-    };
+    std::unordered_set<GraphNode*> visited{};
 
     std::function<void(GraphNode*)> visitNode = [&](GraphNode* node) {
-        if (!node)
+        if (!node || visited.contains(node))
             return;
 
-        // we assume if we've made it this far, the node hasn't been visited
+        visited.insert(node);
         flattenedNodes.push_back(node);
 
-        // then we visit any previous node that hasn't been visited
-        // and any next node that hasn't been visited
         for (const auto& previousNode : node->inputs) {
-            if (previousNode && !hasBeenVisited(previousNode)) {
-                visitNode(previousNode);
-            }
+            visitNode(previousNode);
         }
-
         for (const auto& nextNode : node->outputs) {
-            if (nextNode && !hasBeenVisited(nextNode)) {
-                visitNode(nextNode);
-            }
+            visitNode(nextNode);
         }
     };
 
