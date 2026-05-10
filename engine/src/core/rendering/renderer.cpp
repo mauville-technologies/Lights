@@ -16,10 +16,11 @@ namespace OZZ {
         device.reset();
     }
 
-    void Renderer::Init(rendering::PlatformContext&& platformContext) {
+    void Renderer::Init(rendering::PlatformContext&& platformContext,
+                        rendering::RHIBackend backend) {
         OZZ_PROFILE_FUNCTION;
         device = rendering::CreateRHIDevice({
-            .Backend = rendering::RHIBackend::Auto,
+            .Backend = backend,
             .Context = std::move(platformContext),
         });
         viewport->Init(device.get());
