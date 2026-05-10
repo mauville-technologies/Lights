@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <lights/framework/input/input_keys.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace OZZ {
@@ -97,7 +98,7 @@ namespace OZZ {
 
         [[nodiscard]] const std::vector<InputMapping>& GetMappings() const { return mappings; }
 
-        [[nodiscard]] const std::vector<AxisMapping>& GetAxisMappings() const { return axisMappings; }
+        [[nodiscard]] const std::unordered_map<std::string, AxisMapping>& GetAxisMappings() const { return axisMappings; }
 
         [[nodiscard]] const std::vector<TextListenerMapping>& GetTextMappings() const { return textMappings; }
 
@@ -114,7 +115,7 @@ namespace OZZ {
     private:
         TextModeFunc TextModeDelegate;
 
-        std::vector<AxisMapping> axisMappings{};
+        std::unordered_map<std::string, AxisMapping> axisMappings{};
         std::vector<InputMapping> mappings{};
         std::vector<TextListenerMapping> textMappings{};
 

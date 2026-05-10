@@ -193,7 +193,7 @@ namespace OZZ {
                                     EControllerButton::LeftTrigger);
         }
 
-        for (auto& Mapping : axisMappings) {
+        for (auto& [action, Mapping] : axisMappings) {
             Mapping.Value = 0.f;
 
             for (auto& [eKey, Weight] : Mapping.Keys) {
@@ -239,12 +239,8 @@ namespace OZZ {
     }
 
     float InputSubsystem::GetAxisValue(const std::string& Action) const {
-        auto Mapping = std::ranges::find_if(axisMappings, [&Action](const AxisMapping& Mapping) {
-            return Mapping.Action == Action;
-        });
-
-        if (Mapping != axisMappings.end()) {
-            return Mapping->Value;
+        if (const auto it = axisMappings.find(Action); it != axisMappings.end()) {
+            return it->second.Value;
         }
         return 0.f;
     }
@@ -280,25 +276,12 @@ namespace OZZ {
     }
 
     void InputSubsystem::RegisterAxisMapping(AxisMapping&& Mapping) {
-        const std::string& action = Mapping.Action;
-        bool bFound = false;
-        for (auto& ExistingMapping : axisMappings) {
-            if (ExistingMapping.Action == action) {
-                ExistingMapping = Mapping;
-                bFound = true;
-                break;
-            }
-        }
-
-        if (!bFound) {
-            axisMappings.push_back(Mapping);
-        }
+        const std::string action = Mapping.Action;
+        axisMappings.insert_or_assign(action, std::move(Mapping));
     }
 
     void InputSubsystem::UnregisterAxisMapping(const std::string& Action) {
-        std::erase_if(axisMappings, [&Action](const AxisMapping& Mapping) {
-            return Mapping.Action == Action;
-        });
+        axisMappings.erase(Action);
     }
 
     void InputSubsystem::RegisterTextListener(TextListenerMapping&& Mapping) {
