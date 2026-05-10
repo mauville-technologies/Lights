@@ -140,7 +140,6 @@ bool ClayUILayer::IsDebugPanelOpened() const {
 void ClayUILayer::reinitializeClay() {
     shutdownClay();
     currentRenderCommand.clear();
-    uiSceneObjects.clear();
     fontRegistry = {};
     fontLoader = std::make_unique<OZZ::FontLoader>();
     clayTotalMemorySize = Clay_MinMemorySize();
@@ -220,6 +219,25 @@ void ClayUILayer::shutdownClay() {
         uiShader.reset();
         textShader.reset();
         uiImages.clear();
+
+        if (device) {
+            for (auto& [id, handle] : uiComponentSettings) {
+                if (handle != OZZ::rendering::RHIBufferHandle::Null()) {
+                    device->FreeBuffer(handle);
+                }
+            }
+            for (auto& [id, sceneObject] : uiSceneObjects) {
+                if (sceneObject.MeshData.VertexBuffer != OZZ::rendering::RHIBufferHandle::Null()) {
+                    device->FreeBuffer(sceneObject.MeshData.VertexBuffer);
+                }
+                if (sceneObject.MeshData.IndexBuffer != OZZ::rendering::RHIBufferHandle::Null()) {
+                    device->FreeBuffer(sceneObject.MeshData.IndexBuffer);
+                }
+            }
+        }
+        uiComponentSettings.clear();
+        uiSceneObjects.clear();
+
         free(clayArena.memory);
         clayArena = {};
         Clay_SetCurrentContext({});
@@ -398,18 +416,27 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
                           borderRadius.bottomLeft / command.boundingBox.height},
     };
 
-    auto uiComponentBuffer = device->CreateBuffer({
-        .Size = sizeof(UIComponentSettings),
-        .Usage = OZZ::rendering::BufferUsage::UniformBuffer,
-        .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
-    });
-
-    device->UpdateBuffer(uiComponentBuffer, &uiSettings, sizeof(UIComponentSettings), 0);
-    uiComponentSettings[id] = uiComponentBuffer;
+    // Reuse the component uniform buffer if it already exists (fixed size, always UIComponentSettings).
+    // Create it on first use, then update in place on subsequent rebuilds.
+    auto& cachedUiComponentBuffer = uiComponentSettings[id];
+    if (cachedUiComponentBuffer == OZZ::rendering::RHIBufferHandle::Null()) {
+        cachedUiComponentBuffer = device->CreateBuffer({
+            .Size = sizeof(UIComponentSettings),
+            .Usage = OZZ::rendering::BufferUsage::UniformBuffer,
+            .Access = OZZ::rendering::BufferMemoryAccess::CpuToGpu,
+        });
+    }
+    device->UpdateBuffer(cachedUiComponentBuffer, &uiSettings, sizeof(UIComponentSettings), 0);
 
     material->SetResource(0, 0, cameraBuffer);
-    material->SetResource(0, 1, uiComponentBuffer);
+    material->SetResource(0, 1, cachedUiComponentBuffer);
     material->SetResource(0, 2, texture->GetRHIHandle());
+
+    // Free old vertex/index buffers before overwriting to avoid leaking GPU memory.
+    if (const auto existingIt = uiSceneObjects.find(id); existingIt != uiSceneObjects.end()) {
+        device->FreeBuffer(existingIt->second.MeshData.VertexBuffer);
+        device->FreeBuffer(existingIt->second.MeshData.IndexBuffer);
+    }
 
     const auto vertexBuffer = device->CreateBuffer({
         .Size = sizeof(OZZ::Vertex) * vertices.size(),
