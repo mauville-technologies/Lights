@@ -39,7 +39,7 @@ namespace OZZ::platform::SDL3 {
         // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-        const SDL_WindowFlags windowFlags = bWebGPU
+        const SDL_WindowFlags windowFlags = rhiBackend == OZZ::rendering::RHIBackend::WebGPU
             ? SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN
             : SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
         window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
@@ -63,7 +63,7 @@ namespace OZZ::platform::SDL3 {
 
     bool SDLWindow::CreateSurface(void* instance, void* surfaceOut) {
 #ifdef OZZ_WEBGPU_ENABLED
-        if (bWebGPU) {
+        if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU) {
             WGPUInstance wgpuInstance = *static_cast<WGPUInstance*>(instance);
             WGPUSurface* surfacePtr   = static_cast<WGPUSurface*>(surfaceOut);
 
@@ -134,7 +134,7 @@ namespace OZZ::platform::SDL3 {
 
     std::vector<std::string> SDLWindow::GetRequiredInstanceExtensions() {
 #ifdef OZZ_WEBGPU_ENABLED
-        if (bWebGPU) return {};
+        if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU) return {};
 #endif
         uint32_t count;
         auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);

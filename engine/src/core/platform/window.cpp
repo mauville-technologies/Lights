@@ -15,15 +15,15 @@
 #endif
 
 namespace OZZ {
-    Window::Window(platform::WindowCallbacks&& inCallbacks, bool bWebGPU) {
-        initWindow(std::move(inCallbacks), bWebGPU);
+    Window::Window(platform::WindowCallbacks&& inCallbacks, rendering::RHIBackend backend) {
+        initWindow(std::move(inCallbacks), backend);
     }
 
     Window::~Window() {
         window.reset();
     }
 
-    void Window::initWindow(platform::WindowCallbacks&& inCallbacks, bool bWebGPU) {
+    void Window::initWindow(platform::WindowCallbacks&& inCallbacks, rendering::RHIBackend backend) {
 #ifdef OZZ_GLFW
         window = std::make_unique<platform::glfw::GLFWWindow>();
 #endif
@@ -32,7 +32,7 @@ namespace OZZ {
         window = std::make_unique<platform::SDL3::SDLWindow>();
 #endif
 
-        window->SetWebGPUMode(bWebGPU);
+        window->SetRHIBackend(backend);
         window->CreateWindow("Ozzadar", 800, 600);
         window->MakeContextCurrent();
 

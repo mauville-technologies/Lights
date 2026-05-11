@@ -7,6 +7,7 @@
 #include <functional>
 #include <glm/glm.hpp>
 #include <lights/framework/input/input_keys.h>
+#include <ozz_rendering/rhi_device.h>
 #include <string>
 
 #if OZZ_PLATFORM_WINDOWS
@@ -37,7 +38,7 @@ namespace OZZ::platform {
     class IPlatformWindow {
     public:
         virtual ~IPlatformWindow() = default;
-        virtual void SetWebGPUMode(bool bIsWebGPU) {}
+        void SetRHIBackend(rendering::RHIBackend backend) { rhiBackend = backend; }
         virtual void CreateWindow(const std::string& title, int width, int height) = 0;
         virtual bool CreateSurface(void* instance, void* surfaceOut) = 0;
         virtual std::vector<std::string> GetRequiredInstanceExtensions() = 0;
@@ -60,6 +61,7 @@ namespace OZZ::platform {
         [[nodiscard]] const auto& GetMouseButtonStates() const { return mouseButtonStates; }
 
     protected:
+        rendering::RHIBackend rhiBackend {rendering::RHIBackend::Auto};
         KeyStateArrayType keyStates{};
         MouseButtonStateArrayType mouseButtonStates{};
         ControllerStateMap controllerState;
