@@ -37,6 +37,7 @@ namespace OZZ::platform {
     class IPlatformWindow {
     public:
         virtual ~IPlatformWindow() = default;
+        virtual void SetWebGPUMode(bool bIsWebGPU) {}
         virtual void CreateWindow(const std::string& title, int width, int height) = 0;
         virtual bool CreateSurface(void* instance, void* surfaceOut) = 0;
         virtual std::vector<std::string> GetRequiredInstanceExtensions() = 0;

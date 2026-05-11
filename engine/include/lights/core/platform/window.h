@@ -12,7 +12,7 @@ namespace OZZ {
         friend class ContextWindow;
 
     public:
-        Window(platform::WindowCallbacks&& inCallbacks);
+        Window(platform::WindowCallbacks&& inCallbacks, bool bWebGPU = false);
         ~Window();
 
         bool CreateSurface(void* instance, void* surfaceOut) const {
@@ -41,7 +41,7 @@ namespace OZZ {
         void Show() { window->Show(); }
 
     private:
-        void initWindow(platform::WindowCallbacks&& inCallbacks);
+        void initWindow(platform::WindowCallbacks&& inCallbacks, bool bWebGPU = false);
 
     public:
     private:

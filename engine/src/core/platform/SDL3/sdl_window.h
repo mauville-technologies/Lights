@@ -12,6 +12,7 @@
 namespace OZZ::platform::SDL3 {
     class SDLWindow final : public IPlatformWindow {
     public:
+        void SetWebGPUMode(bool bIsWebGPU) override { bWebGPU = bIsWebGPU; }
         void CreateWindow(const std::string& title, int width, int height) override;
 
         bool CreateSurface(void* instance, void* surfaceOut) override;
@@ -37,6 +38,7 @@ namespace OZZ::platform::SDL3 {
     private:
         SDL_Window* window{nullptr};
         SDL_GLContext glContext{nullptr};
+        bool bWebGPU{false};
 
         WindowCallbacks callbacks;
 

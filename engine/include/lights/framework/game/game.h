@@ -181,7 +181,8 @@ namespace OZZ::game {
                                                          [this](const glm::vec2 pos) {
                                                              input->NotifyMouseMove(pos);
                                                          }};
-            window = std::make_shared<Window>(std::move(callbacks));
+            window = std::make_shared<Window>(std::move(callbacks),
+                preferredBackend == rendering::RHIBackend::WebGPU);
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
