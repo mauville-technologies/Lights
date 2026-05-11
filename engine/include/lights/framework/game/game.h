@@ -79,8 +79,10 @@ namespace OZZ::game {
     template <typename SceneType>
     class LightsGame {
     public:
-        explicit LightsGame(const std::filesystem::path& configFilePath)
-            : params(Configuration<GameParameters>(configFilePath)) {}
+        explicit LightsGame(const std::filesystem::path& configFilePath,
+                            rendering::RHIBackend preferredBackend = rendering::RHIBackend::Auto)
+            : params(Configuration<GameParameters>(configFilePath))
+            , preferredBackend(preferredBackend) {}
 
         ~LightsGame() {
             scene.reset();
@@ -179,7 +181,7 @@ namespace OZZ::game {
                                                          [this](const glm::vec2 pos) {
                                                              input->NotifyMouseMove(pos);
                                                          }};
-            window = std::make_shared<Window>(std::move(callbacks));
+            window = std::make_shared<Window>(std::move(callbacks), preferredBackend);
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
@@ -221,7 +223,7 @@ namespace OZZ::game {
                     [this](void* instance, void* surface) {
                         return window->CreateSurface(instance, surface);
                     },
-            });
+            }, preferredBackend);
 
             resourceManager = std::make_unique<scene::ResourceManager>(renderer->GetDevice());
         }
@@ -287,6 +289,7 @@ namespace OZZ::game {
     private:
         bool bRunning{false};
         OZZ::Configuration<GameParameters> params;
+        rendering::RHIBackend preferredBackend {rendering::RHIBackend::Auto};
 
         std::shared_ptr<Window> window{nullptr};
         std::shared_ptr<InputSubsystem> input{nullptr};

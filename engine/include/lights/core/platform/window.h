@@ -12,7 +12,8 @@ namespace OZZ {
         friend class ContextWindow;
 
     public:
-        Window(platform::WindowCallbacks&& inCallbacks);
+        Window(platform::WindowCallbacks&& inCallbacks,
+               rendering::RHIBackend backend = rendering::RHIBackend::Auto);
         ~Window();
 
         bool CreateSurface(void* instance, void* surfaceOut) const {
@@ -41,7 +42,8 @@ namespace OZZ {
         void Show() { window->Show(); }
 
     private:
-        void initWindow(platform::WindowCallbacks&& inCallbacks);
+        void initWindow(platform::WindowCallbacks&& inCallbacks,
+                        rendering::RHIBackend backend = rendering::RHIBackend::Auto);
 
     public:
     private:

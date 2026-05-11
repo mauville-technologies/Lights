@@ -7,6 +7,7 @@
 #include "lights/framework/scene/scene.h"
 #include "renderable.h"
 #include "renderables/renderable_viewport.h"
+#include <ozz_rendering/rhi_device.h>
 
 namespace OZZ {
     class Renderer {
@@ -14,7 +15,8 @@ namespace OZZ {
         Renderer();
         ~Renderer();
 
-        void Init(rendering::PlatformContext&& platformContext);
+        void Init(rendering::PlatformContext&& platformContext,
+                  rendering::RHIBackend backend = rendering::RHIBackend::Auto);
         void ExecuteSceneGraph(Renderable* sceneGraph);
 
         void ViewportResize(const glm::uvec2 newSize) const {
