@@ -25,6 +25,8 @@ namespace OZZ {
         std::unordered_map<char, CharacterDetails> Characters{};
         glm::vec2 CharacterSize{};
         std::string Name{};
+        int Ascender{0};   // font-level ascender in pixels (above baseline, positive)
+        int Descender{0};  // font-level descender in pixels (below baseline, negative)
 
         [[nodiscard]] glm::ivec2 MeasureText(const std::string& text) const;
     };

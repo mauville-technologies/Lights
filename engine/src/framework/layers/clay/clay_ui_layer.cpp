@@ -85,6 +85,19 @@ void ClayUILayer::Tick(float DeltaTime) {
         }
 
         clayRenderCommandArray = Clay_EndLayout();
+
+        // Consume all image wrappers now so render() is idempotent this frame.
+        frameImageTextures.clear();
+        for (const auto& cmd : std::span(clayRenderCommandArray.internalArray, clayRenderCommandArray.length)) {
+            if (cmd.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE && cmd.renderData.image.imageData != nullptr) {
+                auto tex = UnwrapUITexture(cmd.renderData.image.imageData);
+                if (tex) {
+                    frameImageTextures[cmd.id] = std::move(tex);
+                }
+            }
+        }
+        // Free wrappers for elements Clay culled (offscreen) — they emit no render command.
+        ClayUI_FlushLeakedWrappers();
     }
 }
 
@@ -142,6 +155,9 @@ void ClayUILayer::reinitializeClay() {
     currentRenderCommand.clear();
     fontRegistry = {};
     fontLoader = std::make_unique<OZZ::FontLoader>();
+    // The debug panel generates ~10x more elements than the game UI alone.
+    // Bump the limit before querying MinMemorySize so the arena is sized correctly.
+    Clay_SetMaxElementCount(16384);
     clayTotalMemorySize = Clay_MinMemorySize();
     clayArena = Clay_CreateArenaWithCapacityAndMemory(clayTotalMemorySize, malloc(clayTotalMemorySize));
     auto context = Clay_Initialize(clayArena,
@@ -215,6 +231,7 @@ void ClayUILayer::buildShaders() {
 void ClayUILayer::shutdownClay() {
     if (bClayInitialized) {
         spdlog::info("Shutting down clay");
+        frameImageTextures.clear();
         fontRegistry.clear();
         uiShader.reset();
         textShader.reset();
@@ -265,11 +282,6 @@ void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderComman
 
     if (bBuildSceneObject) {
         buildSceneObject(id, command, scissor);
-    } else if (command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE &&
-               command.renderData.image.imageData != nullptr) {
-        // WrapTextureForUI creates a heap-allocated shared_ptr wrapper each frame.
-        // When we skip the rebuild, discard the allocation here to avoid leaking it.
-        UnwrapUITexture(command.renderData.image.imageData);
     }
 }
 
@@ -324,7 +336,9 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
             break;
         }
         case CLAY_RENDER_COMMAND_TYPE_IMAGE: {
-            texture = UnwrapUITexture(command.renderData.image.imageData);
+            if (const auto it = frameImageTextures.find(command.id); it != frameImageTextures.end()) {
+                texture = it->second;
+            }
             borderRadius = command.renderData.image.cornerRadius;
             generateSquareMesh(vertices, indices);
             break;
@@ -368,11 +382,7 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
                                          command.renderData.text.stringContents.length),
                              FontSet,
                              vertices,
-                             indices,
-                             {
-                                 command.boundingBox.width,
-                                 command.boundingBox.height,
-                             });
+                             indices);
             break;
         }
         default: {
@@ -518,9 +528,9 @@ void ClayUILayer::generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
 void ClayUILayer::generateTextMesh(const std::string& text,
                                    OZZ::FontSet* fontSet,
                                    std::vector<OZZ::Vertex>& outVertices,
-                                   std::vector<uint32_t>& outIndices,
-                                   const glm::vec2& baseline) {
-    // build the text object
+                                   std::vector<uint32_t>& outIndices) {
+    int ascender = fontSet->Ascender;
+
     int nextCharacterX = 0;
     int startIndex = outVertices.size();
 
@@ -535,7 +545,7 @@ void ClayUILayer::generateTextMesh(const std::string& text,
         auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
 
         float left = nextCharacterX + Bearing.x;
-        float top = -Bearing.y + (baseline.y / 1.0);
+        float top = static_cast<float>(ascender - Bearing.y);
         float bottom = top + Size.y;
         float right = left + Size.x;
 

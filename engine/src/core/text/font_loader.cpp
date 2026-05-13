@@ -11,9 +11,6 @@
 namespace OZZ {
     glm::ivec2 FontSet::MeasureText(const std::string& text) const {
         int width = 0;
-        int maxTop = 0;
-        int minBottom = 0;
-        bool first = true;
 
         for (const auto character : text) {
             if (!Characters.contains(character)) {
@@ -21,25 +18,10 @@ namespace OZZ {
                 return {0, 0};
             }
 
-            const auto& fontCharacter = Characters.at(character);
-            width += fontCharacter.Advance.x >> 6;
-
-            int top = static_cast<int>(fontCharacter.Bearing.y);
-            int bottom = top - static_cast<int>(fontCharacter.Size.y);
-
-            if (first) {
-                maxTop = top;
-                minBottom = bottom;
-                first = false;
-            }
-            else {
-                maxTop = std::max(maxTop, top);
-                minBottom = std::min(minBottom, bottom);
-            }
+            width += Characters.at(character).Advance.x >> 6;
         }
 
-        int height = maxTop - minBottom;
-        return {width, height};
+        return {width, Ascender - Descender};
     }
 
     FontLoader::FontLoader() {
@@ -75,6 +57,9 @@ namespace OZZ {
             spdlog::error("Could not set font size: {}", fontSize);
             return {};
         }
+
+        NewFontSet->Ascender = static_cast<int>(face->size->metrics.ascender >> 6);
+        NewFontSet->Descender = static_cast<int>(face->size->metrics.descender >> 6);
 
         auto characterImages = std::vector<std::unique_ptr<Image>>();
         auto characterDetails = std::unordered_map<char, CharacterDetails>();

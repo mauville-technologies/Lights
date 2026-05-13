@@ -197,8 +197,7 @@ private:
     void generateTextMesh(const std::string& text,
                           OZZ::FontSet* fontSet,
                           std::vector<OZZ::Vertex>& outVertices,
-                          std::vector<uint32_t>& outIndices,
-                          const glm::vec2& baseline = {0, 0});
+                          std::vector<uint32_t>& outIndices);
 
 public:
     std::string GetRenderableName() override { return "ClayUILayer"; }
@@ -227,6 +226,9 @@ private:
     std::unordered_map<uint32_t, OZZ::rendering::RHIBufferHandle> uiComponentSettings{};
 
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
+
+    // Image wrappers consumed once per Tick; render() may be called multiple times per frame safely.
+    std::unordered_map<uint32_t, std::shared_ptr<OZZ::Texture>> frameImageTextures{};
 
     std::unordered_map<std::filesystem::path, std::shared_ptr<OZZ::Texture>> uiImages{};
     std::unordered_map<uint16_t, std::filesystem::path> fontRegistry{};
