@@ -11,33 +11,31 @@ namespace OZZ {
 
     class RenderableViewport : public Renderable {
     public:
-        const std::string VertexShader = R"(
-#version 450 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec4 aColor;
-layout (location = 2) in vec3 aNormal;
-layout (location = 3) in vec2 aTexCoord;
+        const std::string ViewportShader = R"(
+struct VertexOutput {
+    float4 position : SV_Position;
+    float2 texCoord : TEXCOORD0;
+};
 
-layout (location = 0) out vec2 texCoord;
+[vk::combinedImageSampler] [vk::binding(1, 0)] Texture2D<float4> inTexture;
+[vk::combinedImageSampler] [vk::binding(1, 0)] SamplerState      inTextureSmp;
 
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    texCoord = aTexCoord;
+[shader("vertex")]
+VertexOutput vertexMain(
+    [vk::location(0)] float3 aPos,
+    [vk::location(1)] float4 aColor,
+    [vk::location(2)] float3 aNormal,
+    [vk::location(3)] float2 aTexCoord
+) {
+    VertexOutput output;
+    output.position = float4(aPos, 1.0);
+    output.texCoord = aTexCoord;
+    return output;
 }
-)";
 
-        const std::string FragmentShader = R"(
-#version 450 core
-
-layout (location = 0) in vec2 texCoord;
-layout (location = 0) out vec4 FragColor;
-
-layout(binding = 1) uniform sampler2D inTexture;
-
-void main()
-{
-    FragColor = texture(inTexture, texCoord);
+[shader("fragment")]
+float4 fragmentMain(VertexOutput input) : SV_Target {
+    return inTexture.Sample(inTextureSmp, input.texCoord);
 }
 )";
         RenderableViewport();

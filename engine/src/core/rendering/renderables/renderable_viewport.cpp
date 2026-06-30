@@ -64,8 +64,8 @@ namespace OZZ {
 
         const auto shader = std::make_shared<OZZ::Shader>(device,
                                                           rendering::ShaderSourceParams{
-                                                              .Vertex = VertexShader,
-                                                              .Fragment = FragmentShader,
+                                                              .Vertex  = ViewportShader,
+                                                              .IsSlang = true,
                                                           });
         const auto material = std::make_shared<Material>(device);
         material->SetShader(shader);
