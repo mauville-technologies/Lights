@@ -2,7 +2,7 @@
 
 ## Role
 
-Game engine. Builds the `lights_engine` static library. C++23. Cascades the `LOCAL_RENDERING_DIR` and `OZZ_WINDOWING_SYSTEM` (`GLFW` | `SDL3`) configure flags down to `ozz_rendering`.
+Game engine. Builds the `lights_engine` static library. C++23. Cascades the `LOCAL_RENDERING_DIR` configure flag down to `ozz_rendering`. SDL3 is the only supported windowing backend.
 
 Normally consumed via `FetchContent` from `truck-kun/`. Standalone build is supported but not the production path.
 
@@ -42,11 +42,9 @@ Lights\
 │   │       └── scene\          # scene, scene_layer, scene_layer_manager, scene_object,
 │   │                           # resource_manager, units, constants
 │   ├── src\                    # mirrors include/lights/ tree;
-│   │                           # platform\ has GLFW\ and SDL3\ implementations
-│   │                           # (selected at configure time by OZZ_WINDOWING_SYSTEM)
+│   │                           # platform\ has SDL3\ implementation
 │   └── third_party\            # FetchContent: spdlog, glm, freetype2, toml11, rtaudio,
-│                               # GLFW or SDL3 (per OZZ_WINDOWING_SYSTEM), ozz_rendering,
-│                               # tileson, clay
+│                               # SDL3, ozz_rendering, tileson, clay
 └── libs\
     ├── ozz_audio\              # audio runtime (own static lib)
     ├── ozz_binarypacking\      # binary serialization helpers
@@ -62,7 +60,6 @@ Lights\
 
 ## Configure flags (when consumed via Lights's third_party)
 
-- `OZZ_WINDOWING_SYSTEM` — `GLFW` (default) or `SDL3`. Selects platform layer in `engine/src/core/platform/`.
 - `LOCAL_RENDERING_DIR` — path to a local `ozz_rendering` checkout; overrides the GitHub fetch.
 
 ## Compile defines
@@ -90,7 +87,7 @@ Used by downstream consumers (`truck-kun`) to consolidate artifacts.
 |------|------|
 | Public API surface | `engine/include/lights/lights.h` (umbrella) |
 | RHI consumption | `engine/src/core/rendering/`, `engine/include/lights/core/rendering/` |
-| Windowing / input | `engine/src/core/platform/{GLFW,SDL3}\`, `engine/src/framework/input/` |
+| Windowing / input | `engine/src/core/platform/SDL3\`, `engine/src/framework/input/` |
 | Scene graph | `engine/src/framework/scene/`, `engine/include/lights/framework/scene/` |
 | Clay UI | `engine/src/framework/layers/clay/` |
 | Audio | `engine/src/core/audio/` |

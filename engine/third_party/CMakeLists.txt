@@ -1,8 +1,5 @@
 include(FetchContent)
 
-set(GLFW_BUILD_WAYLAND FALSE)
-
-set(OZZ_WINDOWING_SYSTEM "GLFW" CACHE STRING "Windowing system to use, options: GLFW, SDL3")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
 
 if (NOT TARGET spdlog)
@@ -129,31 +126,15 @@ set(LIBS
         TracyClient
 )
 
-set(THIRD_PARTY_COMPILE_DEFS "")
-# if window system is GLFW, add glfw
-if (OZZ_WINDOWING_SYSTEM STREQUAL "GLFW")
-    FetchContent_Declare(
-            glfwlib
-            GIT_REPOSITORY git@github.com:glfw/glfw.git
-            GIT_TAG 3.4
-    )
+set(THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
 
-    FetchContent_MakeAvailable(glfwlib)
-    list(APPEND LIBS glfw)
-    list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_GLFW)
-
-elseif (OZZ_WINDOWING_SYSTEM STREQUAL "SDL3")
-    # not implemented error
-    #    message(FATAL_ERROR "SDL3 windowing system is not implemented yet.")
-    FetchContent_Declare(
-            SDL_Lib
-            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-            GIT_TAG release-3.2.16
-    )
-    FetchContent_MakeAvailable(SDL_Lib)
-    list(APPEND LIBS SDL3::SDL3)
-    list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
-endif ()
+FetchContent_Declare(
+        SDL_Lib
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.2.16
+)
+FetchContent_MakeAvailable(SDL_Lib)
+list(APPEND LIBS SDL3::SDL3)
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     list(APPEND THIRD_PARTY_COMPILE_DEFS OZZ_PROFILING_ENABLED)

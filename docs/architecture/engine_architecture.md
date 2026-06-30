@@ -20,7 +20,7 @@ Purpose: low-level systems, explicit control, composable primitives.
 Subsystems:
 - `algo`: graph utilities (`GraphNode`) used by render/audio execution.
 - `audio`: runtime audio graph, device selection, cue/synth/mixer nodes.
-- `platform`: backend-neutral window/input bridge (GLFW/SDL3).
+- `platform`: window/input bridge via SDL3 (Emscripten-compatible).
 - `rendering`: render graph execution primitives and GL object wrappers.
 - `text`: font atlas generation via FreeType.
 - `util`: generic helpers (configuration, state machine, image/ring buffer, enum helpers, etc.).
@@ -48,7 +48,7 @@ Based on source patterns/TODOs:
 - render graph validation and safety checks likely to expand;
 - audio node ecosystem likely to grow beyond cue/saw/mixer;
 - resource manager job/render split likely to be further formalized;
-- optional backend paths (e.g., SDL3/asio) likely to mature over time.
+- Emscripten/WebGPU target path to be built on top of existing SDL3 backend.
 
 ## Relationship to File Structure
 

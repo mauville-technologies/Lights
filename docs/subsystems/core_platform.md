@@ -7,9 +7,7 @@ Path: `engine/include/lights/core/platform/*`
 Platform abstracts windowing/input backend details behind a stable interface:
 - high-level wrapper: `OZZ::Window`
 - backend contract: `platform::IPlatformWindow`
-- backend implementations:
-  - GLFW (`core/platform/GLFW/*`)
-  - SDL3 (`core/platform/SDL3/*`)
+- backend implementation: SDL3 (`core/platform/SDL3/*`)
 
 ## Interface Shape
 
@@ -25,13 +23,9 @@ Callbacks are grouped in `WindowCallbacks`:
 - controller connect/disconnect
 - mouse move/scroll
 
-## Backend Selection
+## Backend
 
-Backend is selected by compile definitions from CMake:
-- `OZZ_GLFW`
-- `OZZ_SDL3`
-
-`Window::initWindow` instantiates the selected backend and initializes GLAD once.
+SDL3 is the only supported backend. `OZZ_SDL3` is defined unconditionally. `Window::initWindow` instantiates `SDLWindow`.
 
 ## Inferred Design Intent
 
@@ -42,6 +36,6 @@ Backend is selected by compile definitions from CMake:
 ## Speculative Direction (labeled)
 
 Potential future improvements:
-- complete parity between GLFW and SDL3 feature paths;
 - stronger context ownership APIs (currently `Window::MakeContextCurrent` is intentionally minimal);
-- expanded platform events and device hotplug behavior.
+- expanded platform events and device hotplug behavior;
+- Emscripten canvas surface creation via SDL3.

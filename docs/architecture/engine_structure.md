@@ -38,7 +38,7 @@ Platform abstraction layer for window management and input.
 
 - `window.h` - Cross-platform window management
 - `platform_window.h` - Platform-specific window interface
-- GLFW and SDL3 backend implementations
+- SDL3 backend implementation
 
 #### `core/rendering/`
 
