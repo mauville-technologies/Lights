@@ -59,7 +59,7 @@ struct UIComponentSettings {
 
 struct PushConstants { float4x4 model; };
 [[vk::push_constant]]
-PushConstants pc;
+ConstantBuffer<PushConstants> pc;
 
 [shader("vertex")]
 VertexOutput vertexMain(
