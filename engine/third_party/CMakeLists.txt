@@ -87,6 +87,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tracy_lib)
 
+set(OZZ_ENABLE_SLANG ON CACHE BOOL "Enable Slang shader compiler" FORCE)
+
 set(LOCAL_RENDERING_DIR "" CACHE PATH "Path to local lights engine directory")
 if (LOCAL_RENDERING_DIR AND EXISTS "${LOCAL_RENDERING_DIR}")
     message(STATUS "using local lights directory ${LOCAL_RENDERING_DIR}")
