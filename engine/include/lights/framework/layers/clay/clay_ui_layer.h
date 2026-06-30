@@ -31,121 +31,98 @@ private:
         glm::vec4 BorderRadiusY; // top-left, top-right, bottom-right, bottom-left
     };
 
-    const std::string VertexShader = R"(
-#version 450 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec4 aColor;
-layout (location = 2) in vec3 aNormal;
-layout (location = 3) in vec2 aTexCoord;
+    // Shared preamble: UBOs, texture, sampler, push constant, vertex entry point.
+    // Included in both UISlangShader and FontUISlangShader.
+    static constexpr const char* kClayShaderPreamble = R"(
+struct VertexOutput {
+    float4 position : SV_Position;
+    float2 texCoord : TEXCOORD0;
+};
 
-layout (location = 1) out vec2 texCoord;
+struct CameraSettings {
+    float4x4 view;
+    float4x4 proj;
+};
 
-layout(set = 0, binding = 0) uniform CameraSettings {
-    mat4 view;
-    mat4 proj;
-} camera;
+struct UIComponentSettings {
+    float4 backgroundColor;
+    float4 borderColor;
+    float4 borderWidth;    // left, right, top, bottom
+    float4 borderRadiusX;  // top-left, top-right, bottom-right, bottom-left
+    float4 borderRadiusY;  // top-left, top-right, bottom-right, bottom-left
+};
 
-layout(push_constant) uniform PushConstants {
-    mat4 model;
-} pc;
+[vk::binding(0, 0)] ConstantBuffer<CameraSettings> camera;
+[vk::binding(1, 0)] ConstantBuffer<UIComponentSettings> uiSettings;
+[vk::binding(2, 0)] Texture2D<float4> image;
+[vk::binding(3, 0)] SamplerState imageSmp;
 
-void main()
-{
-    gl_Position = camera.proj * camera.view * pc.model * vec4(aPos, 1.0);
-    texCoord = aTexCoord;
+struct PushConstants { float4x4 model; };
+[[vk::push_constant]]
+PushConstants pc;
+
+[shader("vertex")]
+VertexOutput vertexMain(
+    [vk::location(0)] float3 aPos,
+    [vk::location(1)] float4 aColor,
+    [vk::location(2)] float3 aNormal,
+    [vk::location(3)] float2 aTexCoord
+) {
+    VertexOutput output;
+    output.position = mul(mul(mul(camera.proj, camera.view), pc.model), float4(aPos, 1.0));
+    output.texCoord = aTexCoord;
+    return output;
 }
-
 )";
 
-    const std::string FragmentShader = R"(
-#version 450 core
-layout (location = 0) out vec4 FragColor;
-
-layout (location = 1) in vec2 texCoord;
-
-layout(set = 0, binding = 1) uniform UIComponentSettings {
-    vec4 backgroundColor;
-    vec4 borderColor;
-    vec4 borderWidth;
-    vec4 borderRadiusX;
-    vec4 borderRadiusY;
-} uiSettings;
-
-layout(set = 0, binding = 2) uniform sampler2D image;
-
-float ellipseMask(vec2 uv, vec2 center, float rx, float ry) {
-    vec2 norm = (uv - center) / vec2(rx, ry);
+    const std::string UISlangShader = std::string(kClayShaderPreamble) + R"(
+float ellipseMask(float2 uv, float2 center, float rx, float ry) {
+    float2 norm = (uv - center) / float2(rx, ry);
     return smoothstep(0.9, 1.1, dot(norm, norm));
 }
 
-void main()
-{
-    vec4 backgroundColor = uiSettings.backgroundColor;
-    vec4 borderColor = uiSettings.borderColor;
-    vec4 borderWidth = uiSettings.borderWidth;
-    vec4 borderRadiusX = uiSettings.borderRadiusX;
-    vec4 borderRadiusY = uiSettings.borderRadiusY;
+[shader("fragment")]
+float4 fragmentMain(VertexOutput input) : SV_Target {
+    float4 backgroundColor = uiSettings.backgroundColor;
+    float4 borderColor     = uiSettings.borderColor;
+    float4 borderWidth     = uiSettings.borderWidth;
+    float4 borderRadiusX   = uiSettings.borderRadiusX;
+    float4 borderRadiusY   = uiSettings.borderRadiusY;
 
+    float2 texCoord = input.texCoord;
     float mask = 1.0;
 
     if (texCoord.x < borderRadiusX.x && texCoord.y < borderRadiusY.x) {
-        mask = 1.0 - ellipseMask(texCoord, vec2(borderRadiusX.x, borderRadiusY.x), borderRadiusX.x, borderRadiusY.x);
+        mask = 1.0 - ellipseMask(texCoord, float2(borderRadiusX.x, borderRadiusY.x), borderRadiusX.x, borderRadiusY.x);
     } else if (texCoord.x > 1.0 - borderRadiusX.y && texCoord.y < borderRadiusY.y) {
-        mask = 1.0 - ellipseMask(texCoord, vec2(1.0 - borderRadiusX.y, borderRadiusY.y), borderRadiusX.y, borderRadiusY.y);
+        mask = 1.0 - ellipseMask(texCoord, float2(1.0 - borderRadiusX.y, borderRadiusY.y), borderRadiusX.y, borderRadiusY.y);
     } else if (texCoord.x > 1.0 - borderRadiusX.z && texCoord.y > 1.0 - borderRadiusY.z) {
-        mask = 1.0 - ellipseMask(texCoord, vec2(1.0 - borderRadiusX.z, 1.0 - borderRadiusY.z), borderRadiusX.z, borderRadiusY.z);
+        mask = 1.0 - ellipseMask(texCoord, float2(1.0 - borderRadiusX.z, 1.0 - borderRadiusY.z), borderRadiusX.z, borderRadiusY.z);
     } else if (texCoord.x < borderRadiusX.w && texCoord.y > 1.0 - borderRadiusY.w) {
-        mask = 1.0 - ellipseMask(texCoord, vec2(borderRadiusX.w, 1.0 - borderRadiusY.w), borderRadiusX.w, borderRadiusY.w);
+        mask = 1.0 - ellipseMask(texCoord, float2(borderRadiusX.w, 1.0 - borderRadiusY.w), borderRadiusX.w, borderRadiusY.w);
     }
 
-    float distanceLeft = texCoord.x;
-    float distanceRight = 1.0 - texCoord.x;
-    float distanceTop = texCoord.y;
-    float distanceBottom = 1.0 - texCoord.y;
+    float maskLeft   = 1.0 - step(borderWidth.x, texCoord.x);
+    float maskRight  = 1.0 - step(borderWidth.y, 1.0 - texCoord.x);
+    float maskTop    = 1.0 - step(borderWidth.z, texCoord.y);
+    float maskBottom = 1.0 - step(borderWidth.w, 1.0 - texCoord.y);
 
-    float maskLeft = 1.0 - step(borderWidth.x, distanceLeft);
-    float maskRight = 1.0 - step(borderWidth.y, distanceRight);
-    float maskTop = 1.0 - step(borderWidth.z, distanceTop);
-    float maskBottom = 1.0 - step(borderWidth.w, distanceBottom);
-
-    float maskX = max(maskLeft, maskRight);
-    float maskY = max(maskTop, maskBottom);
-    float borderMask = max(maskX, maskY);
-
+    float borderMask      = max(max(maskLeft, maskRight), max(maskTop, maskBottom));
     float finalBorderMask = mask * borderMask;
-    float backgroundMask = mask;
 
-    vec4 backgroundColorFinal = mix(backgroundColor, vec4(0.0), 1 - mask);
-    vec4 imageColor = mix(texture(image, texCoord), vec4(0.0), 1 - mask);
-    FragColor = mix(mix(backgroundColorFinal, borderColor, finalBorderMask), imageColor, imageColor.a);
+    float4 backgroundColorFinal = lerp(backgroundColor, float4(0.0, 0.0, 0.0, 0.0), 1.0 - mask);
+    float4 imageColor           = lerp(image.Sample(imageSmp, texCoord), float4(0.0, 0.0, 0.0, 0.0), 1.0 - mask);
+    return lerp(lerp(backgroundColorFinal, borderColor, finalBorderMask), imageColor, imageColor.a);
 }
-
 )";
 
-    const std::string FontFragmentShader = R"(
-#version 450 core
-layout (location = 0) out vec4 FragColor;
-
-layout (location = 1) in vec2 texCoord;
-
-
-layout(set = 0, binding = 1) uniform UIComponentSettings {
-    vec4 backgroundColor;
-    vec4 borderColor;
-    vec4 borderWidth;
-    vec4 borderRadiusX;
-    vec4 borderRadiusY;
-} uiSettings;
-
-
-layout(binding = 2) uniform sampler2D image;
-
-void main()
-{
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(image, texCoord).r);
-    FragColor = vec4(uiSettings.borderColor) * sampled;
+    const std::string FontUISlangShader = std::string(kClayShaderPreamble) + R"(
+[shader("fragment")]
+float4 fragmentMain(VertexOutput input) : SV_Target {
+    float sampled = image.Sample(imageSmp, input.texCoord).r;
+    return float4(1.0, 1.0, 1.0, sampled) * uiSettings.borderColor;
 }
-        )";
+)";
 
     struct ScissorDef {
         bool bHasScissor{false};

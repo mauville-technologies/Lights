@@ -17,8 +17,8 @@ struct VertexOutput {
     float2 texCoord : TEXCOORD0;
 };
 
-[vk::combinedImageSampler] [vk::binding(1, 0)] Texture2D<float4> inTexture;
-[vk::combinedImageSampler] [vk::binding(1, 0)] SamplerState      inTextureSmp;
+[vk::binding(1, 0)] Texture2D<float4> inTexture;
+[vk::binding(2, 0)] SamplerState      inTextureSmp;
 
 [shader("vertex")]
 VertexOutput vertexMain(

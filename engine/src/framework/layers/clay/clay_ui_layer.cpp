@@ -205,13 +205,13 @@ void ClayUILayer::reinitializeClay() {
 void ClayUILayer::buildShaders() {
     uiShader = std::make_shared<OZZ::Shader>(device,
                                              OZZ::rendering::ShaderSourceParams{
-                                                 .Vertex = VertexShader,
-                                                 .Fragment = FragmentShader,
+                                                 .Vertex  = UISlangShader,
+                                                 .IsSlang = true,
                                              });
     textShader = std::make_shared<OZZ::Shader>(device,
                                                OZZ::rendering::ShaderSourceParams{
-                                                   .Vertex = VertexShader,
-                                                   .Fragment = FontFragmentShader,
+                                                   .Vertex  = FontUISlangShader,
+                                                   .IsSlang = true,
                                                });
 
     const auto emptyImage = std::make_shared<OZZ::Image>();
