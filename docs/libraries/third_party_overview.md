@@ -36,9 +36,7 @@ Configured via `FetchContent` in `engine/third_party/CMakeLists.txt`:
 - `rtaudio`: audio device/stream backend
 - `EnTT`: ECS utilities
 - `nlohmann_json`: JSON parsing
-- window backend dependency:
-  - `glfw` when `OZZ_WINDOWING_SYSTEM=GLFW`
-  - `SDL3` when `OZZ_WINDOWING_SYSTEM=SDL3`
+- `SDL3`: windowing and input backend
 
 Additional library-specific third-party:
 - `libs/ozz_audio/third_party` fetches `libsamplerate`.
@@ -46,7 +44,7 @@ Additional library-specific third-party:
 ## Inferred Design Intent
 
 - keep direct third-party usage centralized behind engine/library wrappers;
-- make backend swaps compile-time configurable;
+- keep SDL3 as the single windowing backend (Emscripten-compatible);
 - avoid exposing third-party APIs to application code where possible.
 
 ## Speculative Direction (labeled)

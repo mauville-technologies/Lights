@@ -6,13 +6,7 @@
 #include "lights/core/util/profiling.h"
 #include <spdlog/spdlog.h>
 
-#ifdef OZZ_GLFW
-#include "core/platform/GLFW/glfw_window.h"
-#endif
-
-#ifdef OZZ_SDL3
 #include "core/platform/SDL3/sdl_window.h"
-#endif
 
 namespace OZZ {
     Window::Window(platform::WindowCallbacks&& inCallbacks, rendering::RHIBackend backend) {
@@ -24,13 +18,7 @@ namespace OZZ {
     }
 
     void Window::initWindow(platform::WindowCallbacks&& inCallbacks, rendering::RHIBackend backend) {
-#ifdef OZZ_GLFW
-        window = std::make_unique<platform::glfw::GLFWWindow>();
-#endif
-
-#ifdef OZZ_SDL3
         window = std::make_unique<platform::SDL3::SDLWindow>();
-#endif
 
         window->SetRHIBackend(backend);
         window->CreateWindow("Ozzadar", 800, 600);

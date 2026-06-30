@@ -17,7 +17,7 @@ constexpr uint8_t VERSION_MINOR = 1;
  *    Low-level primitives and building blocks for direct manipulation and experimentation.
  *    - algo/       : Graph nodes and algorithms
  *    - audio/      : Audio subsystem and audio processing nodes
- *    - platform/   : Window management, input handling (GLFW, SDL3)
+ *    - platform/   : Window management, input handling (SDL3)
  *    - rendering/  : Rendering primitives (buffers, shaders, textures, materials)
  *    - text/       : Font loading and text rendering
  *    - util/       : Utilities (image loading, ring buffers, crypto, etc.)

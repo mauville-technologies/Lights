@@ -21,8 +21,6 @@ set(SOURCES
         src/framework/layers/clay/clay_ui_layer.cpp
 
         src/core/platform/window.cpp
-        src/core/platform/GLFW/glfw_keys.cpp
-        src/core/platform/GLFW/glfw_window.cpp
         src/core/platform/SDL3/sdl_keys.cpp
         src/core/platform/SDL3/sdl_window.cpp
 
