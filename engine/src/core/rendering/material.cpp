@@ -7,6 +7,7 @@
 
 #include "glm/gtc/type_ptr.hpp"
 
+#include <climits>
 #include <ranges>
 
 namespace OZZ {
@@ -37,12 +38,16 @@ namespace OZZ {
                 const auto descriptorSet = descriptorSets[set];
                 std::vector<rendering::RHIDescriptorWrite> writes;
                 for (const auto& [bindingPoint, resource] : binding) {
-                    // Search by Binding field — Slang returns parameters in discovery order,
-                    // not binding-number order, so Bindings[bindingPoint] is wrong.
+                    // Search by Binding field first, then OriginalBinding (for WebGPU GLSL
+                    // remapped shaders where the sampler2D binding was renumbered).
+                    // Skip Count==0 slots — these are consumed/empty placeholder entries.
                     const rendering::RHIDescriptorSetLayoutBinding* bd = nullptr;
                     for (uint32_t bi = 0; bi < layout.Sets[set].BindingCount; bi++) {
-                        if (layout.Sets[set].Bindings[bi].Binding == bindingPoint) {
-                            bd = &layout.Sets[set].Bindings[bi];
+                        const auto& b = layout.Sets[set].Bindings[bi];
+                        if (b.Count == 0) continue;
+                        uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
+                        if (b.Binding == bindingPoint || effOrig == bindingPoint) {
+                            bd = &b;
                             break;
                         }
                     }
@@ -52,7 +57,7 @@ namespace OZZ {
                     }
                     if (std::holds_alternative<rendering::RHITextureHandle>(resource)) {
                         writes.push_back(rendering::RHIDescriptorWrite{
-                            .Binding = bindingPoint,
+                            .Binding = bd->Binding, // use actual (possibly remapped) binding
                             .Type = bd->Type,
                             .Image =
                                 {
@@ -61,7 +66,7 @@ namespace OZZ {
                         });
                     } else if (std::holds_alternative<rendering::RHIBufferHandle>(resource)) {
                         writes.push_back(rendering::RHIDescriptorWrite{
-                            .Binding = bindingPoint,
+                            .Binding = bd->Binding, // use actual (possibly remapped) binding
                             .Type = bd->Type,
                             .Buffer =
                                 {
@@ -107,12 +112,15 @@ namespace OZZ {
 
         const auto setLayout = layout.Sets[set];
 
-        // Search by binding index field — Slang may return bindings in any discovery order
-        // so Bindings[i].Binding != i in general.
+        // Search by Binding field first, then OriginalBinding (for WebGPU GLSL remapped
+        // shaders). Skip Count==0 slots which are consumed/empty placeholders.
         const rendering::RHIDescriptorSetLayoutBinding* bindingDesc = nullptr;
         for (uint32_t i = 0; i < setLayout.BindingCount; i++) {
-            if (setLayout.Bindings[i].Binding == binding) {
-                bindingDesc = &setLayout.Bindings[i];
+            const auto& b = setLayout.Bindings[i];
+            if (b.Count == 0) continue;
+            uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
+            if (b.Binding == binding || effOrig == binding) {
+                bindingDesc = &b;
                 break;
             }
         }

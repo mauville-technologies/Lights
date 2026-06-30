@@ -183,6 +183,7 @@ namespace OZZ {
     }
 
     RenderTargetParams RenderTarget::setupRenderTarget(const RenderTargetParams& inParams) {
+        spdlog::trace("setupRenderTarget: {}x{} hasDepth={}", inParams.Size.x, inParams.Size.y, inParams.bHasDepth);
         if (texture) {
             texture.reset();
         }
@@ -229,7 +230,7 @@ namespace OZZ {
             };
         }
 
-        if (inParams.Type == RenderTargetType::Texture) {
+        if (inParams.Type == RenderTargetType::Texture && inParams.Size.x > 0 && inParams.Size.y > 0) {
             texture = std::make_shared<Texture>(
                 device,
                 rendering::TextureDescriptor{
