@@ -37,10 +37,23 @@ namespace OZZ {
                 const auto descriptorSet = descriptorSets[set];
                 std::vector<rendering::RHIDescriptorWrite> writes;
                 for (const auto& [bindingPoint, resource] : binding) {
+                    // Search by Binding field — Slang returns parameters in discovery order,
+                    // not binding-number order, so Bindings[bindingPoint] is wrong.
+                    const rendering::RHIDescriptorSetLayoutBinding* bd = nullptr;
+                    for (uint32_t bi = 0; bi < layout.Sets[set].BindingCount; bi++) {
+                        if (layout.Sets[set].Bindings[bi].Binding == bindingPoint) {
+                            bd = &layout.Sets[set].Bindings[bi];
+                            break;
+                        }
+                    }
+                    if (!bd) {
+                        spdlog::error("Bind: binding {} not found in set {} layout", bindingPoint, set);
+                        continue;
+                    }
                     if (std::holds_alternative<rendering::RHITextureHandle>(resource)) {
                         writes.push_back(rendering::RHIDescriptorWrite{
                             .Binding = bindingPoint,
-                            .Type = layout.Sets[set].Bindings[bindingPoint].Type,
+                            .Type = bd->Type,
                             .Image =
                                 {
                                     .Texture = std::get<rendering::RHITextureHandle>(resource),
@@ -49,12 +62,12 @@ namespace OZZ {
                     } else if (std::holds_alternative<rendering::RHIBufferHandle>(resource)) {
                         writes.push_back(rendering::RHIDescriptorWrite{
                             .Binding = bindingPoint,
-                            .Type = layout.Sets[set].Bindings[bindingPoint].Type,
+                            .Type = bd->Type,
                             .Buffer =
                                 {
                                     .Buffer = std::get<rendering::RHIBufferHandle>(resource),
                                     .Offset = 0,
-                                    .Range = ~0ULL, // VK_WHOLE_SIZE equivalent
+                                    .Range = ~0ULL,
                                 },
                         });
                     }
@@ -93,16 +106,23 @@ namespace OZZ {
         }
 
         const auto setLayout = layout.Sets[set];
-        if (setLayout.BindingCount < binding) {
-            spdlog::error("Attempted to set resource for binding {} in set {} which is out of bounds for shader with "
-                          "{} bindings in that set.",
-                          binding,
-                          set,
-                          setLayout.BindingCount);
+
+        // Search by binding index field — Slang may return bindings in any discovery order
+        // so Bindings[i].Binding != i in general.
+        const rendering::RHIDescriptorSetLayoutBinding* bindingDesc = nullptr;
+        for (uint32_t i = 0; i < setLayout.BindingCount; i++) {
+            if (setLayout.Bindings[i].Binding == binding) {
+                bindingDesc = &setLayout.Bindings[i];
+                break;
+            }
+        }
+        if (!bindingDesc) {
+            spdlog::error("Attempted to set resource for binding {} in set {} which was not found in the shader layout.",
+                          binding, set);
             return false;
         }
 
-        const auto bindingType = setLayout.Bindings[binding].Type;
+        const auto bindingType = bindingDesc->Type;
         if (bindingType == rendering::DescriptorType::CombinedImageSampler ||
             bindingType == rendering::DescriptorType::SampledImage ||
             bindingType == rendering::DescriptorType::StorageImage) {
