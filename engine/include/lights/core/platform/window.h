@@ -25,8 +25,6 @@ namespace OZZ {
         }
 
         void PollEvents();
-        void MakeContextCurrent();
-        void SwapBuffers();
 
         [[nodiscard]] glm::ivec2 GetSize() const;
 

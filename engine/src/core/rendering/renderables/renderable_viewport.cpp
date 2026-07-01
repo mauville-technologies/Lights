@@ -12,6 +12,36 @@
 #include <lights/core/util/profiling.h>
 
 namespace OZZ {
+    namespace {
+        const std::string kViewportShader = R"(
+struct VertexOutput {
+    float4 position : SV_Position;
+    float2 texCoord : TEXCOORD0;
+};
+
+[vk::binding(1, 0)] Texture2D<float4> inTexture;
+[vk::binding(2, 0)] SamplerState      inTextureSmp;
+
+[shader("vertex")]
+VertexOutput vertexMain(
+    [vk::location(0)] float3 aPos,
+    [vk::location(1)] float4 aColor,
+    [vk::location(2)] float3 aNormal,
+    [vk::location(3)] float2 aTexCoord
+) {
+    VertexOutput output;
+    output.position = float4(aPos, 1.0);
+    output.texCoord = aTexCoord;
+    return output;
+}
+
+[shader("fragment")]
+float4 fragmentMain(VertexOutput input) : SV_Target {
+    return inTexture.Sample(inTextureSmp, input.texCoord);
+}
+)";
+    } // namespace
+
     RenderableViewport::RenderableViewport() {}
 
     void RenderableViewport::Init(rendering::RHIDevice* inDevice) {
@@ -64,8 +94,7 @@ namespace OZZ {
 
         const auto shader = std::make_shared<OZZ::Shader>(device,
                                                           rendering::ShaderSourceParams{
-                                                              .Vertex  = ViewportShader,
-                                                              .IsSlang = true,
+                                                              .Slang = kViewportShader,
                                                           });
         const auto material = std::make_shared<Material>(device);
         material->SetShader(shader);
@@ -105,6 +134,11 @@ namespace OZZ {
         auto render = sceneRenderOpt.value();
         if (render->GetType() != RenderTargetType::Texture) {
             spdlog::error("Required input {} is not a texture.", GetRequiredInputs()[0]);
+        }
+
+        if (!render->IsReady()) {
+            // Input target has no backing texture yet (e.g. 0x0 size) — skip this frame.
+            return true;
         }
 
         if (renderTarget) {

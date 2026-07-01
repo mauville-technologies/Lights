@@ -82,7 +82,9 @@ namespace OZZ::game {
         explicit LightsGame(const std::filesystem::path& configFilePath,
                             rendering::RHIBackend preferredBackend = rendering::RHIBackend::Auto)
             : params(Configuration<GameParameters>(configFilePath))
-            , preferredBackend(preferredBackend) {}
+            // Resolve Auto to a concrete backend exactly once, up front, so the window
+            // and the RHI device always agree on which backend is in use.
+            , resolvedBackend(rendering::ResolveBackend(preferredBackend)) {}
 
         ~LightsGame() {
             scene.reset();
@@ -97,7 +99,7 @@ namespace OZZ::game {
             initInput();
             initWindow();
             initAudio();
-            initGL();
+            initViewport();
             initRenderer();
             updateViewport(window->GetSize()); // initialize viewport to correct window size
             initScene();
@@ -181,7 +183,7 @@ namespace OZZ::game {
                                                          [this](const glm::vec2 pos) {
                                                              input->NotifyMouseMove(pos);
                                                          }};
-            window = std::make_shared<Window>(std::move(callbacks), preferredBackend);
+            window = std::make_shared<Window>(std::move(callbacks), resolvedBackend);
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
@@ -199,7 +201,7 @@ namespace OZZ::game {
             audio->Init();
         }
 
-        void initGL() {
+        void initViewport() {
             // set up the viewport
             const auto size = window->GetSize();
             updateViewport(size);
@@ -223,7 +225,7 @@ namespace OZZ::game {
                     [this](void* instance, void* surface) {
                         return window->CreateSurface(instance, surface);
                     },
-            }, preferredBackend);
+            }, resolvedBackend);
 
             resourceManager = std::make_unique<scene::ResourceManager>(renderer->GetDevice());
         }
@@ -244,12 +246,7 @@ namespace OZZ::game {
 
         void drawScene(OZZ::scene::Scene* scene) {
             OZZ_PROFILE_FUNCTION;
-            // renderer->RenderScene(scene);
-            window->MakeContextCurrent();
             renderer->ExecuteSceneGraph(scene->GetSceneGraph());
-            if (scene == this->scene.get()) {
-                window->SwapBuffers();
-            }
         }
 
         void preciseSleep(double seconds) {
@@ -289,7 +286,8 @@ namespace OZZ::game {
     private:
         bool bRunning{false};
         OZZ::Configuration<GameParameters> params;
-        rendering::RHIBackend preferredBackend {rendering::RHIBackend::Auto};
+        // Concrete backend (never Auto) — resolved once in the constructor.
+        rendering::RHIBackend resolvedBackend;
 
         std::shared_ptr<Window> window{nullptr};
         std::shared_ptr<InputSubsystem> input{nullptr};

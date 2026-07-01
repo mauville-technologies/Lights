@@ -35,6 +35,12 @@ namespace OZZ {
 
         [[nodiscard]] RenderTargetType GetType() const { return activeParams.Type; }
 
+        // A Texture-type target sized 0x0 allocates no backing texture; it is "not ready"
+        // and Begin()/End() are no-ops until it is resized to a non-zero size.
+        [[nodiscard]] bool IsReady() const {
+            return activeParams.Type != RenderTargetType::Texture || texture != nullptr;
+        }
+
         [[nodiscard]] glm::ivec2 GetSize() const { return activeParams.Size; }
 
         std::shared_ptr<Texture> GetTexture() const { return texture; }

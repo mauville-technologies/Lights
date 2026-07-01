@@ -16,11 +16,8 @@ namespace OZZ::platform::SDL3 {
 
         bool CreateSurface(void* instance, void* surfaceOut) override;
         std::vector<std::string> GetRequiredInstanceExtensions() override;
-        void* GetProcAddress() override;
         void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;
-        void MakeContextCurrent() override;
-        void Present() override;
         [[nodiscard]] glm::ivec2 GetSize() const override;
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
@@ -36,7 +33,6 @@ namespace OZZ::platform::SDL3 {
     public:
     private:
         SDL_Window* window{nullptr};
-        SDL_GLContext glContext{nullptr};
 
         WindowCallbacks callbacks;
 

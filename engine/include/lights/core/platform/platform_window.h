@@ -4,11 +4,13 @@
 
 #pragma once
 
+#include <cassert>
 #include <functional>
 #include <glm/glm.hpp>
 #include <lights/framework/input/input_keys.h>
-#include <ozz_rendering/rhi_device.h>
+#include <ozz_rendering/rhi_backend.h>
 #include <string>
+#include <vector>
 
 #if OZZ_PLATFORM_WINDOWS
 #undef CreateWindow
@@ -38,15 +40,17 @@ namespace OZZ::platform {
     class IPlatformWindow {
     public:
         virtual ~IPlatformWindow() = default;
-        void SetRHIBackend(rendering::RHIBackend backend) { rhiBackend = backend; }
+        void SetRHIBackend(rendering::RHIBackend backend) {
+            // Auto must be resolved (see OZZ::rendering::ResolveBackend) before it reaches the
+            // window: the window picks surface / window-flag paths based on the concrete backend.
+            assert(backend != rendering::RHIBackend::Auto && "Resolve RHIBackend::Auto before passing it to the window");
+            rhiBackend = backend;
+        }
         virtual void CreateWindow(const std::string& title, int width, int height) = 0;
         virtual bool CreateSurface(void* instance, void* surfaceOut) = 0;
         virtual std::vector<std::string> GetRequiredInstanceExtensions() = 0;
-        virtual void* GetProcAddress() = 0;
         virtual void InitInput(WindowCallbacks&& callbacks) = 0;
         virtual void Poll() = 0;
-        virtual void MakeContextCurrent() = 0;
-        virtual void Present() = 0;
         [[nodiscard]] virtual glm::ivec2 GetSize() const = 0;
         virtual void SetSize(int width, int height) = 0;
         virtual void SetFullscreen(bool fullscreen) = 0;

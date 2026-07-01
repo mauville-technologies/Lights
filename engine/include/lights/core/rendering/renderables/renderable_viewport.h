@@ -11,33 +11,6 @@ namespace OZZ {
 
     class RenderableViewport : public Renderable {
     public:
-        const std::string ViewportShader = R"(
-struct VertexOutput {
-    float4 position : SV_Position;
-    float2 texCoord : TEXCOORD0;
-};
-
-[vk::binding(1, 0)] Texture2D<float4> inTexture;
-[vk::binding(2, 0)] SamplerState      inTextureSmp;
-
-[shader("vertex")]
-VertexOutput vertexMain(
-    [vk::location(0)] float3 aPos,
-    [vk::location(1)] float4 aColor,
-    [vk::location(2)] float3 aNormal,
-    [vk::location(3)] float2 aTexCoord
-) {
-    VertexOutput output;
-    output.position = float4(aPos, 1.0);
-    output.texCoord = aTexCoord;
-    return output;
-}
-
-[shader("fragment")]
-float4 fragmentMain(VertexOutput input) : SV_Target {
-    return inTexture.Sample(inTextureSmp, input.texCoord);
-}
-)";
         RenderableViewport();
 
         void Init(rendering::RHIDevice* inDevice);

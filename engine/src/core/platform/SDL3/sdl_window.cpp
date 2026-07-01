@@ -32,13 +32,6 @@ namespace OZZ::platform::SDL3 {
             return;
         }
 
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-        //
-        // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
         const SDL_WindowFlags windowFlags = rhiBackend == OZZ::rendering::RHIBackend::WebGPU
             ? SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN
             : SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
@@ -47,15 +40,6 @@ namespace OZZ::platform::SDL3 {
             spdlog::error("Failed to create SDL window: {}", SDL_GetError());
             return;
         }
-
-        // glContext = SDL_GL_CreateContext(window);
-        // if (!glContext) {
-        //     spdlog::error("Failed to create OpenGL context: {}", SDL_GetError());
-        //     SDL_DestroyWindow(window);
-        //     return;
-        // }
-
-        MakeContextCurrent();
 
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         bIsValid = true;
@@ -146,10 +130,6 @@ namespace OZZ::platform::SDL3 {
             }
         }
         return extensionList;
-    }
-
-    void* SDLWindow::GetProcAddress() {
-        return reinterpret_cast<void*>(SDL_GL_GetProcAddress);
     }
 
     void SDLWindow::InitInput(WindowCallbacks&& inCallbacks) {
@@ -262,15 +242,6 @@ namespace OZZ::platform::SDL3 {
                 }
             }
         }
-    }
-
-    void SDLWindow::MakeContextCurrent() {
-        // SDL_GL_MakeCurrent(window, glContext);
-        // SDL_GL_SetSwapInterval(0);
-    }
-
-    void SDLWindow::Present() {
-        // SDL_GL_SwapWindow(window);
     }
 
     glm::ivec2 SDLWindow::GetSize() const {

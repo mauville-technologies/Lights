@@ -11,6 +11,29 @@
 #include <ranges>
 
 namespace OZZ {
+    namespace {
+        // Search by OriginalBinding (falls back to Binding when there's no WebGPU
+        // GLSL remap). Must NOT also match on the raw `Binding` field: for remapped
+        // shaders, one entry's post-remap physical Binding can coincidentally equal
+        // a *different* entry's pre-remap OriginalBinding (e.g. game_composite.frag's
+        // overlayColorTexture ends up at physical binding 3, which collides with
+        // sceneDepthTexture's original binding 3), causing a false-positive match.
+        // Skip Count==0 slots — these are consumed/empty placeholder entries.
+        const rendering::RHIDescriptorSetLayoutBinding*
+        findBindingByLogicalIndex(const rendering::RHIDescriptorSetLayoutDescriptor& setLayout,
+                                  const uint32_t logicalBinding) {
+            for (uint32_t i = 0; i < setLayout.BindingCount; i++) {
+                const auto& b = setLayout.Bindings[i];
+                if (b.Count == 0) continue;
+                const uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
+                if (effOrig == logicalBinding) {
+                    return &b;
+                }
+            }
+            return nullptr;
+        }
+    } // namespace
+
     Material::~Material() {
         for (const auto descriptorSet : descriptorSets | std::views::values) {
             device->FreeDescriptorSet(descriptorSet);
@@ -38,23 +61,7 @@ namespace OZZ {
                 const auto descriptorSet = descriptorSets[set];
                 std::vector<rendering::RHIDescriptorWrite> writes;
                 for (const auto& [bindingPoint, resource] : binding) {
-                    // Search by OriginalBinding (falls back to Binding when there's no WebGPU
-                    // GLSL remap). Must NOT also match on the raw `Binding` field: for remapped
-                    // shaders, one entry's post-remap physical Binding can coincidentally equal
-                    // a *different* entry's pre-remap OriginalBinding (e.g. game_composite.frag's
-                    // overlayColorTexture ends up at physical binding 3, which collides with
-                    // sceneDepthTexture's original binding 3), causing a false-positive match.
-                    // Skip Count==0 slots — these are consumed/empty placeholder entries.
-                    const rendering::RHIDescriptorSetLayoutBinding* bd = nullptr;
-                    for (uint32_t bi = 0; bi < layout.Sets[set].BindingCount; bi++) {
-                        const auto& b = layout.Sets[set].Bindings[bi];
-                        if (b.Count == 0) continue;
-                        uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
-                        if (effOrig == bindingPoint) {
-                            bd = &b;
-                            break;
-                        }
-                    }
+                    const auto* bd = findBindingByLogicalIndex(layout.Sets[set], bindingPoint);
                     if (!bd) {
                         spdlog::error("Bind: binding {} not found in set {} layout", bindingPoint, set);
                         continue;
@@ -107,7 +114,7 @@ namespace OZZ {
                                const uint32_t binding,
                                const std::variant<rendering::RHITextureHandle, rendering::RHIBufferHandle>& resource) {
         const auto layout = shader->GetLayoutDescriptor();
-        if (layout.SetCount < set) {
+        if (set >= layout.SetCount) {
             spdlog::error("Attempted to set resource for set {} which is out of bounds for shader with {} sets.",
                           set,
                           layout.SetCount);
@@ -116,19 +123,7 @@ namespace OZZ {
 
         const auto setLayout = layout.Sets[set];
 
-        // Search by OriginalBinding (falls back to Binding when there's no WebGPU GLSL
-        // remap) — see the matching comment in Bind() for why the raw Binding field must
-        // not also be checked here. Skip Count==0 slots which are consumed/empty placeholders.
-        const rendering::RHIDescriptorSetLayoutBinding* bindingDesc = nullptr;
-        for (uint32_t i = 0; i < setLayout.BindingCount; i++) {
-            const auto& b = setLayout.Bindings[i];
-            if (b.Count == 0) continue;
-            uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
-            if (effOrig == binding) {
-                bindingDesc = &b;
-                break;
-            }
-        }
+        const auto* bindingDesc = findBindingByLogicalIndex(setLayout, binding);
         if (!bindingDesc) {
             spdlog::error("Attempted to set resource for binding {} in set {} which was not found in the shader layout.",
                           binding, set);

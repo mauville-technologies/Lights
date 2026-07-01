@@ -22,7 +22,6 @@ namespace OZZ {
 
         window->SetRHIBackend(backend);
         window->CreateWindow("Ozzadar", 800, 600);
-        window->MakeContextCurrent();
 
         window->InitInput(std::move(inCallbacks));
     }
@@ -32,13 +31,6 @@ namespace OZZ {
         window->Poll();
 
         // TODO: Add mouse and joystick input
-    }
-
-    void Window::MakeContextCurrent() {}
-
-    void Window::SwapBuffers() {
-        OZZ_PROFILE_FUNCTION;
-        window->Present();
     }
 
     glm::ivec2 Window::GetSize() const {

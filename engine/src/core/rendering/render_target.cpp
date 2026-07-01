@@ -37,6 +37,8 @@ namespace OZZ {
         OZZ_PROFILE_FUNCTION;
         if (!frameContext.IsValid())
             return;
+        if (!IsReady())
+            return; // Texture target with no backing texture (e.g. 0x0 size) — nothing to begin
         if (activeParams.Type == RenderTargetType::Viewport) {
             auto descriptorCopy = renderPassDescriptor;
             descriptorCopy.ColorAttachmentCount = 1;
@@ -127,6 +129,8 @@ namespace OZZ {
 
     void RenderTarget::End(rendering::RHIFrameContext& frameContext) const {
         OZZ_PROFILE_FUNCTION;
+        if (!IsReady())
+            return; // symmetric with Begin(): no render pass was started
         device->EndRenderPass(frameContext);
         // Transition the texture to shader read optimal if it's a texture render target
         if (activeParams.Type == RenderTargetType::Texture) {
@@ -183,9 +187,13 @@ namespace OZZ {
     }
 
     RenderTargetParams RenderTarget::setupRenderTarget(const RenderTargetParams& inParams) {
-        spdlog::trace("setupRenderTarget: {}x{} hasDepth={}", inParams.Size.x, inParams.Size.y, inParams.bHasDepth);
         if (texture) {
             texture.reset();
+        }
+        // Also drop any previous depth texture: a not-ready (0x0) pass would otherwise
+        // leave a stale, previous-size depth texture behind.
+        if (depthTexture) {
+            depthTexture.reset();
         }
         renderPassDescriptor = {
             .ColorAttachments = {},
