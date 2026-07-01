@@ -38,15 +38,19 @@ namespace OZZ {
                 const auto descriptorSet = descriptorSets[set];
                 std::vector<rendering::RHIDescriptorWrite> writes;
                 for (const auto& [bindingPoint, resource] : binding) {
-                    // Search by Binding field first, then OriginalBinding (for WebGPU GLSL
-                    // remapped shaders where the sampler2D binding was renumbered).
+                    // Search by OriginalBinding (falls back to Binding when there's no WebGPU
+                    // GLSL remap). Must NOT also match on the raw `Binding` field: for remapped
+                    // shaders, one entry's post-remap physical Binding can coincidentally equal
+                    // a *different* entry's pre-remap OriginalBinding (e.g. game_composite.frag's
+                    // overlayColorTexture ends up at physical binding 3, which collides with
+                    // sceneDepthTexture's original binding 3), causing a false-positive match.
                     // Skip Count==0 slots — these are consumed/empty placeholder entries.
                     const rendering::RHIDescriptorSetLayoutBinding* bd = nullptr;
                     for (uint32_t bi = 0; bi < layout.Sets[set].BindingCount; bi++) {
                         const auto& b = layout.Sets[set].Bindings[bi];
                         if (b.Count == 0) continue;
                         uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
-                        if (b.Binding == bindingPoint || effOrig == bindingPoint) {
+                        if (effOrig == bindingPoint) {
                             bd = &b;
                             break;
                         }
@@ -112,14 +116,15 @@ namespace OZZ {
 
         const auto setLayout = layout.Sets[set];
 
-        // Search by Binding field first, then OriginalBinding (for WebGPU GLSL remapped
-        // shaders). Skip Count==0 slots which are consumed/empty placeholders.
+        // Search by OriginalBinding (falls back to Binding when there's no WebGPU GLSL
+        // remap) — see the matching comment in Bind() for why the raw Binding field must
+        // not also be checked here. Skip Count==0 slots which are consumed/empty placeholders.
         const rendering::RHIDescriptorSetLayoutBinding* bindingDesc = nullptr;
         for (uint32_t i = 0; i < setLayout.BindingCount; i++) {
             const auto& b = setLayout.Bindings[i];
             if (b.Count == 0) continue;
             uint32_t effOrig = (b.OriginalBinding == UINT32_MAX) ? b.Binding : b.OriginalBinding;
-            if (b.Binding == binding || effOrig == binding) {
+            if (effOrig == binding) {
                 bindingDesc = &b;
                 break;
             }
@@ -133,7 +138,8 @@ namespace OZZ {
         const auto bindingType = bindingDesc->Type;
         if (bindingType == rendering::DescriptorType::CombinedImageSampler ||
             bindingType == rendering::DescriptorType::SampledImage ||
-            bindingType == rendering::DescriptorType::StorageImage) {
+            bindingType == rendering::DescriptorType::StorageImage ||
+            bindingType == rendering::DescriptorType::DepthSampledImage) {
             if (!std::holds_alternative<rendering::RHITextureHandle>(resource)) {
                 spdlog::error("Attempted to set non-texture resource for binding {} in set {} which expects a texture.",
                               binding,
@@ -141,7 +147,8 @@ namespace OZZ {
                 return false;
             }
         } else if (bindingType == rendering::DescriptorType::UniformBuffer ||
-                   bindingType == rendering::DescriptorType::StorageBuffer) {
+                   bindingType == rendering::DescriptorType::StorageBuffer ||
+                   bindingType == rendering::DescriptorType::ReadOnlyStorageBuffer) {
             if (!std::holds_alternative<rendering::RHIBufferHandle>(resource)) {
                 spdlog::error("Attempted to set non-buffer resource for binding {} in set {} which expects a buffer.",
                               binding,
