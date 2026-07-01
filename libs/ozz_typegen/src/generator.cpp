@@ -4,6 +4,7 @@
 
 #include "generator.h"
 
+#include <algorithm>
 #include <iostream>
 
 namespace OZZ::typegen {
