@@ -13,6 +13,56 @@
 
 namespace OZZ {
     namespace {
+        // Engine built-in fullscreen composite shader. On the web there is no
+        // Slang runtime, so the WGSL below is the precompiled (slangc -target wgsl)
+        // equivalent of the Slang source used on desktop. Keep the two in sync.
+#ifdef __EMSCRIPTEN__
+        const std::string kViewportShader = R"(
+@binding(1) @group(0) var inTexture_0 : texture_2d<f32>;
+
+@binding(2) @group(0) var inTextureSmp_0 : sampler;
+
+struct VertexOutput_0
+{
+    @builtin(position) position_0 : vec4<f32>,
+    @location(0) texCoord_0 : vec2<f32>,
+};
+
+struct vertexInput_0
+{
+    @location(0) aPos_0 : vec3<f32>,
+    @location(1) aColor_0 : vec4<f32>,
+    @location(2) aNormal_0 : vec3<f32>,
+    @location(3) aTexCoord_0 : vec2<f32>,
+};
+
+@vertex
+fn vertexMain( _S1 : vertexInput_0) -> VertexOutput_0
+{
+    var output_0 : VertexOutput_0;
+    output_0.position_0 = vec4<f32>(_S1.aPos_0, 1.0f);
+    output_0.texCoord_0 = _S1.aTexCoord_0;
+    return output_0;
+}
+
+struct pixelOutput_0
+{
+    @location(0) output_1 : vec4<f32>,
+};
+
+struct pixelInput_0
+{
+    @location(0) texCoord_1 : vec2<f32>,
+};
+
+@fragment
+fn fragmentMain( _S2 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0
+{
+    var _S3 : pixelOutput_0 = pixelOutput_0( (textureSample((inTexture_0), (inTextureSmp_0), (_S2.texCoord_1))) );
+    return _S3;
+}
+)";
+#else
         const std::string kViewportShader = R"(
 struct VertexOutput {
     float4 position : SV_Position;
@@ -40,6 +90,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target {
     return inTexture.Sample(inTextureSmp, input.texCoord);
 }
 )";
+#endif
     } // namespace
 
     RenderableViewport::RenderableViewport() {}
