@@ -17,6 +17,246 @@
 namespace {
     // Shared preamble: UBOs, texture, sampler, push constant, vertex entry point.
     // Included in both UISlangShader and FontUISlangShader.
+#ifdef __EMSCRIPTEN__
+    // No Slang runtime on web: precompiled WGSL (slangc -target wgsl) of the
+    // Slang sources in the #else branch. The push constant is emitted at
+    // @group(3) @binding(0) to match the backend's push-constant emulation.
+    const std::string UISlangShader = R"WGSL(
+struct _MatrixStorage_float4x4_ColMajorstd140_0
+{
+    @align(16) data_0 : array<vec4<f32>, i32(4)>,
+};
+
+struct CameraSettings_std140_0
+{
+    @align(16) view_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+    @align(16) proj_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+};
+
+@binding(0) @group(0) var<uniform> camera_0 : CameraSettings_std140_0;
+struct PushConstants_std140_0
+{
+    @align(16) model_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+};
+
+@binding(0) @group(3) var<uniform> pc_0 : PushConstants_std140_0;
+struct UIComponentSettings_std140_0
+{
+    @align(16) backgroundColor_0 : vec4<f32>,
+    @align(16) borderColor_0 : vec4<f32>,
+    @align(16) borderWidth_0 : vec4<f32>,
+    @align(16) borderRadiusX_0 : vec4<f32>,
+    @align(16) borderRadiusY_0 : vec4<f32>,
+};
+
+@binding(1) @group(0) var<uniform> uiSettings_0 : UIComponentSettings_std140_0;
+@binding(2) @group(0) var image_0 : texture_2d<f32>;
+
+@binding(3) @group(0) var imageSmp_0 : sampler;
+
+struct VertexOutput_0
+{
+    @builtin(position) position_0 : vec4<f32>,
+    @location(0) texCoord_0 : vec2<f32>,
+};
+
+struct vertexInput_0
+{
+    @location(0) aPos_0 : vec3<f32>,
+    @location(1) aColor_0 : vec4<f32>,
+    @location(2) aNormal_0 : vec3<f32>,
+    @location(3) aTexCoord_0 : vec2<f32>,
+};
+
+@vertex
+fn vertexMain( _S1 : vertexInput_0) -> VertexOutput_0
+{
+    var output_0 : VertexOutput_0;
+    output_0.position_0 = (((vec4<f32>(_S1.aPos_0, 1.0f)) * ((((mat4x4<f32>(pc_0.model_0.data_0[i32(0)][i32(0)], pc_0.model_0.data_0[i32(1)][i32(0)], pc_0.model_0.data_0[i32(2)][i32(0)], pc_0.model_0.data_0[i32(3)][i32(0)], pc_0.model_0.data_0[i32(0)][i32(1)], pc_0.model_0.data_0[i32(1)][i32(1)], pc_0.model_0.data_0[i32(2)][i32(1)], pc_0.model_0.data_0[i32(3)][i32(1)], pc_0.model_0.data_0[i32(0)][i32(2)], pc_0.model_0.data_0[i32(1)][i32(2)], pc_0.model_0.data_0[i32(2)][i32(2)], pc_0.model_0.data_0[i32(3)][i32(2)], pc_0.model_0.data_0[i32(0)][i32(3)], pc_0.model_0.data_0[i32(1)][i32(3)], pc_0.model_0.data_0[i32(2)][i32(3)], pc_0.model_0.data_0[i32(3)][i32(3)])) * ((((mat4x4<f32>(camera_0.view_0.data_0[i32(0)][i32(0)], camera_0.view_0.data_0[i32(1)][i32(0)], camera_0.view_0.data_0[i32(2)][i32(0)], camera_0.view_0.data_0[i32(3)][i32(0)], camera_0.view_0.data_0[i32(0)][i32(1)], camera_0.view_0.data_0[i32(1)][i32(1)], camera_0.view_0.data_0[i32(2)][i32(1)], camera_0.view_0.data_0[i32(3)][i32(1)], camera_0.view_0.data_0[i32(0)][i32(2)], camera_0.view_0.data_0[i32(1)][i32(2)], camera_0.view_0.data_0[i32(2)][i32(2)], camera_0.view_0.data_0[i32(3)][i32(2)], camera_0.view_0.data_0[i32(0)][i32(3)], camera_0.view_0.data_0[i32(1)][i32(3)], camera_0.view_0.data_0[i32(2)][i32(3)], camera_0.view_0.data_0[i32(3)][i32(3)])) * (mat4x4<f32>(camera_0.proj_0.data_0[i32(0)][i32(0)], camera_0.proj_0.data_0[i32(1)][i32(0)], camera_0.proj_0.data_0[i32(2)][i32(0)], camera_0.proj_0.data_0[i32(3)][i32(0)], camera_0.proj_0.data_0[i32(0)][i32(1)], camera_0.proj_0.data_0[i32(1)][i32(1)], camera_0.proj_0.data_0[i32(2)][i32(1)], camera_0.proj_0.data_0[i32(3)][i32(1)], camera_0.proj_0.data_0[i32(0)][i32(2)], camera_0.proj_0.data_0[i32(1)][i32(2)], camera_0.proj_0.data_0[i32(2)][i32(2)], camera_0.proj_0.data_0[i32(3)][i32(2)], camera_0.proj_0.data_0[i32(0)][i32(3)], camera_0.proj_0.data_0[i32(1)][i32(3)], camera_0.proj_0.data_0[i32(2)][i32(3)], camera_0.proj_0.data_0[i32(3)][i32(3)]))))))))));
+    output_0.texCoord_0 = _S1.aTexCoord_0;
+    return output_0;
+}
+
+fn ellipseMask_0( uv_0 : vec2<f32>,  center_0 : vec2<f32>,  rx_0 : f32,  ry_0 : f32) -> f32
+{
+    var norm_0 : vec2<f32> = (uv_0 - center_0) / vec2<f32>(rx_0, ry_0);
+    return smoothstep(0.89999997615814209f, 1.10000002384185791f, dot(norm_0, norm_0));
+}
+
+struct pixelOutput_0
+{
+    @location(0) output_1 : vec4<f32>,
+};
+
+struct pixelInput_0
+{
+    @location(0) texCoord_1 : vec2<f32>,
+};
+
+@fragment
+fn fragmentMain( _S2 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0
+{
+    var backgroundColor_1 : vec4<f32> = uiSettings_0.backgroundColor_0;
+    var borderColor_1 : vec4<f32> = uiSettings_0.borderColor_0;
+    var borderWidth_1 : vec4<f32> = uiSettings_0.borderWidth_0;
+    var borderRadiusX_1 : vec4<f32> = uiSettings_0.borderRadiusX_0;
+    var borderRadiusY_1 : vec4<f32> = uiSettings_0.borderRadiusY_0;
+    var _S3 : f32 = _S2.texCoord_1.x;
+    var _S4 : f32 = uiSettings_0.borderRadiusX_0.x;
+    var _S5 : bool;
+    if(_S3 < _S4)
+    {
+        _S5 = (_S2.texCoord_1.y) < (borderRadiusY_1.x);
+    }
+    else
+    {
+        _S5 = false;
+    }
+    var mask_0 : f32;
+    if(_S5)
+    {
+        var _S6 : f32 = borderRadiusY_1.x;
+        mask_0 = 1.0f - ellipseMask_0(_S2.texCoord_1, vec2<f32>(_S4, _S6), _S4, _S6);
+    }
+    else
+    {
+        var _S7 : f32 = borderRadiusX_1.y;
+        var _S8 : f32 = 1.0f - _S7;
+        if(_S3 > _S8)
+        {
+            _S5 = (_S2.texCoord_1.y) < (borderRadiusY_1.y);
+        }
+        else
+        {
+            _S5 = false;
+        }
+        if(_S5)
+        {
+            var _S9 : f32 = borderRadiusY_1.y;
+            mask_0 = 1.0f - ellipseMask_0(_S2.texCoord_1, vec2<f32>(_S8, _S9), _S7, _S9);
+        }
+        else
+        {
+            var _S10 : f32 = borderRadiusX_1.z;
+            var _S11 : f32 = 1.0f - _S10;
+            if(_S3 > _S11)
+            {
+                _S5 = (_S2.texCoord_1.y) > (1.0f - borderRadiusY_1.z);
+            }
+            else
+            {
+                _S5 = false;
+            }
+            if(_S5)
+            {
+                var _S12 : f32 = borderRadiusY_1.z;
+                mask_0 = 1.0f - ellipseMask_0(_S2.texCoord_1, vec2<f32>(_S11, 1.0f - _S12), _S10, _S12);
+            }
+            else
+            {
+                var _S13 : f32 = borderRadiusX_1.w;
+                if(_S3 < _S13)
+                {
+                    _S5 = (_S2.texCoord_1.y) > (1.0f - borderRadiusY_1.w);
+                }
+                else
+                {
+                    _S5 = false;
+                }
+                if(_S5)
+                {
+                    var _S14 : f32 = borderRadiusY_1.w;
+                    mask_0 = 1.0f - ellipseMask_0(_S2.texCoord_1, vec2<f32>(_S13, 1.0f - _S14), _S13, _S14);
+                }
+                else
+                {
+                    mask_0 = 1.0f;
+                }
+            }
+        }
+    }
+    var _S15 : f32 = _S2.texCoord_1.y;
+    const _S16 : vec4<f32> = vec4<f32>(0.0f, 0.0f, 0.0f, 0.0f);
+    var _S17 : vec4<f32> = vec4<f32>((1.0f - mask_0));
+    var imageColor_0 : vec4<f32> = mix((textureSample((image_0), (imageSmp_0), (_S2.texCoord_1))), _S16, _S17);
+    var _S18 : pixelOutput_0 = pixelOutput_0( mix(mix(mix(backgroundColor_1, _S16, _S17), borderColor_1, vec4<f32>((mask_0 * max(max(1.0f - step(borderWidth_1.x, _S3), 1.0f - step(borderWidth_1.y, 1.0f - _S3)), max(1.0f - step(borderWidth_1.z, _S15), 1.0f - step(borderWidth_1.w, 1.0f - _S15)))))), imageColor_0, vec4<f32>(imageColor_0.w)) );
+    return _S18;
+}
+)WGSL";
+    const std::string FontUISlangShader = R"WGSL(
+struct _MatrixStorage_float4x4_ColMajorstd140_0
+{
+    @align(16) data_0 : array<vec4<f32>, i32(4)>,
+};
+
+struct CameraSettings_std140_0
+{
+    @align(16) view_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+    @align(16) proj_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+};
+
+@binding(0) @group(0) var<uniform> camera_0 : CameraSettings_std140_0;
+struct PushConstants_std140_0
+{
+    @align(16) model_0 : _MatrixStorage_float4x4_ColMajorstd140_0,
+};
+
+@binding(0) @group(3) var<uniform> pc_0 : PushConstants_std140_0;
+@binding(2) @group(0) var image_0 : texture_2d<f32>;
+
+@binding(3) @group(0) var imageSmp_0 : sampler;
+
+struct UIComponentSettings_std140_0
+{
+    @align(16) backgroundColor_0 : vec4<f32>,
+    @align(16) borderColor_0 : vec4<f32>,
+    @align(16) borderWidth_0 : vec4<f32>,
+    @align(16) borderRadiusX_0 : vec4<f32>,
+    @align(16) borderRadiusY_0 : vec4<f32>,
+};
+
+@binding(1) @group(0) var<uniform> uiSettings_0 : UIComponentSettings_std140_0;
+struct VertexOutput_0
+{
+    @builtin(position) position_0 : vec4<f32>,
+    @location(0) texCoord_0 : vec2<f32>,
+};
+
+struct vertexInput_0
+{
+    @location(0) aPos_0 : vec3<f32>,
+    @location(1) aColor_0 : vec4<f32>,
+    @location(2) aNormal_0 : vec3<f32>,
+    @location(3) aTexCoord_0 : vec2<f32>,
+};
+
+@vertex
+fn vertexMain( _S1 : vertexInput_0) -> VertexOutput_0
+{
+    var output_0 : VertexOutput_0;
+    output_0.position_0 = (((vec4<f32>(_S1.aPos_0, 1.0f)) * ((((mat4x4<f32>(pc_0.model_0.data_0[i32(0)][i32(0)], pc_0.model_0.data_0[i32(1)][i32(0)], pc_0.model_0.data_0[i32(2)][i32(0)], pc_0.model_0.data_0[i32(3)][i32(0)], pc_0.model_0.data_0[i32(0)][i32(1)], pc_0.model_0.data_0[i32(1)][i32(1)], pc_0.model_0.data_0[i32(2)][i32(1)], pc_0.model_0.data_0[i32(3)][i32(1)], pc_0.model_0.data_0[i32(0)][i32(2)], pc_0.model_0.data_0[i32(1)][i32(2)], pc_0.model_0.data_0[i32(2)][i32(2)], pc_0.model_0.data_0[i32(3)][i32(2)], pc_0.model_0.data_0[i32(0)][i32(3)], pc_0.model_0.data_0[i32(1)][i32(3)], pc_0.model_0.data_0[i32(2)][i32(3)], pc_0.model_0.data_0[i32(3)][i32(3)])) * ((((mat4x4<f32>(camera_0.view_0.data_0[i32(0)][i32(0)], camera_0.view_0.data_0[i32(1)][i32(0)], camera_0.view_0.data_0[i32(2)][i32(0)], camera_0.view_0.data_0[i32(3)][i32(0)], camera_0.view_0.data_0[i32(0)][i32(1)], camera_0.view_0.data_0[i32(1)][i32(1)], camera_0.view_0.data_0[i32(2)][i32(1)], camera_0.view_0.data_0[i32(3)][i32(1)], camera_0.view_0.data_0[i32(0)][i32(2)], camera_0.view_0.data_0[i32(1)][i32(2)], camera_0.view_0.data_0[i32(2)][i32(2)], camera_0.view_0.data_0[i32(3)][i32(2)], camera_0.view_0.data_0[i32(0)][i32(3)], camera_0.view_0.data_0[i32(1)][i32(3)], camera_0.view_0.data_0[i32(2)][i32(3)], camera_0.view_0.data_0[i32(3)][i32(3)])) * (mat4x4<f32>(camera_0.proj_0.data_0[i32(0)][i32(0)], camera_0.proj_0.data_0[i32(1)][i32(0)], camera_0.proj_0.data_0[i32(2)][i32(0)], camera_0.proj_0.data_0[i32(3)][i32(0)], camera_0.proj_0.data_0[i32(0)][i32(1)], camera_0.proj_0.data_0[i32(1)][i32(1)], camera_0.proj_0.data_0[i32(2)][i32(1)], camera_0.proj_0.data_0[i32(3)][i32(1)], camera_0.proj_0.data_0[i32(0)][i32(2)], camera_0.proj_0.data_0[i32(1)][i32(2)], camera_0.proj_0.data_0[i32(2)][i32(2)], camera_0.proj_0.data_0[i32(3)][i32(2)], camera_0.proj_0.data_0[i32(0)][i32(3)], camera_0.proj_0.data_0[i32(1)][i32(3)], camera_0.proj_0.data_0[i32(2)][i32(3)], camera_0.proj_0.data_0[i32(3)][i32(3)]))))))))));
+    output_0.texCoord_0 = _S1.aTexCoord_0;
+    return output_0;
+}
+
+struct pixelOutput_0
+{
+    @location(0) output_1 : vec4<f32>,
+};
+
+struct pixelInput_0
+{
+    @location(0) texCoord_1 : vec2<f32>,
+};
+
+@fragment
+fn fragmentMain( _S2 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0
+{
+    var _S3 : pixelOutput_0 = pixelOutput_0( vec4<f32>(1.0f, 1.0f, 1.0f, (textureSample((image_0), (imageSmp_0), (_S2.texCoord_1))).x) * uiSettings_0.borderColor_0 );
+    return _S3;
+}
+)WGSL";
+#else
     constexpr const char* kClayShaderPreamble = R"(
 struct VertexOutput {
     float4 position : SV_Position;
@@ -107,6 +347,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target {
     return float4(1.0, 1.0, 1.0, sampled) * uiSettings.borderColor;
 }
 )";
+#endif
 } // namespace
 
 ClayUILayer::ClayUILayer() {}
