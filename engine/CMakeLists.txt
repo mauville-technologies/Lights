@@ -11,6 +11,7 @@ set(SOURCES
         src/core/audio/nodes/audio_fan_in_mixer_node.cpp
         src/core/audio/nodes/saw_tooth_node.cpp
         src/core/audio/audio_subsystem.cpp
+        src/core/audio/audio_subsystem_web.cpp
         src/core/audio/audio_graph.cpp
 
         src/framework/input/input_keys.cpp

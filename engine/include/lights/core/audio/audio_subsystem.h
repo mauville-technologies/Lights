@@ -9,7 +9,12 @@
 #include <memory>
 #include <ranges>
 #include <algorithm>
+
+// RtAudio is a native-only backend. On web the subsystem is a stub (no device
+// output); audio graph nodes can still be created and connected.
+#if !defined(__EMSCRIPTEN__)
 #include <RtAudio.h>
+#endif
 
 #include <spdlog/spdlog.h>
 
@@ -81,7 +86,11 @@ namespace OZZ::lights::audio {
 
 
         [[nodiscard]] bool IsInitialized() const {
+#if defined(__EMSCRIPTEN__)
+            return bInitialized;
+#else
             return rtAudio != nullptr;
+#endif
         }
 
         [[nodiscard]] bool IsValidDevice(const uint32_t deviceID) const {
@@ -101,7 +110,11 @@ namespace OZZ::lights::audio {
         }
 
         [[nodiscard]] uint32_t GetDefaultOutputDeviceID() const {
+#if defined(__EMSCRIPTEN__)
+            return 0;
+#else
             return rtAudio->getDefaultOutputDevice();
+#endif
         }
 
         void SelectOutputAudioDevice(uint32_t deviceID = 0);
@@ -113,8 +126,10 @@ namespace OZZ::lights::audio {
 
         bool initializeMainMix();
 
+#if !defined(__EMSCRIPTEN__)
         int renderAudio(void *outputBuffer, void *inputBuffer, unsigned int nFrames, double streamTime,
                         RtAudioStreamStatus status) const;
+#endif
 
         void shutdownMainMix();
 
@@ -127,7 +142,9 @@ namespace OZZ::lights::audio {
 
         std::shared_ptr<AudioFanInMixerNode> mainMixNode{nullptr};
         AudioSubsystemSettings settings{};
+#if !defined(__EMSCRIPTEN__)
         std::unique_ptr<RtAudio> rtAudio{nullptr};
+#endif
         const AudioDevice *currentOutputDevice{nullptr};
         std::vector<AudioDevice> audioDevices{};
     };

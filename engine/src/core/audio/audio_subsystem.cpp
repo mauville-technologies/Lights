@@ -1,6 +1,8 @@
 //
 // Created by ozzadar on 2025-07-13.
 //
+// Native (desktop) audio backend. The web build uses audio_subsystem_web.cpp.
+#if !defined(__EMSCRIPTEN__)
 
 #include <lights/core/audio/audio_subsystem.h>
 #include <lights/core/util/profiling.h>
@@ -238,3 +240,5 @@ namespace OZZ::lights::audio {
         }
     }
 }
+
+#endif // !__EMSCRIPTEN__
