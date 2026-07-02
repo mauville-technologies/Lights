@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <lights/framework/input/input_keys.h>
 #include <ozz_rendering/rhi_backend.h>
+#include <ozz_rendering/rhi_device.h>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,8 @@ namespace OZZ::platform {
         }
         virtual void CreateWindow(const std::string& title, int width, int height) = 0;
         virtual bool CreateSurface(void* instance, void* surfaceOut) = 0;
+        // Native window handles for backends that build their own surface (WebGPU).
+        virtual rendering::NativeWindowHandles GetNativeWindowHandles() = 0;
         virtual std::vector<std::string> GetRequiredInstanceExtensions() = 0;
         virtual void InitInput(WindowCallbacks&& callbacks) = 0;
         virtual void Poll() = 0;

@@ -16,14 +16,6 @@
 
 #include <spdlog/spdlog.h>
 
-#ifdef OZZ_WEBGPU_ENABLED
-#include <dawn/webgpu.h>
-#ifdef OZZ_PLATFORM_WINDOWS
-#include <windows.h>
-#undef CreateWindow  // windows.h macro conflicts with IPlatformWindow::CreateWindow
-#endif
-#endif
-
 namespace OZZ::platform::SDL3 {
     void SDLWindow::CreateWindow(const std::string& title, int width, int height) {
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
@@ -46,74 +38,53 @@ namespace OZZ::platform::SDL3 {
     }
 
     bool SDLWindow::CreateSurface(void* instance, void* surfaceOut) {
-#ifdef OZZ_WEBGPU_ENABLED
-        if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU) {
-            WGPUInstance wgpuInstance = *static_cast<WGPUInstance*>(instance);
-            WGPUSurface* surfacePtr   = static_cast<WGPUSurface*>(surfaceOut);
-
-#ifdef OZZ_PLATFORM_WINDOWS
-            void* hwnd = SDL_GetPointerProperty(
-                SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-            if (!hwnd) {
-                spdlog::error("Failed to get HWND from SDL window for WebGPU surface");
-                return false;
-            }
-            WGPUSurfaceSourceWindowsHWND hwndDesc = {};
-            hwndDesc.chain.sType = WGPUSType_SurfaceSourceWindowsHWND;
-            hwndDesc.hinstance   = GetModuleHandle(nullptr);
-            hwndDesc.hwnd        = hwnd;
-            WGPUSurfaceDescriptor surfDesc = {};
-            surfDesc.nextInChain = &hwndDesc.chain;
-            *surfacePtr = wgpuInstanceCreateSurface(wgpuInstance, &surfDesc);
-#elif defined(OZZ_PLATFORM_LINUX)
-            // Try Wayland first, fall back to X11
-            struct wl_display* wlDisplay = static_cast<struct wl_display*>(SDL_GetPointerProperty(
-                SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr));
-            struct wl_surface* wlSurface = static_cast<struct wl_surface*>(SDL_GetPointerProperty(
-                SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr));
-            if (wlDisplay && wlSurface) {
-                WGPUSurfaceSourceWaylandSurface wlDesc = {};
-                wlDesc.chain.sType = WGPUSType_SurfaceSourceWaylandSurface;
-                wlDesc.display     = wlDisplay;
-                wlDesc.surface     = wlSurface;
-                WGPUSurfaceDescriptor surfDesc = {};
-                surfDesc.nextInChain = &wlDesc.chain;
-                *surfacePtr = wgpuInstanceCreateSurface(wgpuInstance, &surfDesc);
-            } else {
-                void* x11Display = SDL_GetPointerProperty(
-                    SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
-                uint64_t x11Window = static_cast<uint64_t>(SDL_GetNumberProperty(
-                    SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
-                if (!x11Display || !x11Window) {
-                    spdlog::error("Failed to get native window handle for WebGPU surface (no Wayland or X11)");
-                    return false;
-                }
-                WGPUSurfaceSourceXlibWindow xlibDesc = {};
-                xlibDesc.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
-                xlibDesc.display     = x11Display;
-                xlibDesc.window      = x11Window;
-                WGPUSurfaceDescriptor surfDesc = {};
-                surfDesc.nextInChain = &xlibDesc.chain;
-                *surfacePtr = wgpuInstanceCreateSurface(wgpuInstance, &surfDesc);
-            }
-#else
-            spdlog::error("WebGPU surface creation not implemented for this platform");
-            return false;
-#endif
-            if (!*surfacePtr) {
-                spdlog::error("wgpuInstanceCreateSurface returned null");
-                return false;
-            }
-            return true;
-        }
-#endif
-        // Vulkan path
+        // Vulkan-only. The WebGPU backend builds its own surface from the native handles
+        // returned by GetNativeWindowHandles().
         if (!SDL_Vulkan_CreateSurface(
                 window, static_cast<VkInstance>(instance), nullptr, static_cast<VkSurfaceKHR*>(surfaceOut))) {
             spdlog::error("Failed to create Vulkan surface: {}", SDL_GetError());
             return false;
         }
         return true;
+    }
+
+    OZZ::rendering::NativeWindowHandles SDLWindow::GetNativeWindowHandles() {
+        OZZ::rendering::NativeWindowHandles handles {};
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+
+#ifdef OZZ_PLATFORM_WINDOWS
+        void* hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+        if (!hwnd) {
+            spdlog::error("Failed to get HWND from SDL window for native window handles");
+            return handles;
+        }
+        handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::Win32;
+        handles.Display  = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+        handles.Window   = hwnd;
+#elif defined(OZZ_PLATFORM_LINUX)
+        // Try Wayland first, fall back to X11
+        void* wlDisplay = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
+        void* wlSurface = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
+        if (wlDisplay && wlSurface) {
+            handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::Wayland;
+            handles.Display  = wlDisplay;
+            handles.Window   = wlSurface;
+        } else {
+            void* x11Display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
+            uint64_t x11Window = static_cast<uint64_t>(
+                SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
+            if (!x11Display || !x11Window) {
+                spdlog::error("Failed to get native window handle (no Wayland or X11)");
+                return handles;
+            }
+            handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::X11;
+            handles.Display  = x11Display;
+            handles.WindowId = x11Window;
+        }
+#else
+        spdlog::error("Native window handles not implemented for this platform");
+#endif
+        return handles;
     }
 
     std::vector<std::string> SDLWindow::GetRequiredInstanceExtensions() {

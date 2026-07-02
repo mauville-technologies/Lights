@@ -15,6 +15,7 @@ namespace OZZ::platform::SDL3 {
         void CreateWindow(const std::string& title, int width, int height) override;
 
         bool CreateSurface(void* instance, void* surfaceOut) override;
+        OZZ::rendering::NativeWindowHandles GetNativeWindowHandles() override;
         std::vector<std::string> GetRequiredInstanceExtensions() override;
         void InitInput(WindowCallbacks&& inCallbacks) override;
         void Poll() override;

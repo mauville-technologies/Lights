@@ -20,6 +20,10 @@ namespace OZZ {
             return window->CreateSurface(instance, surfaceOut);
         }
 
+        [[nodiscard]] rendering::NativeWindowHandles GetNativeWindowHandles() const {
+            return window->GetNativeWindowHandles();
+        }
+
         virtual std::vector<std::string> GetRequiredInstanceExtensions() {
             return window->GetRequiredInstanceExtensions();
         }

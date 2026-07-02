@@ -225,6 +225,10 @@ namespace OZZ::game {
                     [this](void* instance, void* surface) {
                         return window->CreateSurface(instance, surface);
                     },
+                .GetNativeWindowHandlesFunction =
+                    [this]() {
+                        return window->GetNativeWindowHandles();
+                    },
             }, resolvedBackend);
 
             resourceManager = std::make_unique<scene::ResourceManager>(renderer->GetDevice());
