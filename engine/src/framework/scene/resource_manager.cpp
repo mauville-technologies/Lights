@@ -17,14 +17,20 @@
 namespace OZZ::scene {
     ResourceManager::ResourceManager(rendering::RHIDevice* inDevice)
         : device(inDevice) {
+#if !defined(__EMSCRIPTEN__)
         jobThread = std::jthread([this](const std::stop_token& tok) {
             run(tok);
         });
+#endif
+        // On web there is no worker thread; queued jobs run synchronously in
+        // queueJob() (the browser has a single thread and no pthreads).
     }
 
     ResourceManager::~ResourceManager() {
+#if !defined(__EMSCRIPTEN__)
         jobThread.request_stop();
         queueCondition.notify_all();
+#endif
     }
 
     bool ResourceManager::LoadSpritesheet(const SpritesheetLocation& location) {
@@ -169,11 +175,16 @@ namespace OZZ::scene {
     }
 
     void ResourceManager::queueJob(const std::function<void()>& job) {
+#if defined(__EMSCRIPTEN__)
+        // No worker thread on web — run the job now, on the calling thread.
+        job();
+#else
         {
             auto queueLock = std::scoped_lock(queueMutex);
             queuedJobs.push_back(job);
         }
         queueCondition.notify_one();
+#endif
     }
 
     void ResourceManager::run(const std::stop_token& tok) {
