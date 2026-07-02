@@ -39,20 +39,38 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(toml11_lib)
 
-set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "The RTAUDIO uninstall target name" FORCE)
+# RtAudio drives native audio backends (ALSA/PulseAudio/WASAPI/CoreAudio).
+# None of these exist in the browser, so it is skipped on the web build; audio
+# on web is handled separately (Web Audio / SDL audio) or stubbed.
+if (NOT EMSCRIPTEN)
+    set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "The RTAUDIO uninstall target name" FORCE)
 
-# if on linux
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(RTAUDIO_API_ALSA OFF)
-    set(RTAUDIO_API_PULSE ON)
+    # if on linux
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(RTAUDIO_API_ALSA OFF)
+        set(RTAUDIO_API_PULSE ON)
+    endif ()
+
+    FetchContent_Declare(
+            rtaudio_lib
+            GIT_REPOSITORY git@github.com:thestk/rtaudio.git
+            GIT_TAG 6.0.1
+    )
+    FetchContent_MakeAvailable(rtaudio_lib)
+
+    # IXWebSocket is the desktop backend for the engine's OZZ::net::WebSocket
+    # abstraction (the web backend uses emscripten/websocket.h instead, so this
+    # native library is only fetched off the web). Owned by the engine so any
+    # consumer (game client, tools) gets a single write-once networking API.
+    set(USE_TLS             OFF CACHE BOOL "" FORCE)
+    set(IXWEBSOCKET_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+            ixwebsocket_lib
+            GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+            GIT_TAG v11.4.5
+    )
+    FetchContent_MakeAvailable(ixwebsocket_lib)
 endif ()
-
-FetchContent_Declare(
-        rtaudio_lib
-        GIT_REPOSITORY git@github.com:thestk/rtaudio.git
-        GIT_TAG 6.0.1
-)
-FetchContent_MakeAvailable(rtaudio_lib)
 
 FetchContent_Declare(
         EnTT_lib
@@ -87,7 +105,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tracy_lib)
 
-set(OZZ_ENABLE_SLANG ON CACHE BOOL "Enable Slang shader compiler" FORCE)
+# Slang is a native prebuilt shared library with no wasm distribution. The web
+# build compiles shaders offline to WGSL instead, so it must not force Slang on.
+if (NOT EMSCRIPTEN)
+    set(OZZ_ENABLE_SLANG ON CACHE BOOL "Enable Slang shader compiler" FORCE)
+endif ()
 
 set(LOCAL_RENDERING_DIR "" CACHE PATH "Path to local lights engine directory")
 if (LOCAL_RENDERING_DIR AND EXISTS "${LOCAL_RENDERING_DIR}")
@@ -121,12 +143,17 @@ set(LIBS
         clay
         freetype
         toml11
-        rtaudio
         EnTT::EnTT
         nlohmann_json
         ozz_rendering
         TracyClient
 )
+
+# RtAudio and IXWebSocket are desktop-only (see the guarded fetches above).
+# On web, audio is stubbed and networking uses emscripten/websocket.h.
+if (NOT EMSCRIPTEN)
+    list(APPEND LIBS rtaudio ixwebsocket)
+endif ()
 
 set(THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
 

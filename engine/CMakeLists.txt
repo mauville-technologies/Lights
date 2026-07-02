@@ -20,6 +20,9 @@ set(SOURCES
         src/framework/layers/clay/components/clay_canvas_panel.cpp
         src/framework/layers/clay/clay_ui_layer.cpp
 
+        src/core/net/web_socket_ixwebsocket.cpp
+        src/core/net/web_socket_emscripten.cpp
+
         src/core/platform/window.cpp
         src/core/platform/SDL3/sdl_keys.cpp
         src/core/platform/SDL3/sdl_window.cpp
@@ -55,8 +58,12 @@ endif ()
 # Compile definitions
 set(COMPILE_DEFINITIONS "")
 
-# if on windows
-if (WIN32)
+# Platform define. Emscripten must be checked before the generic desktop
+# branches: it is a Unix-like host, so WIN32/APPLE are false and it would
+# otherwise be misdetected as Linux.
+if (EMSCRIPTEN)
+    list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_WEB)
+elseif (WIN32)
     list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_WINDOWS)
 elseif (APPLE)
     list(APPEND COMPILE_DEFINITIONS OZZ_PLATFORM_MACOS)

@@ -7,6 +7,10 @@
 #include <memory>
 #include <toml.hpp>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "lights/core/audio/audio_subsystem.h"
 #include "lights/core/platform/window.h"
 #include "lights/core/rendering/renderer.h"
@@ -106,56 +110,89 @@ namespace OZZ::game {
             window->Show();
             resetSleepStatistics();
 
-            auto lastTickTime = std::chrono::high_resolution_clock::now();
-            auto lastRenderTime = std::chrono::high_resolution_clock::now();
-            const auto renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
+            lastTickTime = std::chrono::high_resolution_clock::now();
+            lastRenderTime = lastTickTime;
+            renderRate = std::chrono::duration<float>(1.0f / params.Config.FPS);
 
+#ifdef __EMSCRIPTEN__
+            // The browser owns the event loop; a blocking while-loop would freeze
+            // the page. Hand control to Emscripten, which drives one frame per
+            // requestAnimationFrame callback (fps = 0). simulate_infinite_loop = 1
+            // unwinds the C++ stack immediately after this call returns.
+            emscripten_set_main_loop_arg(&LightsGame::emscriptenFrame, this, 0, 1);
+#else
             while (bRunning) {
-                OZZ_PROFILE_SCOPE_N("GameLoop");
-                if (scene->HasSceneEnded()) {
-                    bRunning = false;
-                    continue;
-                }
-
-                window->PollEvents();
-                if (!bRunning) {
-                    continue;
-                }
-
-                // Tick on all polled events
-                if (input) {
-                    input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
-                }
-
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                resourceManager->Tick();
-                {
-                    // Tick and render all scenes
-                    auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
-
-                    // in situations where the tick gets artificially slowed (Steamdeck pause, window move / resize), we
-                    // don't want to have a ridiculous DeltaTime gap.
-                    if (deltaTime > 1.f) {
-                        deltaTime = 0.f;
-                    }
-
-                    scene->Tick(deltaTime);
-
-                    if (currentTime - lastRenderTime >= renderRate) {
-                        drawScene(scene.get());
-                        lastRenderTime = currentTime;
-                    }
-                    lastTickTime = currentTime;
-                }
-
-                auto frameTime = std::chrono::high_resolution_clock::now();
-                const double sleepsSec = 1.0 / params.Config.FPS - (frameTime - currentTime).count() / 1e9;
-                preciseSleep(sleepsSec);
-                OZZ_FRAME_MARK;
+                tickFrame();
             }
+#endif
         }
 
     private:
+        // One iteration of the game loop. On desktop it is called in a tight
+        // while-loop; on web it is invoked once per browser animation frame.
+        void tickFrame() {
+            OZZ_PROFILE_SCOPE_N("GameLoop");
+            if (scene->HasSceneEnded()) {
+                stopLoop();
+                return;
+            }
+
+            window->PollEvents();
+            if (!bRunning) {
+                stopLoop();
+                return;
+            }
+
+            // Tick on all polled events
+            if (input) {
+                input->Tick(window->GetKeyStates(), window->GetControllerState(), window->GetMouseButtonStates());
+            }
+
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            resourceManager->Tick();
+            {
+                // Tick and render all scenes
+                auto deltaTime = std::chrono::duration<float>(currentTime - lastTickTime).count();
+
+                // in situations where the tick gets artificially slowed (Steamdeck pause, window move / resize), we
+                // don't want to have a ridiculous DeltaTime gap.
+                if (deltaTime > 1.f) {
+                    deltaTime = 0.f;
+                }
+
+                scene->Tick(deltaTime);
+
+                if (currentTime - lastRenderTime >= renderRate) {
+                    drawScene(scene.get());
+                    lastRenderTime = currentTime;
+                }
+                lastTickTime = currentTime;
+            }
+
+#ifndef __EMSCRIPTEN__
+            // The browser paces frames via requestAnimationFrame; a busy sleep
+            // would only burn the main thread. Only the desktop path throttles.
+            auto frameTime = std::chrono::high_resolution_clock::now();
+            const double sleepsSec = 1.0 / params.Config.FPS - (frameTime - currentTime).count() / 1e9;
+            preciseSleep(sleepsSec);
+#endif
+            OZZ_FRAME_MARK;
+        }
+
+        // Tear down the loop in a way that is correct on both platforms.
+        void stopLoop() {
+            bRunning = false;
+#ifdef __EMSCRIPTEN__
+            emscripten_cancel_main_loop();
+#endif
+        }
+
+#ifdef __EMSCRIPTEN__
+        static void emscriptenFrame(void* arg) {
+            static_cast<LightsGame*>(arg)->tickFrame();
+        }
+#endif
+
         void initWindow() {
             OZZ::platform::WindowCallbacks callbacks{.OnWindowClose =
                                                          [this]() {
@@ -306,5 +343,11 @@ namespace OZZ::game {
         double sleepMean {5e-3};
         double sleepM2 {0.0};
         int64_t sleepCount {1};
+
+        // Frame-loop timing. Members (not locals) so the per-frame step can be
+        // driven either by the desktop while-loop or by Emscripten's callback.
+        std::chrono::high_resolution_clock::time_point lastTickTime{};
+        std::chrono::high_resolution_clock::time_point lastRenderTime{};
+        std::chrono::duration<float> renderRate{};
     };
 } // namespace OZZ::game
