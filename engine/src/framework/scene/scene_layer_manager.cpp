@@ -38,7 +38,8 @@ namespace OZZ::scene {
     }
 
     void SceneLayerManager::RemoveLayer(const std::string& layerName) {
-        for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+        for (size_t index = 0; index < layerNames.size(); ++index) {
+            const auto& name = layerNames[index];
             if (name == layerName) {
                 // remove from the active layers if it is there
                 erase_if(activeLayers, [index](const auto& layerIndex) {
@@ -56,7 +57,8 @@ namespace OZZ::scene {
     }
 
     void SceneLayerManager::SetLayerActive(const std::string& layerName, bool bActive) {
-        for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+        for (size_t index = 0; index < layerNames.size(); ++index) {
+            const auto& name = layerNames[index];
             if (name == layerName) {
                 if (bActive) {
                     activeLayers.insert(index);
@@ -70,7 +72,8 @@ namespace OZZ::scene {
     }
 
     void SceneLayerManager::SetLayerExecutionOrder(const std::string& layerName, const uint16_t zOrder) {
-        for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+        for (size_t index = 0; index < layerNames.size(); ++index) {
+            const auto& name = layerNames[index];
             if (name == layerName) {
                 layerExecutionOrders[index] = zOrder;
                 bActiveLayersCacheDirty = true;

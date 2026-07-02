@@ -28,7 +28,8 @@ namespace OZZ::scene {
 
         template <typename T, typename... Args>
         T* LoadLayer(rendering::RHIDevice* inDevice, const std::string& layerName, Args&&... args) {
-            for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+            for (size_t index = 0; index < layerNames.size(); ++index) {
+                const auto& name = layerNames[index];
                 if (name != layerName) {
                     continue;
                 }
@@ -74,7 +75,8 @@ namespace OZZ::scene {
         // Caller must call InitLayerAsync() or layer->Init() manually.
         template <typename T, typename... Args>
         T* LoadLayerDeferred(const std::string& layerName, Args&&... args) {
-            for (const auto& [index, name] : layerNames | std::ranges::views::enumerate) {
+            for (size_t index = 0; index < layerNames.size(); ++index) {
+                const auto& name = layerNames[index];
                 if (name != layerName) continue;
                 auto* existingLayer = dynamic_cast<T*>(layers[index].get());
                 assert(existingLayer && "Layer name already exists with a different type.");
@@ -113,7 +115,8 @@ namespace OZZ::scene {
         template <typename LayerType>
         LayerType* GetLayer(const std::string& layerName) {
             SceneLayer* layer{nullptr};
-            for (const auto& [index, name] : this->layerNames | std::ranges::views::enumerate) {
+            for (size_t index = 0; index < this->layerNames.size(); ++index) {
+                const auto& name = this->layerNames[index];
                 if (name == layerName) {
                     layer = layers[index].get();
                     break;

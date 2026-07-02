@@ -8,11 +8,16 @@
 
 #ifdef OZZ_SDL3
 
+// Vulkan (volk + SDL_vulkan) is desktop-only. On web the WebGPU backend builds
+// its surface from the page canvas, so no Vulkan surface/extension code is used.
+#if !defined(__EMSCRIPTEN__)
 #include <volk.h>
-
 #include "SDL3/SDL_vulkan.h"
+#endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
+
+#include <algorithm>
 
 #include <spdlog/spdlog.h>
 
@@ -38,6 +43,11 @@ namespace OZZ::platform::SDL3 {
     }
 
     bool SDLWindow::CreateSurface(void* instance, void* surfaceOut) {
+#if defined(__EMSCRIPTEN__)
+        // No Vulkan on web; the WebGPU backend creates its surface from the canvas.
+        (void)instance; (void)surfaceOut;
+        return false;
+#else
         // Vulkan-only. The WebGPU backend builds its own surface from the native handles
         // returned by GetNativeWindowHandles().
         if (!SDL_Vulkan_CreateSurface(
@@ -46,6 +56,7 @@ namespace OZZ::platform::SDL3 {
             return false;
         }
         return true;
+#endif
     }
 
     OZZ::rendering::NativeWindowHandles SDLWindow::GetNativeWindowHandles() {
@@ -88,6 +99,10 @@ namespace OZZ::platform::SDL3 {
     }
 
     std::vector<std::string> SDLWindow::GetRequiredInstanceExtensions() {
+#if defined(__EMSCRIPTEN__)
+        // Web: WebGPU only, no Vulkan instance extensions.
+        return {};
+#else
 #ifdef OZZ_WEBGPU_ENABLED
         if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU) return {};
 #endif
@@ -101,6 +116,7 @@ namespace OZZ::platform::SDL3 {
             }
         }
         return extensionList;
+#endif // __EMSCRIPTEN__
     }
 
     void SDLWindow::InitInput(WindowCallbacks&& inCallbacks) {
