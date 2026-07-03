@@ -62,7 +62,12 @@ if (NOT EMSCRIPTEN)
     # abstraction (the web backend uses emscripten/websocket.h instead, so this
     # native library is only fetched off the web). Owned by the engine so any
     # consumer (game client, tools) gets a single write-once networking API.
+    # USE_ZLIB pulls in a hard find_package(ZLIB REQUIRED) in ixwebsocket's
+    # CMakeLists; we don't use permessage-deflate compression anywhere in
+    # web_socket_ixwebsocket.cpp, so disable it rather than require a system
+    # zlib install (notably absent by default on Windows dev machines).
     set(USE_TLS             OFF CACHE BOOL "" FORCE)
+    set(USE_ZLIB            OFF CACHE BOOL "" FORCE)
     set(IXWEBSOCKET_INSTALL OFF CACHE BOOL "" FORCE)
     FetchContent_Declare(
             ixwebsocket_lib
