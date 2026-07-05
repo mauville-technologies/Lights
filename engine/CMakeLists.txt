@@ -50,9 +50,9 @@ set(SOURCES
 
 add_library(lights_engine STATIC ${SOURCES})
 
-# if set_base_dir(target) is defined, call it
-if (DEFINED set_base_dir)
-    set_base_dir(${PROJECT_NAME})
+# if set_base_dir(target, base_dir) is defined, call it
+if (COMMAND set_base_dir)
+    set_base_dir(${PROJECT_NAME} ${CMAKE_SOURCE_DIR})
 endif ()
 
 
