@@ -22,14 +22,8 @@ namespace OZZ::net {
         class IxWebSocket final : public WebSocket {
         public:
             IxWebSocket() {
-                // The Emscripten backend has no concept of automatic reconnection (the
-                // browser's WebSocket never retries on its own), so callers of this
-                // interface are written against "start() is a single connection
-                // attempt; reconnect policy is the caller's job" — see web_socket.h.
-                // IXWebSocket defaults to its own background auto-reconnect with
-                // exponential backoff, which silently violates that contract on
-                // desktop and can leave a caller's own reconnect state machine
-                // fighting a socket that's already retrying underneath it.
+                // We want reconnects handled explicitly at the caller level, not by
+                // IXWebSocket's own background auto-reconnect — see web_socket.h.
                 ws.disableAutomaticReconnection();
             }
 
