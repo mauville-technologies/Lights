@@ -68,6 +68,9 @@ namespace OZZ::net {
         virtual void setUrl(const std::string& url) = 0;
         virtual void setOnMessageCallback(OnMessageCallback callback) = 0;
 
+        // Makes exactly one connection attempt — neither backend retries on its
+        // own. Reconnect policy (if any) is the caller's responsibility, driven
+        // by observing Close/Error events from poll() and calling start() again.
         virtual void start() = 0;
         virtual void stop() = 0;
 
