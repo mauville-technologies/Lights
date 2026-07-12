@@ -21,6 +21,12 @@ namespace OZZ::net {
     namespace {
         class IxWebSocket final : public WebSocket {
         public:
+            IxWebSocket() {
+                // We want reconnects handled explicitly at the caller level, not by
+                // IXWebSocket's own background auto-reconnect — see web_socket.h.
+                ws.disableAutomaticReconnection();
+            }
+
             void setUrl(const std::string& url) override { ws.setUrl(url); }
 
             void setOnMessageCallback(OnMessageCallback callback) override {
