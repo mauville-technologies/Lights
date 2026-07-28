@@ -61,7 +61,6 @@ if (NOT EMSCRIPTEN)
     FetchContent_MakeAvailable(rtaudio_lib)
 
     # Desktop backend for OZZ::net::WebSocket (web uses emscripten/websocket.h).
-    # Matches truck-kun's server stack so both ends share one networking library.
     # BOOST_INCLUDE_LIBRARIES scopes the build to just beast+asio. 1.87+ (not 1.85) fixes a
     # deprecated literal-operator warning in Beast's headers; SYSTEM suppresses any others.
     set(BOOST_INCLUDE_LIBRARIES beast asio)

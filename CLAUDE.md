@@ -62,6 +62,8 @@ Lights\
 
 Keep comments short — one line, two at most. Only comment non-obvious WHY, not WHAT. Don't restate design rationale that belongs in a PR description or commit message.
 
+No references to truck-kun (or any other application-layer/game project) by name in source code or comments — Lights is a standalone engine, not coupled to a specific consumer. Refer to "downstream consumers" generically if context is needed.
+
 ## Configure flags (when consumed via Lights's third_party)
 
 - `LOCAL_RENDERING_DIR` — path to a local `ozz_rendering` checkout; overrides the GitHub fetch.
