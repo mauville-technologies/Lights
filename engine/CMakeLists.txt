@@ -21,7 +21,7 @@ set(SOURCES
         src/framework/layers/clay/components/clay_canvas_panel.cpp
         src/framework/layers/clay/clay_ui_layer.cpp
 
-        src/core/net/web_socket_ixwebsocket.cpp
+        src/core/net/web_socket_boost.cpp
         src/core/net/web_socket_emscripten.cpp
 
         src/core/platform/window.cpp
