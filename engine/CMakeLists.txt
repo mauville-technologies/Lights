@@ -24,6 +24,11 @@ set(SOURCES
         src/core/net/web_socket_boost.cpp
         src/core/net/web_socket_emscripten.cpp
 
+        src/core/net/server/reactor_pool.cpp
+        src/core/net/server/connection_handler.cpp
+        src/core/net/server/connection_registry.cpp
+        src/core/net/server/server.cpp
+
         src/core/platform/window.cpp
         src/core/platform/SDL3/sdl_keys.cpp
         src/core/platform/SDL3/sdl_window.cpp
@@ -80,4 +85,9 @@ target_include_directories(${PROJECT_NAME}
 )
 target_compile_definitions(lights_engine PUBLIC ${COMPILE_DEFINITIONS})
 target_link_libraries(lights_engine PUBLIC ${OPENGL_LIBRARIES} third_party ozz_collision ozz_audio)
+
+# Networking tests need Boost, which isn't fetched on web builds (see third_party).
+if (NOT EMSCRIPTEN)
+    add_subdirectory(tests)
+endif ()
 
