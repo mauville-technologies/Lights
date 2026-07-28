@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.25) # FetchContent_Declare(... SYSTEM) needs 3.25+
+
 include(FetchContent)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as static" FORCE)
@@ -58,23 +60,18 @@ if (NOT EMSCRIPTEN)
     )
     FetchContent_MakeAvailable(rtaudio_lib)
 
-    # IXWebSocket is the desktop backend for the engine's OZZ::net::WebSocket
-    # abstraction (the web backend uses emscripten/websocket.h instead, so this
-    # native library is only fetched off the web). Owned by the engine so any
-    # consumer (game client, tools) gets a single write-once networking API.
-    # USE_ZLIB pulls in a hard find_package(ZLIB REQUIRED) in ixwebsocket's
-    # CMakeLists; we don't use permessage-deflate compression anywhere in
-    # web_socket_ixwebsocket.cpp, so disable it rather than require a system
-    # zlib install (notably absent by default on Windows dev machines).
-    set(USE_TLS             OFF CACHE BOOL "" FORCE)
-    set(USE_ZLIB            OFF CACHE BOOL "" FORCE)
-    set(IXWEBSOCKET_INSTALL OFF CACHE BOOL "" FORCE)
+    # Desktop backend for OZZ::net::WebSocket (web uses emscripten/websocket.h).
+    # BOOST_INCLUDE_LIBRARIES scopes the build to just beast+asio. 1.87+ (not 1.85) fixes a
+    # deprecated literal-operator warning in Beast's headers; SYSTEM suppresses any others.
+    set(BOOST_INCLUDE_LIBRARIES beast asio)
+    set(BOOST_ENABLE_CMAKE ON)
     FetchContent_Declare(
-            ixwebsocket_lib
-            GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
-            GIT_TAG v11.4.5
+            Boost
+            SYSTEM
+            URL https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
+            DOWNLOAD_EXTRACT_TIMESTAMP ON
     )
-    FetchContent_MakeAvailable(ixwebsocket_lib)
+    FetchContent_MakeAvailable(Boost)
 endif ()
 
 FetchContent_Declare(
@@ -154,10 +151,10 @@ set(LIBS
         TracyClient
 )
 
-# RtAudio and IXWebSocket are desktop-only (see the guarded fetches above).
+# RtAudio and Boost are desktop-only (see the guarded fetches above).
 # On web, audio is stubbed and networking uses emscripten/websocket.h.
 if (NOT EMSCRIPTEN)
-    list(APPEND LIBS rtaudio ixwebsocket)
+    list(APPEND LIBS rtaudio Boost::beast Boost::asio)
 endif ()
 
 set(THIRD_PARTY_COMPILE_DEFS OZZ_SDL3)
