@@ -1,11 +1,9 @@
 //
 // Desktop WebSocket backend — wraps Boost::Beast/Asio.
 //
-// Beast has no built-in background-thread model the way IXWebSocket did, so
-// each instance runs its own io_context on a dedicated thread. We translate
-// each event into an OZZ::net::WebSocketMessage and push it onto a queue; the
-// user callback is invoked later from poll() on the caller's thread, so the
-// threading model matches the Emscripten backend.
+// Runs its own io_context on a dedicated thread (Beast has no built-in
+// background thread) and enqueues events for poll() to deliver, matching the
+// Emscripten backend's threading model.
 //
 #ifndef __EMSCRIPTEN__
 
@@ -38,8 +36,7 @@ namespace OZZ::net {
             std::string target;
         };
 
-        // Handles "ws://host[:port][/path]". No TLS support (matches the previous
-        // IXWebSocket backend, which was built with USE_TLS OFF).
+        // Handles "ws://host[:port][/path]". No TLS support (matches the previous USE_TLS OFF setup).
         ParsedUrl ParseUrl(const std::string& url) {
             std::string rest = url;
             if (const auto schemeEnd = rest.find("://"); schemeEnd != std::string::npos) {

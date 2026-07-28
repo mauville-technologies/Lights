@@ -60,12 +60,8 @@ if (NOT EMSCRIPTEN)
     )
     FetchContent_MakeAvailable(rtaudio_lib)
 
-    # Boost::Beast/Asio is the desktop backend for the engine's OZZ::net::WebSocket
-    # abstraction (the web backend uses emscripten/websocket.h instead, so this
-    # native library is only fetched off the web). Owned by the engine so any
-    # consumer (game client, tools) gets a single write-once networking API.
-    # Matches the server side (truck-kun/simple-mmo/server) so both ends of the
-    # wire share one networking stack.
+    # Desktop backend for OZZ::net::WebSocket (web uses emscripten/websocket.h).
+    # Matches truck-kun's server stack so both ends share one networking library.
     # BOOST_INCLUDE_LIBRARIES scopes the build to just beast+asio. 1.87+ (not 1.85) fixes a
     # deprecated literal-operator warning in Beast's headers; SYSTEM suppresses any others.
     set(BOOST_INCLUDE_LIBRARIES beast asio)

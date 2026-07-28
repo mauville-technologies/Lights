@@ -1,18 +1,9 @@
 //
 // Cross-platform WebSocket client abstraction.
 //
-// Network code is written ONCE against this interface. The engine selects the
-// backend at build time:
-//   * Desktop (Windows/macOS/Linux) -> Boost::Beast/Asio (native BSD sockets)
-//   * Web (Emscripten/WASM)         -> emscripten/websocket.h (the browser's
-//                                       native WebSocket object)
-//
-// The two backends have different threading models (the Beast backend delivers
-// events from its own io_context thread; Emscripten delivers them on the main
-// thread). To keep behaviour identical everywhere, both backends ENQUEUE
-// incoming events and only deliver them to the user callback from `poll()`,
-// which the caller invokes on its own (game) thread once per tick. Callbacks
-// therefore always fire on the polling thread on every platform.
+// Backend is chosen at build time: Boost::Beast/Asio on desktop, the browser's
+// WebSocket on Emscripten. Both enqueue events and deliver them only from
+// poll(), so callbacks always fire on the caller's polling thread.
 //
 #pragma once
 
@@ -47,8 +38,7 @@ namespace OZZ::net {
         bool        remote{false};
     };
 
-    // Mirrors IXWebSocket's message model (the library the Beast backend
-    // replaced) so both backends map cleanly onto a single shape.
+    // Mirrors the previous IXWebSocket message model so both backends map cleanly onto it.
     struct WebSocketMessage {
         WebSocketMessageType type{WebSocketMessageType::Message};
         std::string          data;          // payload for Message events
