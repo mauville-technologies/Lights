@@ -64,6 +64,10 @@ Keep comments short — one line, two at most. Only comment non-obvious WHY, not
 
 No references to truck-kun (or any other application-layer/game project) by name in source code or comments — Lights is a standalone engine, not coupled to a specific consumer. Refer to "downstream consumers" generically if context is needed.
 
+## Assertions
+
+Use `OZZ_ASSERT(condition, message)` (`lights/core/util/assert.h`) instead of a naked `assert()` — it logs via `spdlog::error` before asserting, so the failure is visible even in a release build where `NDEBUG` strips `assert()` (and its condition) entirely. Replace naked asserts with it opportunistically as encountered, not as a dedicated retrofit pass.
+
 ## Configure flags (when consumed via Lights's third_party)
 
 - `LOCAL_RENDERING_DIR` — path to a local `ozz_rendering` checkout; overrides the GitHub fetch.

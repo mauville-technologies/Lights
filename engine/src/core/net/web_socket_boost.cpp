@@ -21,6 +21,7 @@
 #include <mutex>
 #include <optional>
 #include <thread>
+#include <utility>
 
 namespace OZZ::net {
 
@@ -92,8 +93,8 @@ namespace OZZ::net {
                 ioc.restart();
             }
 
-            void sendBinary(const std::string& data) override { send(data); }
-            void sendText(const std::string& data) override { send(data); }
+            void sendBinary(const std::string& data) override { send(data, true); }
+            void sendText(const std::string& data) override { send(data, false); }
 
             void poll() override {
                 std::deque<WebSocketMessage> drained;
@@ -182,20 +183,20 @@ namespace OZZ::net {
                 doRead();
             }
 
-            void send(const std::string& data) {
-                asio::post(ioc, [this, data] { enqueueAndMaybeWrite(data); });
+            void send(const std::string& data, bool binary) {
+                asio::post(ioc, [this, data, binary] { enqueueAndMaybeWrite(data, binary); });
             }
 
-            void enqueueAndMaybeWrite(std::string payload) {
-                outbox.push_back(std::move(payload));
+            void enqueueAndMaybeWrite(std::string payload, bool binary) {
+                outbox.emplace_back(std::move(payload), binary);
                 if (writing) {
                     // Write already in flight (Beast allows only one); onWrite() will pick this up.
                     return;
                 }
 
                 writing = true;
-                ws.binary(true);
-                ws.async_write(asio::buffer(outbox.front()), [this](const beast::error_code ec, const std::size_t bytesTransferred) {
+                ws.binary(outbox.front().second);
+                ws.async_write(asio::buffer(outbox.front().first), [this](const beast::error_code ec, const std::size_t bytesTransferred) {
                     onWrite(ec, bytesTransferred);
                 });
             }
@@ -208,7 +209,8 @@ namespace OZZ::net {
 
                 outbox.pop_front();
                 if (!outbox.empty()) {
-                    ws.async_write(asio::buffer(outbox.front()), [this](const beast::error_code ec, const std::size_t bytesTransferred) {
+                    ws.binary(outbox.front().second);
+                    ws.async_write(asio::buffer(outbox.front().first), [this](const beast::error_code ec, const std::size_t bytesTransferred) {
                         onWrite(ec, bytesTransferred);
                     });
                     return;
@@ -243,7 +245,7 @@ namespace OZZ::net {
             std::deque<WebSocketMessage> queue;
 
             // Only ever touched on ioc's thread -- see class comment.
-            std::deque<std::string> outbox;
+            std::deque<std::pair<std::string, bool>> outbox; // (payload, binary)
             bool writing{false};
         };
     } // namespace
