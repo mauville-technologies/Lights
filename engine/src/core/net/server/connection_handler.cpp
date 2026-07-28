@@ -2,9 +2,9 @@
 
 #include "lights/core/net/server/connection_handler.h"
 
-#include <spdlog/spdlog.h>
+#include "lights/core/util/assert.h"
 
-#include <cassert>
+#include <spdlog/spdlog.h>
 
 namespace OZZ::net::server {
 
@@ -18,7 +18,7 @@ namespace OZZ::net::server {
     }
 
     void ConnectionHandler::Run() {
-        assert(delegate && "ConnectionHandler::Run() requires SetDelegate() to have been called first");
+        OZZ_ASSERT(delegate, "ConnectionHandler::Run() requires SetDelegate() to have been called first");
 
         // dispatch not post: already on this socket's executor when called, so it runs inline.
         asio::dispatch(ws.get_executor(), [self = shared_from_this()] {

@@ -3,8 +3,7 @@
 #include "lights/core/net/server/connection_registry.h"
 #include "lights/core/net/server/server.h"
 
-#include <boost/asio/ip/address.hpp>
-
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -21,10 +20,8 @@ namespace OZZ::net::server::testing {
 
             for (int i = 0; i < kMaxTries; ++i) {
                 port = kBasePort + i;
-                auto candidate = Server::Create(
-                    tcp::endpoint{asio::ip::make_address("127.0.0.1"), static_cast<unsigned short>(port)},
-                    registry,
-                    ServerSettings{.reactorThreadCount = 2});
+                auto candidate = Server::Create("127.0.0.1", static_cast<uint16_t>(port), registry,
+                                                ServerSettings{.reactorThreadCount = 2});
 
                 if (candidate->IsListening()) {
                     server = candidate;

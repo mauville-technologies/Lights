@@ -4,15 +4,23 @@
 
 #include "lights/core/net/server/connection_registry.h"
 
+#include <boost/asio/ip/address.hpp>
 #include <spdlog/spdlog.h>
 
 namespace OZZ::net::server {
 
-    Server::Server(const tcp::endpoint& endpoint, ConnectionRegistry& registry, ServerSettings settings)
+    Server::Server(const std::string& bindHost, uint16_t port, ConnectionRegistry& registry, ServerSettings settings)
         : pool(settings.reactorThreadCount)
         , acceptor(acceptorIoc)
         , registry(registry) {
         boost::system::error_code ec;
+
+        const auto address = asio::ip::make_address(bindHost, ec);
+        if (ec) {
+            spdlog::error("Server: invalid bind address '{}': {}", bindHost, ec.message());
+            return;
+        }
+        const tcp::endpoint endpoint{address, port};
 
         acceptor.open(endpoint.protocol(), ec);
         if (ec) {
@@ -41,8 +49,8 @@ namespace OZZ::net::server {
         listening = true;
     }
 
-    std::shared_ptr<Server> Server::Create(const tcp::endpoint& endpoint, ConnectionRegistry& registry, ServerSettings settings) {
-        return std::shared_ptr<Server>(new Server(endpoint, registry, settings));
+    std::shared_ptr<Server> Server::Create(const std::string& bindHost, uint16_t port, ConnectionRegistry& registry, ServerSettings settings) {
+        return std::shared_ptr<Server>(new Server(bindHost, port, registry, settings));
     }
 
     Server::~Server() { Stop(); }

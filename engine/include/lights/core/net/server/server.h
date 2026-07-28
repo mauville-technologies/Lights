@@ -6,8 +6,10 @@
 #include <boost/system/error_code.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -27,7 +29,9 @@ namespace OZZ::net::server {
     // handler captures shared_from_this(), which is UB unless owned by a shared_ptr.
     class Server : public std::enable_shared_from_this<Server> {
     public:
-        static std::shared_ptr<Server> Create(const tcp::endpoint& endpoint,
+        // bindHost is a plain address literal ("0.0.0.0", "127.0.0.1", "::1", ...), not a
+        // URL -- keeps Boost::Asio's endpoint type out of the caller's includes entirely.
+        static std::shared_ptr<Server> Create(const std::string& bindHost, uint16_t port,
                                               ConnectionRegistry& registry,
                                               ServerSettings settings = {});
 
@@ -42,7 +46,7 @@ namespace OZZ::net::server {
         bool IsListening() const;
 
     private:
-        Server(const tcp::endpoint& endpoint, ConnectionRegistry& registry, ServerSettings settings);
+        Server(const std::string& bindHost, uint16_t port, ConnectionRegistry& registry, ServerSettings settings);
 
         void doAccept();
         void onAccept(boost::system::error_code ec, tcp::socket socket);
