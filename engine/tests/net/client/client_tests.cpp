@@ -11,6 +11,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -115,6 +116,22 @@ namespace {
         OZZ::net::server::ConnectionHandler& conn;
     };
 
+    // Drives Client single-threaded (Poll() interleaved with the condition check on the
+    // calling thread) until `condition` holds or `timeout` elapses -- mirrors how the
+    // real game loop only ever calls Connect()/Poll() from one thread, and avoids the
+    // background-thread races a concurrent Start()/Stop() + Poll() would introduce.
+    bool PollUntil(Client& client, const std::function<bool()>& condition,
+                   std::chrono::milliseconds timeout = std::chrono::seconds(5)) {
+        const auto deadline = std::chrono::steady_clock::now() + timeout;
+        while (std::chrono::steady_clock::now() < deadline) {
+            client.Poll();
+            if (condition())
+                return true;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        return false;
+    }
+
 } // namespace
 
 TEST(ClientTest, StartConnectsAndDeliversOpenThroughFactoryDelegate) {
@@ -166,23 +183,47 @@ TEST(ClientTest, StartAgainBuildsFreshDelegateFromFactory) {
     // Driven single-threaded (no PollingClient) so Start()/Stop() -- which replace the
     // underlying WebSocket -- never race a background thread's concurrent Poll(), the
     // same way the real game loop only ever calls Connect()/Poll() from one thread.
-    const auto pollUntilOpen = [&](std::chrono::milliseconds timeout) {
-        const auto deadline = std::chrono::steady_clock::now() + timeout;
-        while (std::chrono::steady_clock::now() < deadline) {
-            client.Poll();
-            if (lastDelegate->WaitForOpen(std::chrono::milliseconds(0)))
-                return true;
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
-        return false;
-    };
+    const auto opened = [&] { return lastDelegate->WaitForOpen(std::chrono::milliseconds(0)); };
 
     client.Start();
-    ASSERT_TRUE(pollUntilOpen(std::chrono::seconds(5)));
+    ASSERT_TRUE(PollUntil(client, opened));
     EXPECT_EQ(factoryCallCount, 1);
 
     client.Stop();
     client.Start();
-    ASSERT_TRUE(pollUntilOpen(std::chrono::seconds(5)));
+    ASSERT_TRUE(PollUntil(client, opened));
     EXPECT_EQ(factoryCallCount, 2);
+}
+
+TEST(ClientTest, LifecycleTracksConnectingThenConnected) {
+    OZZ::net::server::testing::TestServer server([](OZZ::net::server::ConnectionHandler& conn) {
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    Client client(server.url(), [](ConnectionHandler&) { return std::make_shared<RecordingDelegate>(); });
+
+    EXPECT_EQ(client.GetLifecycle(), ConnectionLifecycle::Disconnected);
+    EXPECT_FALSE(client.HasConnectedBefore());
+
+    client.Start();
+    EXPECT_EQ(client.GetLifecycle(), ConnectionLifecycle::Connecting);
+
+    ASSERT_TRUE(PollUntil(client, [&] { return client.GetLifecycle() == ConnectionLifecycle::Connected; }));
+    EXPECT_TRUE(client.HasConnectedBefore());
+    EXPECT_TRUE(client.IsConnected());
+}
+
+TEST(ClientTest, HasConnectedBeforeStaysTrueAfterStop) {
+    OZZ::net::server::testing::TestServer server([](OZZ::net::server::ConnectionHandler& conn) {
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    Client client(server.url(), [](ConnectionHandler&) { return std::make_shared<RecordingDelegate>(); });
+
+    client.Start();
+    ASSERT_TRUE(PollUntil(client, [&] { return client.GetLifecycle() == ConnectionLifecycle::Connected; }));
+
+    client.Stop();
+    EXPECT_EQ(client.GetLifecycle(), ConnectionLifecycle::Disconnected);
+    EXPECT_TRUE(client.HasConnectedBefore());
 }
