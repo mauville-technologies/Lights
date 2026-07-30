@@ -17,6 +17,8 @@ include(GoogleTest)
 
 set(SOURCES
         net/server/connection_handler_tests.cpp
+        net/client/connection_handler_tests.cpp
+        net/client/client_tests.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

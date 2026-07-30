@@ -29,6 +29,9 @@ set(SOURCES
         src/core/net/server/connection_registry.cpp
         src/core/net/server/server.cpp
 
+        src/core/net/client/connection_handler.cpp
+        src/core/net/client/client.cpp
+
         src/core/platform/window.cpp
         src/core/platform/SDL3/sdl_keys.cpp
         src/core/platform/SDL3/sdl_window.cpp
