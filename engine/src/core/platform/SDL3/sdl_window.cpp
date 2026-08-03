@@ -11,8 +11,8 @@
 // Vulkan (volk + SDL_vulkan) is desktop-only. On web the WebGPU backend builds
 // its surface from the page canvas, so no Vulkan surface/extension code is used.
 #if !defined(__EMSCRIPTEN__)
-#include <volk.h>
 #include "SDL3/SDL_vulkan.h"
+#include <volk.h>
 #endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
@@ -30,8 +30,8 @@ namespace OZZ::platform::SDL3 {
         }
 
         const SDL_WindowFlags windowFlags = rhiBackend == OZZ::rendering::RHIBackend::WebGPU
-            ? SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN
-            : SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+                                                ? SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN
+                                                : SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
         window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
         if (!window) {
             spdlog::error("Failed to create SDL window: {}", SDL_GetError());
@@ -45,7 +45,8 @@ namespace OZZ::platform::SDL3 {
     bool SDLWindow::CreateSurface(void* instance, void* surfaceOut) {
 #if defined(__EMSCRIPTEN__)
         // No Vulkan on web; the WebGPU backend creates its surface from the canvas.
-        (void)instance; (void)surfaceOut;
+        (void)instance;
+        (void)surfaceOut;
         return false;
 #else
         // Vulkan-only. The WebGPU backend builds its own surface from the native handles
@@ -60,7 +61,7 @@ namespace OZZ::platform::SDL3 {
     }
 
     OZZ::rendering::NativeWindowHandles SDLWindow::GetNativeWindowHandles() {
-        OZZ::rendering::NativeWindowHandles handles {};
+        OZZ::rendering::NativeWindowHandles handles{};
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
 #ifdef OZZ_PLATFORM_WINDOWS
@@ -70,26 +71,26 @@ namespace OZZ::platform::SDL3 {
             return handles;
         }
         handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::Win32;
-        handles.Display  = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
-        handles.Window   = hwnd;
+        handles.Display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+        handles.Window = hwnd;
 #elif defined(OZZ_PLATFORM_LINUX)
         // Try Wayland first, fall back to X11
         void* wlDisplay = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
         void* wlSurface = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
         if (wlDisplay && wlSurface) {
             handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::Wayland;
-            handles.Display  = wlDisplay;
-            handles.Window   = wlSurface;
+            handles.Display = wlDisplay;
+            handles.Window = wlSurface;
         } else {
             void* x11Display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
-            uint64_t x11Window = static_cast<uint64_t>(
-                SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
+            uint64_t x11Window =
+                static_cast<uint64_t>(SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
             if (!x11Display || !x11Window) {
                 spdlog::error("Failed to get native window handle (no Wayland or X11)");
                 return handles;
             }
             handles.Platform = OZZ::rendering::NativeWindowHandles::Platform::X11;
-            handles.Display  = x11Display;
+            handles.Display = x11Display;
             handles.WindowId = x11Window;
         }
 #else
@@ -104,7 +105,8 @@ namespace OZZ::platform::SDL3 {
         return {};
 #else
 #ifdef OZZ_WEBGPU_ENABLED
-        if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU) return {};
+        if (rhiBackend == OZZ::rendering::RHIBackend::WebGPU)
+            return {};
 #endif
         uint32_t count;
         auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
@@ -187,7 +189,11 @@ namespace OZZ::platform::SDL3 {
                         continue;
                     }
                     const sdl3::SDLKeyState newKeyState(static_cast<int>(event.type));
-                    if (auto oldKeyState = keyStates[sdlKey]; oldKeyState != newKeyState) {
+                    // OS key-repeat re-sends KeyDown with the state unchanged (still Pressed).
+                    // Forward those too, not just state transitions, so InputChord::bCanRepeat
+                    // has repeat events to act on -- it already handles them correctly once they
+                    // arrive, they just never reached it before.
+                    if (auto oldKeyState = keyStates[sdlKey]; oldKeyState != newKeyState || event.key.repeat) {
                         keyStates[sdlKey] = newKeyState;
                         if (callbacks.OnKeyPressed) {
                             callbacks.OnKeyPressed({EDeviceID::Keyboard, sdlKey}, newKeyState);
