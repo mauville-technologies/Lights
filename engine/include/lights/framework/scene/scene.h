@@ -6,6 +6,7 @@
 
 #include "resource_manager.h"
 
+#include <functional>
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
@@ -32,7 +33,8 @@ namespace OZZ::scene {
         // Should be called at the end of the derived class Init function
         virtual void InitScene(OZZ::rendering::RHIDevice* inDevice,
                                std::shared_ptr<InputSubsystem> inInput,
-                               ResourceManager* inResourceManager);
+                               ResourceManager* inResourceManager,
+                               std::function<void(bool)> inSetTextMode);
 
         virtual void Tick(float DeltaTime);
 
@@ -54,8 +56,10 @@ namespace OZZ::scene {
         std::unique_ptr<SceneLayerManager> layerManager{nullptr};
         std::shared_ptr<InputSubsystem> input{nullptr};
         ResourceManager* resourceManager{nullptr};
+        // Toggles platform text input mode (e.g. triggers the Steam Deck / mobile on-screen keyboard).
+        std::function<void(bool)> setTextMode;
 
-        float physicsAccumulator {0.f};
+        float physicsAccumulator{0.f};
         bool bEnded{false};
 
     private:

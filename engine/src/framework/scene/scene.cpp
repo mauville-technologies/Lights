@@ -7,12 +7,14 @@
 namespace OZZ {
     void scene::Scene::InitScene(OZZ::rendering::RHIDevice* inDevice,
                                  std::shared_ptr<InputSubsystem> inInput,
-                                 ResourceManager* inResourceManager) {
+                                 ResourceManager* inResourceManager,
+                                 std::function<void(bool)> inSetTextMode) {
         OZZ_PROFILE_FUNCTION;
         device = inDevice;
         input = std::move(inInput);
         layerManager = std::make_unique<SceneLayerManager>();
         resourceManager = inResourceManager;
+        setTextMode = std::move(inSetTextMode);
         physicsAccumulator = 0.f;
         layerManager->Init(device, input.get());
     }

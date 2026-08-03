@@ -188,9 +188,7 @@ namespace OZZ::game {
         }
 
 #ifdef __EMSCRIPTEN__
-        static void emscriptenFrame(void* arg) {
-            static_cast<LightsGame*>(arg)->tickFrame();
-        }
+        static void emscriptenFrame(void* arg) { static_cast<LightsGame*>(arg)->tickFrame(); }
 #endif
 
         void initWindow() {
@@ -249,31 +247,34 @@ namespace OZZ::game {
         void initRenderer() {
             renderer = std::make_unique<Renderer>();
             renderer->Init({
-                .AppName = "Ozzadar Game",
-                .AppVersion = {0, 1, 0, 0},
-                .EngineName = "Ozzadar Engine",
-                .EngineVersion = {0, 1, 0, 0},
-                .RequiredInstanceExtensions = window->GetRequiredInstanceExtensions(),
-                .GetWindowFramebufferSizeFunction =
-                    [this]() {
-                        return std::make_pair(window->GetSize().x, window->GetSize().y);
-                    },
-                .CreateSurfaceFunction =
-                    [this](void* instance, void* surface) {
-                        return window->CreateSurface(instance, surface);
-                    },
-                .GetNativeWindowHandlesFunction =
-                    [this]() {
-                        return window->GetNativeWindowHandles();
-                    },
-            }, resolvedBackend);
+                               .AppName = "Ozzadar Game",
+                               .AppVersion = {0, 1, 0, 0},
+                               .EngineName = "Ozzadar Engine",
+                               .EngineVersion = {0, 1, 0, 0},
+                               .RequiredInstanceExtensions = window->GetRequiredInstanceExtensions(),
+                               .GetWindowFramebufferSizeFunction =
+                                   [this]() {
+                                       return std::make_pair(window->GetSize().x, window->GetSize().y);
+                                   },
+                               .CreateSurfaceFunction =
+                                   [this](void* instance, void* surface) {
+                                       return window->CreateSurface(instance, surface);
+                                   },
+                               .GetNativeWindowHandlesFunction =
+                                   [this]() {
+                                       return window->GetNativeWindowHandles();
+                                   },
+                           },
+                           resolvedBackend);
 
             resourceManager = std::make_unique<scene::ResourceManager>(renderer->GetDevice());
         }
 
         void initScene() {
             scene = std::make_unique<SceneType>();
-            scene->InitScene(renderer->GetDevice(), input, resourceManager.get());
+            scene->InitScene(renderer->GetDevice(), input, resourceManager.get(), [this](bool bTextMode) {
+                window->SetTextMode(bTextMode);
+            });
             scene->WindowResized(window->GetSize());
         }
 
@@ -339,10 +340,10 @@ namespace OZZ::game {
 
         std::unique_ptr<scene::ResourceManager> resourceManager{nullptr};
 
-        double sleepEstimate {5e-3};
-        double sleepMean {5e-3};
-        double sleepM2 {0.0};
-        int64_t sleepCount {1};
+        double sleepEstimate{5e-3};
+        double sleepMean{5e-3};
+        double sleepM2{0.0};
+        int64_t sleepCount{1};
 
         // Frame-loop timing. Members (not locals) so the per-frame step can be
         // driven either by the desktop while-loop or by Emscripten's callback.
