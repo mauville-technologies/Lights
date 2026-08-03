@@ -189,10 +189,7 @@ namespace OZZ::platform::SDL3 {
                         continue;
                     }
                     const sdl3::SDLKeyState newKeyState(static_cast<int>(event.type));
-                    // OS key-repeat re-sends KeyDown with the state unchanged (still Pressed).
-                    // Forward those too, not just state transitions, so InputChord::bCanRepeat
-                    // has repeat events to act on -- it already handles them correctly once they
-                    // arrive, they just never reached it before.
+                    // Also forward OS key-repeat so InputChord::bCanRepeat has events to act on.
                     if (auto oldKeyState = keyStates[sdlKey]; oldKeyState != newKeyState || event.key.repeat) {
                         keyStates[sdlKey] = newKeyState;
                         if (callbacks.OnKeyPressed) {
