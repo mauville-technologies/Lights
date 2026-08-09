@@ -10,7 +10,8 @@
 namespace OZZ::scene {
     SceneLayerManager::~SceneLayerManager() {
         for (auto& t : asyncLoadingThreads) {
-            if (t.joinable()) t.join();
+            if (t.joinable())
+                t.join();
         }
         activeLayers.clear();
         layerNames.clear();
@@ -19,10 +20,12 @@ namespace OZZ::scene {
 
     void SceneLayerManager::InitLayerAsync(const std::string& layerName, rendering::RHIDevice* inDevice) {
         auto* layer = GetLayer<SceneLayer>(layerName);
-        if (!layer) return;
+        if (!layer)
+            return;
         asyncLoadingThreads.emplace_back([this, layer, inDevice, layerName]() {
             layer->Init(inDevice);
-            if (OnLayerLoaded) OnLayerLoaded(layerName);
+            if (OnLayerLoaded)
+                OnLayerLoaded(layerName);
         });
     }
 
@@ -46,14 +49,27 @@ namespace OZZ::scene {
                     return layerIndex == index;
                 });
 
-                // remove the layer from the names and layers by emptying the slot. We keep the slots empty for re-use
-                // to avoid invalidating the indices
+                // Name freed now; layers[index] stays alive a few more ticks (see
+                // RemovalDelayTicks) -- LoadLayer's slot-reuse scan requires both an empty
+                // name and a null layer pointer, so this slot is correctly skipped meanwhile.
                 layerNames[index] = "";
-                layers[index]->DeInit();
-                layers[index].reset();
+                pendingRemovals.push_back({index, RemovalDelayTicks});
                 bActiveLayersCacheDirty = true;
             }
         }
+    }
+
+    void SceneLayerManager::Tick() {
+        for (auto& pending : pendingRemovals) {
+            --pending.TicksRemaining;
+        }
+        erase_if(pendingRemovals, [this](const PendingRemoval& pending) {
+            if (pending.TicksRemaining > 0)
+                return false;
+            layers[pending.Index]->DeInit();
+            layers[pending.Index].reset();
+            return true;
+        });
     }
 
     void SceneLayerManager::SetLayerActive(const std::string& layerName, bool bActive) {
