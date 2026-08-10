@@ -46,6 +46,8 @@ namespace OZZ::scene {
                 auto& layer = layers[i];
                 auto& name = layerNames[i];
 
+                // Both empty: a slot pending removal has a cleared name but a non-null
+                // layer, so it's correctly skipped here -- see pendingRemovals.
                 if (name.empty() && !layer) {
                     layer = std::move(newLayer);
                     name = layerName;
@@ -112,7 +114,7 @@ namespace OZZ::scene {
         void InitLayerAsync(const std::string& layerName, rendering::RHIDevice* inDevice);
 
         // Deactivates and frees the layer's name immediately; defers the actual
-        // DeInit()/destroy several ticks (see RemovalDelayTicks).
+        // DeInit()/destroy several ticks (see removalDelayTicks).
         void RemoveLayer(const std::string& layerName);
 
         // Advances pending removals queued by RemoveLayer(). Call once per frame; Scene::Tick
@@ -155,10 +157,13 @@ namespace OZZ::scene {
         std::vector<std::unique_ptr<SceneLayer>> layers;
         std::vector<std::thread> asyncLoadingThreads;
 
-        // A just-deactivated layer's GPU resources/Clay components can still be referenced
-        // this tick; margin is tick-counted (assumes tick rate ~= render rate), not GPU-frame-counted.
-        static constexpr int RemovalDelayTicks = 6;
+        // Set in Init() from device->GetFramesInFlight(); a just-deactivated layer's GPU
+        // resources/Clay components can still be referenced this tick.
+        int removalDelayTicks = 6;
 
+        // Indices stay valid while pending: RemoveLayer clears the name but not the layer
+        // pointer, so LoadLayer's slot-reuse scan won't touch this index meanwhile, and
+        // nothing else shrinks or reorders `layers`.
         struct PendingRemoval {
             size_t Index;
             int TicksRemaining;

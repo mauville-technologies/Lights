@@ -3,6 +3,7 @@
 //
 
 #include "lights/framework/scene/scene_layer_manager.h"
+#include "lights/core/util/assert.h"
 #include "lights/framework/layers/clay/clay_ui_layer.h"
 
 #include <algorithm>
@@ -36,6 +37,9 @@ namespace OZZ::scene {
             layer->Init(device);
         }
         bIsInitialized = true;
+        // 3x the backend's real frames-in-flight -- ticks aren't 1:1 with rendered frames
+        // (Scene::Tick runs even when that iteration doesn't render), so pad past the minimum.
+        removalDelayTicks = static_cast<int>(device->GetFramesInFlight()) * 3;
         LoadLayer<ClayUILayer>(device, "ClayUI");
         SetLayerActive("ClayUI", true);
     }
@@ -49,11 +53,13 @@ namespace OZZ::scene {
                     return layerIndex == index;
                 });
 
-                // Name freed now; layers[index] stays alive a few more ticks (see
-                // RemovalDelayTicks) -- LoadLayer's slot-reuse scan requires both an empty
-                // name and a null layer pointer, so this slot is correctly skipped meanwhile.
+                OZZ_ASSERT(std::ranges::none_of(pendingRemovals,
+                                                [index](const auto& p) {
+                                                    return p.Index == index;
+                                                }),
+                           "index already pending removal");
                 layerNames[index] = "";
-                pendingRemovals.push_back({index, RemovalDelayTicks});
+                pendingRemovals.push_back({index, removalDelayTicks});
                 bActiveLayersCacheDirty = true;
             }
         }
