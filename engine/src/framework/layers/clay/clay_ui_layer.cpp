@@ -505,6 +505,10 @@ void ClayUILayer::reinitializeClay() {
                                     this});
     Clay_SetCurrentContext(context);
     Clay_SetDebugModeEnabled(false);
+    // Default 400px is too narrow for our (longer than Clay's own examples)
+    // element IDs -- the debug view's own selected-element name label gets
+    // clipped by the window edge since that row doesn't wrap or clip horizontally.
+    Clay__debugViewWidth = 500;
     Clay_SetMeasureTextFunction(
         [](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) -> Clay_Dimensions {
             auto* ClayUILayerInstance = static_cast<ClayUILayer*>(userData);

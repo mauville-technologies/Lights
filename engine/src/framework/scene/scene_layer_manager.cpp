@@ -3,6 +3,7 @@
 //
 
 #include "lights/framework/scene/scene_layer_manager.h"
+#include "lights/core/util/assert.h"
 #include "lights/framework/layers/clay/clay_ui_layer.h"
 
 #include <algorithm>
@@ -10,7 +11,8 @@
 namespace OZZ::scene {
     SceneLayerManager::~SceneLayerManager() {
         for (auto& t : asyncLoadingThreads) {
-            if (t.joinable()) t.join();
+            if (t.joinable())
+                t.join();
         }
         activeLayers.clear();
         layerNames.clear();
@@ -19,10 +21,12 @@ namespace OZZ::scene {
 
     void SceneLayerManager::InitLayerAsync(const std::string& layerName, rendering::RHIDevice* inDevice) {
         auto* layer = GetLayer<SceneLayer>(layerName);
-        if (!layer) return;
+        if (!layer)
+            return;
         asyncLoadingThreads.emplace_back([this, layer, inDevice, layerName]() {
             layer->Init(inDevice);
-            if (OnLayerLoaded) OnLayerLoaded(layerName);
+            if (OnLayerLoaded)
+                OnLayerLoaded(layerName);
         });
     }
 
@@ -33,6 +37,9 @@ namespace OZZ::scene {
             layer->Init(device);
         }
         bIsInitialized = true;
+        // 3x the backend's real frames-in-flight -- ticks aren't 1:1 with rendered frames
+        // (Scene::Tick runs even when that iteration doesn't render), so pad past the minimum.
+        removalDelayTicks = static_cast<int>(device->GetFramesInFlight()) * 3;
         LoadLayer<ClayUILayer>(device, "ClayUI");
         SetLayerActive("ClayUI", true);
     }
@@ -46,14 +53,29 @@ namespace OZZ::scene {
                     return layerIndex == index;
                 });
 
-                // remove the layer from the names and layers by emptying the slot. We keep the slots empty for re-use
-                // to avoid invalidating the indices
+                OZZ_ASSERT(std::ranges::none_of(pendingRemovals,
+                                                [index](const auto& p) {
+                                                    return p.Index == index;
+                                                }),
+                           "index already pending removal");
                 layerNames[index] = "";
-                layers[index]->DeInit();
-                layers[index].reset();
+                pendingRemovals.push_back({index, removalDelayTicks});
                 bActiveLayersCacheDirty = true;
             }
         }
+    }
+
+    void SceneLayerManager::Tick() {
+        for (auto& pending : pendingRemovals) {
+            --pending.TicksRemaining;
+        }
+        erase_if(pendingRemovals, [this](const PendingRemoval& pending) {
+            if (pending.TicksRemaining > 0)
+                return false;
+            layers[pending.Index]->DeInit();
+            layers[pending.Index].reset();
+            return true;
+        });
     }
 
     void SceneLayerManager::SetLayerActive(const std::string& layerName, bool bActive) {

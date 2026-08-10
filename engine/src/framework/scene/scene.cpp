@@ -19,6 +19,8 @@ namespace OZZ {
 
     void scene::Scene::Tick(float DeltaTime) {
         OZZ_PROFILE_FUNCTION;
+        layerManager->Tick();
+
         constexpr float physicsTickRate = 1.f / 60.f;
         physicsAccumulator += DeltaTime;
 

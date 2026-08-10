@@ -46,6 +46,8 @@ namespace OZZ::scene {
                 auto& layer = layers[i];
                 auto& name = layerNames[i];
 
+                // Both empty: a slot pending removal has a cleared name but a non-null
+                // layer, so it's correctly skipped here -- see pendingRemovals.
                 if (name.empty() && !layer) {
                     layer = std::move(newLayer);
                     name = layerName;
@@ -77,7 +79,8 @@ namespace OZZ::scene {
         T* LoadLayerDeferred(const std::string& layerName, Args&&... args) {
             for (size_t index = 0; index < layerNames.size(); ++index) {
                 const auto& name = layerNames[index];
-                if (name != layerName) continue;
+                if (name != layerName)
+                    continue;
                 auto* existingLayer = dynamic_cast<T*>(layers[index].get());
                 assert(existingLayer && "Layer name already exists with a different type.");
                 return existingLayer;
@@ -110,7 +113,13 @@ namespace OZZ::scene {
         // LoadLayerDeferred first.
         void InitLayerAsync(const std::string& layerName, rendering::RHIDevice* inDevice);
 
+        // Deactivates and frees the layer's name immediately; defers the actual
+        // DeInit()/destroy several ticks (see removalDelayTicks).
         void RemoveLayer(const std::string& layerName);
+
+        // Advances pending removals queued by RemoveLayer(). Call once per frame; Scene::Tick
+        // already does this for every Scene.
+        void Tick();
 
         template <typename LayerType>
         LayerType* GetLayer(const std::string& layerName) {
@@ -136,7 +145,8 @@ namespace OZZ::scene {
 
     private:
         void NotifyLayerProgress(const std::string& layerName, float progress, std::string statusText) {
-            if (OnLayerProgress) OnLayerProgress(layerName, progress, std::move(statusText));
+            if (OnLayerProgress)
+                OnLayerProgress(layerName, progress, std::move(statusText));
         }
 
         rendering::RHIDevice* device{nullptr};
@@ -146,6 +156,20 @@ namespace OZZ::scene {
         std::vector<uint16_t> layerExecutionOrders;
         std::vector<std::unique_ptr<SceneLayer>> layers;
         std::vector<std::thread> asyncLoadingThreads;
+
+        // Set in Init() from device->GetFramesInFlight(); a just-deactivated layer's GPU
+        // resources/Clay components can still be referenced this tick.
+        int removalDelayTicks = 6;
+
+        // Indices stay valid while pending: RemoveLayer clears the name but not the layer
+        // pointer, so LoadLayer's slot-reuse scan won't touch this index meanwhile, and
+        // nothing else shrinks or reorders `layers`.
+        struct PendingRemoval {
+            size_t Index;
+            int TicksRemaining;
+        };
+
+        std::vector<PendingRemoval> pendingRemovals;
 
         mutable std::vector<SceneLayer*> activeLayersCache;
         mutable bool bActiveLayersCacheDirty = true;
