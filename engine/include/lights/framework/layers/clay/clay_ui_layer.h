@@ -53,7 +53,20 @@ public:
 
     void UnregisterFont(const uint16_t& fontId);
 
-    void SetTickDefinitionFunction(std::function<void()> func) { tickDefinitionFunction = std::move(func); }
+    // Last caller always wins ownership.
+    void SetTickDefinitionFunction(std::function<void()> func, const void* owner) {
+        tickDefinitionFunction = std::move(func);
+        tickDefinitionOwner = owner;
+    }
+
+    // No-op if owner isn't the current one -- safe to call unconditionally from DeInit()
+    // without clobbering whichever layer claimed the hook since.
+    void ClearTickDefinitionFunction(const void* owner) {
+        if (owner == tickDefinitionOwner) {
+            tickDefinitionFunction = nullptr;
+            tickDefinitionOwner = nullptr;
+        }
+    }
 
     void SetDebugPanelOpened(bool bOpened);
 
@@ -92,6 +105,7 @@ protected:
 private:
     OZZ::rendering::RHIBufferHandle cameraBuffer{OZZ::rendering::RHIBufferHandle::Null()};
     std::function<void()> tickDefinitionFunction;
+    const void* tickDefinitionOwner{nullptr};
     glm::ivec2 screenSize{0, 0};
 
     // Clay things
