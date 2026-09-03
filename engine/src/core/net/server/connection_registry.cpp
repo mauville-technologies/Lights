@@ -13,7 +13,7 @@ namespace OZZ::net::server {
 
         auto connection = std::make_shared<ConnectionHandler>(std::move(socket), id,
             [this](uint64_t droppedId) { connectionDropped(droppedId); });
-        connection->SetDelegate(factory(*connection));
+        connection->AttachDelegate(factory(*connection));
 
         {
             std::scoped_lock lock(mutex);

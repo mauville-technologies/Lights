@@ -31,7 +31,7 @@ namespace OZZ::net::server {
 
         // Installs the message handler. Must be called (by the connection factory) before
         // Run(), or from inside a delegate's own OnMessage() to transition phases.
-        void SetDelegate(std::shared_ptr<ConnectionDelegate> newDelegate);
+        void AttachDelegate(std::shared_ptr<ConnectionDelegate> newDelegate);
 
         // Kicks off the WebSocket accept handshake. Must be called once, after SetDelegate().
         void Run();

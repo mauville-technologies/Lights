@@ -27,7 +27,7 @@ namespace {
     public:
         explicit RecordingDelegate(ConnectionHandler& conn) : conn(conn) {}
 
-        void OnOpen() override {
+        void OnAttached() override {
             std::lock_guard lock(mutex);
             opened = true;
             cv.notify_all();
@@ -39,7 +39,7 @@ namespace {
             cv.notify_all();
         }
 
-        void OnClose(const std::string& reason) override {
+        void OnDetached(const ConnectionDelegateDetachReason reason) override {
             std::lock_guard lock(mutex);
             closed = true;
             cv.notify_all();
@@ -190,7 +190,7 @@ TEST(ConnectionHandlerTest, SetDelegateSwapsSubsequentMessageHandling) {
         void OnMessage(std::span<const uint8_t> data, bool binary) override {
             RecordingDelegate::OnMessage(data, binary);
             auto next = std::make_shared<SecondDelegate>(conn);
-            conn.SetDelegate(next);
+            conn.AttachDelegate(next);
             promise.set_value(std::move(next));
         }
 

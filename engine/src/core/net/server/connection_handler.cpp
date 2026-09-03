@@ -8,13 +8,23 @@
 
 namespace OZZ::net::server {
 
-    ConnectionHandler::ConnectionHandler(tcp::socket&& socket, uint64_t id, std::function<void(uint64_t)> onClosedCallback)
+    ConnectionHandler::ConnectionHandler(tcp::socket&& socket,
+                                         uint64_t id,
+                                         std::function<void(uint64_t)> onClosedCallback)
         : ws(std::move(socket))
         , id(id)
         , onClosedCallback(std::move(onClosedCallback)) {}
 
-    void ConnectionHandler::SetDelegate(std::shared_ptr<ConnectionDelegate> newDelegate) {
+    void ConnectionHandler::AttachDelegate(std::shared_ptr<ConnectionDelegate> newDelegate) {
+        if (delegate) {
+            delegate->OnDetached(ChangeDelegate);
+        }
+
         delegate = std::move(newDelegate);
+
+        if (delegate) {
+            delegate->OnAttached();
+        }
     }
 
     void ConnectionHandler::Run() {
@@ -33,7 +43,6 @@ namespace OZZ::net::server {
             doClose("Handshake failed");
             return;
         }
-        delegate->OnOpen();
         doRead();
     }
 
@@ -75,7 +84,8 @@ namespace OZZ::net::server {
 
         writing = true;
         ws.binary(true);
-        ws.async_write(asio::buffer(outbox.front()), beast::bind_front_handler(&ConnectionHandler::onWrite, shared_from_this()));
+        ws.async_write(asio::buffer(outbox.front()),
+                       beast::bind_front_handler(&ConnectionHandler::onWrite, shared_from_this()));
     }
 
     void ConnectionHandler::onWrite(beast::error_code ec, [[maybe_unused]] std::size_t bytesTransferred) {
@@ -86,7 +96,8 @@ namespace OZZ::net::server {
 
         outbox.pop_front();
         if (!outbox.empty()) {
-            ws.async_write(asio::buffer(outbox.front()), beast::bind_front_handler(&ConnectionHandler::onWrite, shared_from_this()));
+            ws.async_write(asio::buffer(outbox.front()),
+                           beast::bind_front_handler(&ConnectionHandler::onWrite, shared_from_this()));
             return;
         }
 
@@ -119,7 +130,7 @@ namespace OZZ::net::server {
             }
             if (delegate) {
                 auto currentDelegate = delegate;
-                currentDelegate->OnClose(reason);
+                currentDelegate->OnDetached(ConnectionClosed);
             }
         });
 
