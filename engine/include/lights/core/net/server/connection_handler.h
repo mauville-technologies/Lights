@@ -13,13 +13,14 @@
 #include <string>
 
 #include "connection_delegate.h"
+#include "lights/core/net/server/server_types.h"
 
 namespace OZZ::net::server {
 
-    namespace beast     = boost::beast;
-    namespace asio       = boost::asio;
+    namespace beast = boost::beast;
+    namespace asio = boost::asio;
     namespace websocket = beast::websocket;
-    using tcp            = asio::ip::tcp;
+    using tcp = asio::ip::tcp;
 
     // Pinned to the reactor thread that accepted its socket. Send()/Kill() post onto
     // that executor, so outbox/writing/etc. need no mutex -- touched from one thread only.
@@ -27,7 +28,7 @@ namespace OZZ::net::server {
     public:
         ConnectionHandler(tcp::socket&& socket, uint64_t id, std::function<void(uint64_t)> onClosedCallback);
 
-        uint64_t Id() const { return id; }
+        ConnectionId Id() const { return id; }
 
         // Installs the message handler. Must be called (by the connection factory) before
         // Run(), or from inside a delegate's own OnMessage() to transition phases.
