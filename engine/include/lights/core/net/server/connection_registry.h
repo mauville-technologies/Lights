@@ -21,16 +21,16 @@ namespace OZZ::net::server {
         explicit ConnectionRegistry(ConnectionFactory factory);
 
         std::shared_ptr<ConnectionHandler> NewConnection(tcp::socket&& socket);
-        std::shared_ptr<ConnectionHandler> GetConnection(uint64_t id);
+        std::shared_ptr<ConnectionHandler> GetConnection(ConnectionId id);
 
     private:
-        void connectionDropped(uint64_t id);
+        void connectionDropped(ConnectionId id);
 
         ConnectionFactory factory;
         std::atomic<uint64_t> nextId{1};
 
         std::mutex mutex;
-        std::unordered_map<uint64_t, std::shared_ptr<ConnectionHandler>> connections;
+        std::unordered_map<ConnectionId, std::shared_ptr<ConnectionHandler>> connections;
     };
 
 } // namespace OZZ::net::server

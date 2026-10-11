@@ -4,4 +4,4 @@
 
 #pragma once
 #include <cstdint>
-using ConnectionId = uint64_t;
+enum class ConnectionId : uint64_t {};

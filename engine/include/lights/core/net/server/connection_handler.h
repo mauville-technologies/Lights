@@ -26,7 +26,7 @@ namespace OZZ::net::server {
     // that executor, so outbox/writing/etc. need no mutex -- touched from one thread only.
     class ConnectionHandler : public std::enable_shared_from_this<ConnectionHandler> {
     public:
-        ConnectionHandler(tcp::socket&& socket, uint64_t id, std::function<void(uint64_t)> onClosedCallback);
+        ConnectionHandler(tcp::socket&& socket, ConnectionId id, std::function<void(ConnectionId)> onClosedCallback);
 
         ConnectionId Id() const { return id; }
 
@@ -58,8 +58,8 @@ namespace OZZ::net::server {
         websocket::stream<beast::tcp_stream> ws;
         beast::flat_buffer buffer;
 
-        uint64_t id;
-        std::function<void(uint64_t)> onClosedCallback;
+        ConnectionId id;
+        std::function<void(ConnectionId)> onClosedCallback;
         std::shared_ptr<ConnectionDelegate> delegate;
 
         // Only ever touched on ws.get_executor() -- see class comment.

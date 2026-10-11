@@ -1,16 +1,17 @@
 #ifndef __EMSCRIPTEN__
 
 #include "lights/core/net/server/connection_handler.h"
-
 #include "lights/core/util/assert.h"
+
+#include <ozz_rendering/utils/enums.h>
 
 #include <spdlog/spdlog.h>
 
 namespace OZZ::net::server {
 
     ConnectionHandler::ConnectionHandler(tcp::socket&& socket,
-                                         uint64_t id,
-                                         std::function<void(uint64_t)> onClosedCallback)
+                                         ConnectionId id,
+                                         std::function<void(ConnectionId)> onClosedCallback)
         : ws(std::move(socket))
         , id(id)
         , onClosedCallback(std::move(onClosedCallback)) {}
@@ -39,7 +40,7 @@ namespace OZZ::net::server {
 
     void ConnectionHandler::onAccept(beast::error_code ec) {
         if (ec) {
-            spdlog::warn("Connection {} handshake failed: {}", id, ec.message());
+            spdlog::warn("Connection {} handshake failed: {}", to_index(id), ec.message());
             doClose("Handshake failed");
             return;
         }
