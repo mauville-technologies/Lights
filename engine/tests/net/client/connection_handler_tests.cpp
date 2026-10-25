@@ -11,6 +11,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -114,6 +115,42 @@ namespace {
         OZZ::net::server::ConnectionHandler& conn;
     };
 
+    // Drives a handler single-threaded (Poll() interleaved with the condition check) until
+    // `condition` holds or `timeout` elapses; avoids racing a background poll thread when
+    // reading the handler's lifecycle state directly.
+    bool PollUntil(ConnectionHandler& handler, const std::function<bool()>& condition,
+                   std::chrono::milliseconds timeout = std::chrono::seconds(5)) {
+        const auto deadline = std::chrono::steady_clock::now() + timeout;
+        while (std::chrono::steady_clock::now() < deadline) {
+            handler.Poll();
+            if (condition())
+                return true;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        return false;
+    }
+
+    // Swaps itself out for `next` from inside its own OnMessage(). It is only owned by the
+    // handler, so this drops the last reference to the object still executing.
+    class SwapOnMessageDelegate final : public ConnectionDelegate {
+    public:
+        SwapOnMessageDelegate(ConnectionHandler& handler, std::shared_ptr<ConnectionDelegate> next)
+            : handler(handler)
+            , next(std::move(next)) {}
+
+        void OnMessage(std::span<const uint8_t> data, bool binary) override {
+            handler.SetDelegate(std::move(next));
+            // Touch members after the swap: would be a use-after-free without the keep-alive.
+            ++messagesSeen;
+        }
+
+        int messagesSeen{0};
+
+    private:
+        ConnectionHandler& handler;
+        std::shared_ptr<ConnectionDelegate> next;
+    };
+
 } // namespace
 
 TEST(ClientConnectionHandlerTest, OpenFiresOnConnect) {
@@ -194,4 +231,84 @@ TEST(ClientConnectionHandlerTest, SetDelegateSwapsSubsequentMessageHandling) {
     auto secondReceived = secondDelegate->WaitForMessage();
     ASSERT_TRUE(secondReceived.has_value());
     EXPECT_EQ(secondReceived->first, "second message");
+}
+
+TEST(ClientConnectionHandlerTest, LifecycleTracksConnectingThenConnectedWithNoDelegate) {
+    OZZ::net::server::testing::TestServer server([](OZZ::net::server::ConnectionHandler& conn) {
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    ConnectionHandler handler;
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Disconnected);
+    EXPECT_FALSE(handler.HasConnectedBefore());
+
+    handler.Connect(server.url());
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Connecting);
+
+    ASSERT_TRUE(PollUntil(handler, [&] { return handler.IsConnected(); }));
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Connected);
+    EXPECT_TRUE(handler.HasConnectedBefore());
+}
+
+TEST(ClientConnectionHandlerTest, DisconnectResetsLifecycleButKeepsHasConnectedBefore) {
+    OZZ::net::server::testing::TestServer server([](OZZ::net::server::ConnectionHandler& conn) {
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    ConnectionHandler handler;
+    handler.Connect(server.url());
+    ASSERT_TRUE(PollUntil(handler, [&] { return handler.IsConnected(); }));
+
+    handler.Disconnect();
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Disconnected);
+    EXPECT_TRUE(handler.HasConnectedBefore());
+}
+
+TEST(ClientConnectionHandlerTest, LifecycleSurvivesDelegateSwapAndDropIsSeenBySecondDelegate) {
+    std::shared_ptr<OZZ::net::server::ConnectionHandler> serverConn;
+    OZZ::net::server::testing::TestServer server([&](OZZ::net::server::ConnectionHandler& conn) {
+        serverConn = conn.shared_from_this();
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    ConnectionHandler handler;
+    auto first = std::make_shared<RecordingDelegate>();
+    handler.SetDelegate(first);
+    handler.Connect(server.url());
+    ASSERT_TRUE(PollUntil(handler, [&] { return first->WaitForOpen(std::chrono::milliseconds(0)); }));
+
+    auto second = std::make_shared<RecordingDelegate>();
+    handler.SetDelegate(second);
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Connected);
+
+    serverConn->Kill("test done");
+    serverConn.reset();
+
+    ASSERT_TRUE(PollUntil(handler, [&] { return second->WaitForClose(std::chrono::milliseconds(0)); }));
+    EXPECT_EQ(handler.GetLifecycle(), ConnectionLifecycle::Disconnected);
+    EXPECT_TRUE(handler.HasConnectedBefore());
+}
+
+TEST(ClientConnectionHandlerTest, DelegateMaySwapItselfFromInsideOnMessage) {
+    OZZ::net::server::testing::TestServer server([](OZZ::net::server::ConnectionHandler& conn) {
+        return std::make_shared<EchoServerDelegate>(conn);
+    });
+
+    ConnectionHandler handler;
+    auto next = std::make_shared<RecordingDelegate>();
+    handler.SetDelegate(std::make_shared<SwapOnMessageDelegate>(handler, next));
+    handler.Connect(server.url());
+    ASSERT_TRUE(PollUntil(handler, [&] { return handler.IsConnected(); }));
+
+    // The first echo is handled by the swapping delegate (which then no longer exists);
+    // the second must reach the replacement in the same session.
+    handler.Send("first");
+    handler.Send("second");
+
+    std::optional<std::pair<std::string, bool>> received;
+    ASSERT_TRUE(PollUntil(handler, [&] {
+        received = next->WaitForMessage(std::chrono::milliseconds(0));
+        return received.has_value();
+    }));
+    EXPECT_EQ(received->first, "second");
 }

@@ -16,13 +16,14 @@ namespace OZZ::net::client {
         // produce a fresh connection attempt from a second start() call, so reconnects
         // need a clean instance each time.
         ws = CreateWebSocket();
+        lifecycle = ConnectionLifecycle::Connecting;
         ws->setUrl(url);
         ws->setOnMessageCallback([this](const WebSocketMessage& msg) { onWebSocketMessage(msg); });
         ws->start();
     }
 
     void ConnectionHandler::Disconnect() {
-        connected = false;
+        lifecycle = ConnectionLifecycle::Disconnected;
         ws->stop();
     }
 
@@ -37,15 +38,16 @@ namespace OZZ::net::client {
     void ConnectionHandler::onWebSocketMessage(const WebSocketMessage& msg) {
         switch (msg.type) {
             case WebSocketMessageType::Open:
-                connected = true;
+                lifecycle = ConnectionLifecycle::Connected;
+                hasConnectedBefore = true;
                 if (delegate) delegate->OnOpen();
                 break;
             case WebSocketMessageType::Close:
-                connected = false;
+                lifecycle = ConnectionLifecycle::Disconnected;
                 if (delegate) delegate->OnClose(msg.closeInfo.reason);
                 break;
             case WebSocketMessageType::Error:
-                connected = false;
+                lifecycle = ConnectionLifecycle::Disconnected;
                 if (delegate) delegate->OnError(msg.errorInfo.reason);
                 break;
             case WebSocketMessageType::Message: {

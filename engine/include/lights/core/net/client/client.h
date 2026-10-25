@@ -15,21 +15,15 @@ namespace OZZ::net::client {
     // server::ConnectionFactory / server::ConnectionRegistry).
     using ConnectionFactory = std::function<std::shared_ptr<ConnectionDelegate>(ConnectionHandler&)>;
 
-    enum class ConnectionLifecycle : uint8_t {
-        Disconnected,
-        Connecting,
-        Connected,
-    };
-
     // Top-level client bootstrap, mirroring server::Server: owns the connection and
     // (re)installs a freshly factory-built delegate on every Start() attempt, the same
     // way ConnectionRegistry::NewConnection builds a fresh delegate per accepted socket.
     // There's no accept loop or reactor pool -- a client dials exactly one connection and
     // drives it entirely from Poll().
     //
-    // Client also tracks its own connection lifecycle from the Open/Close/Error events it
-    // already sees, since that's transport fact rather than app policy. What to *do* about
-    // a drop (retry, backoff, give up) stays the caller's decision -- Client only reports.
+    // Lifecycle (Connecting/Connected/...) is tracked by the ConnectionHandler and only
+    // forwarded here, so delegates can SetDelegate() freely. What to *do* about a drop
+    // (retry, backoff, give up) stays the caller's decision -- Client only reports.
     class Client {
     public:
         Client(std::string url, ConnectionFactory factory);
@@ -40,30 +34,23 @@ namespace OZZ::net::client {
         void Start();
         void Stop();
 
-        ConnectionLifecycle GetLifecycle() const { return lifecycle; }
+        ConnectionLifecycle GetLifecycle() const { return conn.GetLifecycle(); }
 
         // True once this Client has reached Connected at least once. Lets a caller tell a
         // first connection attempt failing apart from an established connection dropping,
         // without tracking that itself.
-        bool HasConnectedBefore() const { return hasConnectedBefore; }
+        bool HasConnectedBefore() const { return conn.HasConnectedBefore(); }
 
-        bool IsConnected() const;
+        bool IsConnected() const { return conn.IsConnected(); }
 
         // Pumps the underlying connection and dispatches any queued events to the
         // delegate. Call once per frame from the game/update thread.
         void Poll();
 
     private:
-        // Wraps the factory-built delegate so Client can observe Open/Close/Error and keep
-        // `lifecycle`/`hasConnectedBefore` current, without ConnectionHandler or
-        // ConnectionDelegate needing any notion that Client exists.
-        class LifecycleDelegate;
-
         std::string url;
         ConnectionFactory factory;
         ConnectionHandler conn;
-        ConnectionLifecycle lifecycle{ConnectionLifecycle::Disconnected};
-        bool hasConnectedBefore{false};
     };
 
 } // namespace OZZ::net::client
