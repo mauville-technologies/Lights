@@ -30,6 +30,12 @@ namespace OZZ::net::client {
         // from inside a delegate's own OnMessage() (phase transition, e.g. auth -> gameplay).
         void SetDelegate(std::shared_ptr<ConnectionDelegate> newDelegate);
 
+        // The currently installed delegate as T, or null if none is installed or it is a different type.
+        template <typename T>
+        std::shared_ptr<T> GetDelegateAs() const {
+            return std::dynamic_pointer_cast<T>(delegate);
+        }
+
         // Makes exactly one connection attempt -- see WebSocket::start(). Replaces the
         // underlying socket, so this also how callers retry after a close/error.
         void Connect(const std::string& url);

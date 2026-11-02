@@ -43,6 +43,13 @@ namespace OZZ::net::client {
 
         bool IsConnected() const { return conn.IsConnected(); }
 
+        // The connection's current delegate as T, or null if it is a different phase's delegate.
+        // Prefer this to caching a delegate: SetDelegate() swaps can leave a cached pointer stale.
+        template <typename T>
+        std::shared_ptr<T> GetDelegateAs() const {
+            return conn.GetDelegateAs<T>();
+        }
+
         // Pumps the underlying connection and dispatches any queued events to the
         // delegate. Call once per frame from the game/update thread.
         void Poll();
