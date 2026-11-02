@@ -54,6 +54,7 @@ set(SOURCES
 
         src/core/util/image.cpp
         src/core/util/ring_buffer.cpp
+        src/core/util/time.cpp
 )
 
 add_library(lights_engine STATIC ${SOURCES})
