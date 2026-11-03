@@ -67,6 +67,8 @@ namespace OZZ {
     };
 
     using TextModeFunc = std::function<void(bool)>;
+    using ClipboardGetFunc = std::function<std::string()>;
+    using ClipboardSetFunc = std::function<void(const std::string&)>;
 
     class InputSubsystem {
     public:
@@ -96,6 +98,20 @@ namespace OZZ {
             }
         }
 
+        // The platform clipboard (UTF-8), wired up by the game to its window. Empty / no-op until then.
+        void SetClipboardFuncs(ClipboardGetFunc&& InGet, ClipboardSetFunc&& InSet) {
+            ClipboardGet = std::move(InGet);
+            ClipboardSet = std::move(InSet);
+        }
+
+        [[nodiscard]] std::string GetClipboardText() const { return ClipboardGet ? ClipboardGet() : std::string{}; }
+
+        void SetClipboardText(const std::string& text) const {
+            if (ClipboardSet) {
+                ClipboardSet(text);
+            }
+        }
+
         [[nodiscard]] const std::vector<InputMapping>& GetMappings() const { return mappings; }
 
         [[nodiscard]] const std::unordered_map<std::string, AxisMapping>& GetAxisMappings() const { return axisMappings; }
@@ -114,6 +130,8 @@ namespace OZZ {
 
     private:
         TextModeFunc TextModeDelegate;
+        ClipboardGetFunc ClipboardGet;
+        ClipboardSetFunc ClipboardSet;
 
         std::unordered_map<std::string, AxisMapping> axisMappings{};
         std::vector<InputMapping> mappings{};

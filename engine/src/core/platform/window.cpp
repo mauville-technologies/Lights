@@ -51,4 +51,14 @@ namespace OZZ {
         }
     }
 
+    std::string Window::GetClipboardText() const {
+        return window ? window->GetClipboardText() : std::string{};
+    }
+
+    void Window::SetClipboardText(const std::string& text) {
+        if (window) {
+            window->SetClipboardText(text);
+        }
+    }
+
 } // namespace OZZ

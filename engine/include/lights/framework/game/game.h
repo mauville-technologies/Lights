@@ -212,7 +212,7 @@ namespace OZZ::game {
                                                          },
                                                      .OnTextEvent =
                                                          [this](unsigned int unicode) {
-                                                             // convert unicode to char
+                                                             // one byte of UTF-8 text per call (see the SDL window)
                                                              char character = static_cast<char>(unicode);
                                                              input->NotifyTextEvent(character);
                                                          },
@@ -224,6 +224,13 @@ namespace OZZ::game {
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
+            input->SetClipboardFuncs(
+                [this] {
+                    return window->GetClipboardText();
+                },
+                [this](const std::string& text) {
+                    window->SetClipboardText(text);
+                });
 
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);

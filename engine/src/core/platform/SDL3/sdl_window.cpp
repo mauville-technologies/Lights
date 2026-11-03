@@ -172,12 +172,12 @@ namespace OZZ::platform::SDL3 {
                 }
                 case SDL_EVENT_TEXT_INPUT: {
                     if (callbacks.OnTextEvent) {
-                        // Convert UTF-8 to Unicode code point
-                        unsigned int unicode = 0;
-                        if (event.text.text[0] != '\0') {
-                            unicode = static_cast<unsigned int>(event.text.text[0]);
+                        // Forward every byte of the UTF-8 text in order (one call per byte), so listeners that
+                        // append bytes rebuild the full character. Forwarding only the first byte broke anything
+                        // outside ASCII (e.g. accented letters).
+                        for (const char* byte = event.text.text; *byte != '\0'; ++byte) {
+                            callbacks.OnTextEvent(static_cast<unsigned char>(*byte));
                         }
-                        callbacks.OnTextEvent(unicode);
                     }
                     break;
                 }
@@ -250,6 +250,19 @@ namespace OZZ::platform::SDL3 {
 
     void SDLWindow::Show() {
         SDL_ShowWindow(window);
+    }
+
+    std::string SDLWindow::GetClipboardText() const {
+        char* text = SDL_GetClipboardText(); // never null; empty string when there is nothing
+        std::string result = text ? text : "";
+        SDL_free(text);
+        return result;
+    }
+
+    void SDLWindow::SetClipboardText(const std::string& text) {
+        if (!SDL_SetClipboardText(text.c_str())) {
+            spdlog::warn("SDL_SetClipboardText failed: {}", SDL_GetError());
+        }
     }
 
     void SDLWindow::SetTextMode(const bool bIsTextMode) {

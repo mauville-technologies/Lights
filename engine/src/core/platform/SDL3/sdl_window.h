@@ -23,6 +23,8 @@ namespace OZZ::platform::SDL3 {
         void SetSize(int width, int height) override;
         void SetFullscreen(bool fullscreen) override;
         void SetTextMode(bool bIsTextMode) override;
+        [[nodiscard]] std::string GetClipboardText() const override;
+        void SetClipboardText(const std::string& text) override;
         void Show() override;
 
         [[nodiscard]] bool IsValid() const override { return bIsValid; };
