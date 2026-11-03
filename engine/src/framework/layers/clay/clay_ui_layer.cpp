@@ -872,15 +872,13 @@ void ClayUILayer::generateTextMesh(const std::string& text,
     int nextCharacterX = 0;
     int startIndex = outVertices.size();
 
-    for (const auto& character : text) {
-        // get index of the character
-        auto characterIndex = std::string(OZZ::FontLoader::CharacterSet).find(character);
-        if (characterIndex == std::string::npos) {
-            spdlog::error("Character {} not found in character set", character);
+    for (const auto codePoint : OZZ::DecodeUtf8(text)) {
+        const auto* glyph = fontSet->FindGlyph(codePoint); // '?' for characters the font set lacks
+        if (!glyph) {
             continue;
         }
 
-        auto [UV, Size, Bearing, Advance] = fontSet->Characters[character];
+        auto [UV, Size, Bearing, Advance] = *glyph;
 
         float left = nextCharacterX + Bearing.x;
         float top = static_cast<float>(ascender - Bearing.y);

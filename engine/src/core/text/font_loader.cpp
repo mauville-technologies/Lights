@@ -9,18 +9,40 @@
 #include <spdlog/spdlog.h>
 
 namespace OZZ {
+    std::vector<char32_t> DecodeUtf8(std::string_view text) {
+        std::vector<char32_t> codePoints;
+        codePoints.reserve(text.size());
+        for (size_t i = 0; i < text.size();) {
+            const auto lead = static_cast<unsigned char>(text[i]);
+            const size_t length = lead < 0x80 ? 1 : (lead & 0xE0) == 0xC0 ? 2 : (lead & 0xF0) == 0xE0 ? 3 : (lead & 0xF8) == 0xF0 ? 4 : 0;
+            char32_t codePoint = length == 1 ? lead : length == 2 ? (lead & 0x1F) : length == 3 ? (lead & 0x0F) : (lead & 0x07);
+            bool bValid = length != 0 && i + length <= text.size();
+            for (size_t k = 1; bValid && k < length; ++k) {
+                const auto next = static_cast<unsigned char>(text[i + k]);
+                bValid = (next & 0xC0) == 0x80;
+                codePoint = (codePoint << 6) | (next & 0x3F);
+            }
+            codePoints.push_back(bValid ? codePoint : 0xFFFD);
+            i += bValid ? length : 1;
+        }
+        return codePoints;
+    }
+
+    const CharacterDetails* FontSet::FindGlyph(const char32_t codePoint) const {
+        if (const auto it = Characters.find(codePoint); it != Characters.end()) {
+            return &it->second;
+        }
+        const auto fallback = Characters.find(U'?');
+        return fallback != Characters.end() ? &fallback->second : nullptr;
+    }
+
     glm::ivec2 FontSet::MeasureText(const std::string& text) const {
         int width = 0;
-
-        for (const auto character : text) {
-            if (!Characters.contains(character)) {
-                spdlog::warn("Character '{}' not found in font set", character);
-                return {0, 0};
+        for (const auto codePoint : DecodeUtf8(text)) {
+            if (const auto* glyph = FindGlyph(codePoint)) {
+                width += glyph->Advance.x >> 6;
             }
-
-            width += Characters.at(character).Advance.x >> 6;
         }
-
         return {width, Ascender - Descender};
     }
 
@@ -62,25 +84,31 @@ namespace OZZ {
         NewFontSet->Descender = static_cast<int>(face->size->metrics.descender >> 6);
 
         auto characterImages = std::vector<std::unique_ptr<Image>>();
-        auto characterDetails = std::unordered_map<char, CharacterDetails>();
-        for (auto character : std::string(CharacterSet)) {
-            // load the character
-            if (FT_Load_Char(face, character, FT_LOAD_RENDER)) {
-                spdlog::error("Could not load character: {}", character);
-                continue;
+        auto characterDetails = std::unordered_map<char32_t, CharacterDetails>();
+        auto loadedOrder = std::vector<char32_t>(); // atlas cell order, for the UV pass below
+        for (const auto& [first, last] : GlyphRanges) {
+            for (char32_t character = first; character <= last; ++character) {
+                if (character != U' ' && FT_Get_Char_Index(face, character) == 0) {
+                    continue; // the font has no glyph for it
+                }
+                if (FT_Load_Char(face, character, FT_LOAD_RENDER)) {
+                    spdlog::error("Could not load character U+{:04X}", static_cast<uint32_t>(character));
+                    continue;
+                }
+
+                auto characterImage = std::make_unique<Image>(face->glyph->bitmap.buffer, face->glyph->bitmap.width, face->glyph->bitmap.rows,
+                                                              1);
+                // characterImage->FlipPixels(true, false);
+                characterImages.emplace_back(std::move(characterImage));
+
+                auto charDetails = CharacterDetails{
+                    .Size = glm::vec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                    .Bearing = glm::vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                    .Advance = glm::vec2(face->glyph->advance.x, face->glyph->advance.y)
+                };
+                characterDetails[character] = charDetails;
+                loadedOrder.push_back(character);
             }
-
-            auto characterImage = std::make_unique<Image>(face->glyph->bitmap.buffer, face->glyph->bitmap.width, face->glyph->bitmap.rows,
-                                                          1);
-            // characterImage->FlipPixels(true, false);
-            characterImages.emplace_back(std::move(characterImage));
-
-            auto charDetails = CharacterDetails{
-                .Size = glm::vec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                .Bearing = glm::vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                .Advance = glm::vec2(face->glyph->advance.x, face->glyph->advance.y)
-            };
-            characterDetails[character] = charDetails;
         }
 
         auto [gridSize, imageSize, texture] = Image::MergeImages(characterImages);
@@ -94,7 +122,7 @@ namespace OZZ {
         auto* currentFontSet = fontSets[fontPath][fontSize].get();
         // now let's set the UV coordinates
         glm::vec2 currentGridPosition = {0.f, 0.f};
-        for (auto character : std::string(CharacterSet)) {
+        for (const auto character : loadedOrder) {
             auto& details = currentFontSet->Characters[character];
             if (currentGridPosition.x >= gridSize.x) {
                 currentGridPosition.x = 0.f;
