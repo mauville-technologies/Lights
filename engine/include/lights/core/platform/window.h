@@ -41,6 +41,8 @@ namespace OZZ {
         void SetFullscreen(bool bFullscreen);
         void SetWindowedSize(glm::ivec2 size);
         void SetTextMode(bool bIsTextMode);
+        [[nodiscard]] std::string GetClipboardText() const;
+        void SetClipboardText(const std::string& text);
         void Show() { window->Show(); }
 
     private:

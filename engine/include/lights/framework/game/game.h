@@ -224,6 +224,13 @@ namespace OZZ::game {
             input->SetTextModeFunc([this](bool bIsTextMode) {
                 window->SetTextMode(bIsTextMode);
             });
+            input->SetClipboardFuncs(
+                [this] {
+                    return window->GetClipboardText();
+                },
+                [this](const std::string& text) {
+                    window->SetClipboardText(text);
+                });
 
             if (params.Config.WindowMode == EWindowMode::BorderlessFullscreen) {
                 window->SetFullscreen(true);

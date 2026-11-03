@@ -252,6 +252,19 @@ namespace OZZ::platform::SDL3 {
         SDL_ShowWindow(window);
     }
 
+    std::string SDLWindow::GetClipboardText() const {
+        char* text = SDL_GetClipboardText(); // never null; empty string when there is nothing
+        std::string result = text ? text : "";
+        SDL_free(text);
+        return result;
+    }
+
+    void SDLWindow::SetClipboardText(const std::string& text) {
+        if (!SDL_SetClipboardText(text.c_str())) {
+            spdlog::warn("SDL_SetClipboardText failed: {}", SDL_GetError());
+        }
+    }
+
     void SDLWindow::SetTextMode(const bool bIsTextMode) {
         if (bIsTextMode) {
             SDL_StartTextInput(window);
