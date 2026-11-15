@@ -55,6 +55,10 @@ namespace OZZ {
         mousePosition = inMousePosition;
     }
 
+    void InputSubsystem::NotifyMouseScroll(glm::vec2 inScrollDelta) {
+        pendingScroll += inScrollDelta;
+    }
+
     void InputSubsystem::Tick(const KeyStateArrayType& inKeyStates,
                               const ControllerStateMap& inControllerStates,
                               const MouseButtonStateArrayType& inMouseButtonStates) {
@@ -65,6 +69,8 @@ namespace OZZ {
         keyStates = inKeyStates;
         controllerStates = inControllerStates;
         mouseButtonStates = inMouseButtonStates;
+        scrollDelta = pendingScroll;
+        pendingScroll = {};
 
         const auto NotifyAxisToButtonEvent = [this](const ControllerStateArrayType& PreviousState,
                                                     const ControllerStateArrayType& CurrentState,

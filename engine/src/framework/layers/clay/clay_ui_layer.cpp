@@ -10,11 +10,23 @@
 #include <lights/framework/layers/clay/clay_utils.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <cmath>
 #include <span>
 
 #include "spdlog/spdlog.h"
 
 namespace {
+    // Clay colours are authored in sRGB (like CSS), but the UI target is an sRGB texture that encodes what the shader
+    // writes; the shader must therefore output linear values or every colour comes out washed out.
+    float srgbChannelToLinear(const float channel255) {
+        const float c = channel255 / 255.f;
+        return c <= 0.04045f ? c / 12.92f : std::pow((c + 0.055f) / 1.055f, 2.4f);
+    }
+
+    glm::vec4 clayColorToLinear(const Clay_Color& color) {
+        return {srgbChannelToLinear(color.r), srgbChannelToLinear(color.g), srgbChannelToLinear(color.b), color.a / 255.f};
+    }
+
     // Shared preamble: UBOs, texture, sampler, push constant, vertex entry point.
     // Included in both UISlangShader and FontUISlangShader.
 #ifdef __EMSCRIPTEN__
@@ -364,7 +376,9 @@ void ClayUILayer::Init(OZZ::rendering::RHIDevice* inDevice) {
     renderTarget = std::make_unique<OZZ::RenderTarget>(inDevice,
                                                        OZZ::RenderTargetParams{
                                                            .Type = OZZ::RenderTargetType::Texture,
-                                                           .ClearColor = {1.f, 1.f, 0.f, 0.f},
+                                                           // Transparent black: blending translucent UI over
+                                                           // a coloured clear leaks that colour into it.
+                                                           .ClearColor = {0.f, 0.f, 0.f, 0.f},
                                                            .bHasDepth = false,
                                                        });
     renders.insert(std::make_pair(GetRenderableName(), renderTarget.get()));
@@ -413,7 +427,8 @@ void ClayUILayer::Tick(float DeltaTime) {
     if (bClayInitialized) {
         // TODO: handle input
         Clay_SetPointerState({mousePosition.x, mousePosition.y}, mouseState == OZZ::EKeyState::KeyPressed);
-        Clay_UpdateScrollContainers(true, {0, 0}, DeltaTime);
+        const auto scroll = input->GetScrollDelta();
+        Clay_UpdateScrollContainers(true, {scroll.x, scroll.y}, DeltaTime);
 
         Clay_BeginLayout();
         if (tickDefinitionFunction) {
@@ -683,6 +698,9 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
         }
         case CLAY_RENDER_COMMAND_TYPE_TEXT: {
             scale = {1.f, 1.f, 1.f};
+            // Layout can land text on half pixels (centring in an odd-sized window); glyphs are drawn 1:1 from the
+            // atlas, so snap to whole pixels or every glyph gets smeared by filtering.
+            translation = glm::round(translation);
             // translation = {translation.x, translation.y, 0.f};
             material->SetShader(textShader);
             auto fontPath = fontRegistry[command.renderData.text.fontId];
@@ -730,20 +748,8 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
     }
 
     auto uiSettings = UIComponentSettings{
-        .BackgroundColor =
-            {
-                backgroundColor.r / 255.f,
-                backgroundColor.g / 255.f,
-                backgroundColor.b / 255.f,
-                backgroundColor.a / 255.f,
-            },
-        .BorderColor =
-            {
-                borderColor.r / 255.f,
-                borderColor.g / 255.f,
-                borderColor.b / 255.f,
-                borderColor.a / 255.f,
-            },
+        .BackgroundColor = clayColorToLinear(backgroundColor),
+        .BorderColor = clayColorToLinear(borderColor),
         .BorderWidth =
             {
                 borderWidth.left / command.boundingBox.width,

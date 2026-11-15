@@ -85,6 +85,7 @@ namespace OZZ {
         void NotifyInputEvent(const InputEvent& Event);
         void NotifyTextEvent(char character);
         void NotifyMouseMove(glm::vec2 inMousePosition);
+        void NotifyMouseScroll(glm::vec2 inScrollDelta);
 
         void Tick(const KeyStateArrayType& inKeyStates,
                   const ControllerStateMap& inControllerStates,
@@ -121,6 +122,8 @@ namespace OZZ {
         [[nodiscard]] EKeyState GetKeyState(const InputKey& Key) const;
         [[nodiscard]] float GetAxisValue(const std::string& Action) const;
         [[nodiscard]] const glm::vec2& GetMousePosition() const;
+        /** Wheel movement since the previous Tick (y > 0 = scrolled up / away from the user). */
+        [[nodiscard]] const glm::vec2& GetScrollDelta() const { return scrollDelta; }
 
         ~InputSubsystem() = default;
 
@@ -138,6 +141,8 @@ namespace OZZ {
         std::vector<TextListenerMapping> textMappings{};
 
         glm::vec2 mousePosition{};
+        glm::vec2 pendingScroll{};
+        glm::vec2 scrollDelta{};
         KeyStateArrayType keyStates;
         ControllerStateMap controllerStates;
         MouseButtonStateArrayType mouseButtonStates;
