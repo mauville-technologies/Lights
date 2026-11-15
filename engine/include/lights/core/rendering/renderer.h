@@ -23,6 +23,10 @@ namespace OZZ {
             if (viewport) {
                 viewport->Resize(newSize);
             }
+            // Some backends cannot see window resizes themselves (Vulkan on Wayland).
+            if (device) {
+                device->NotifySurfaceResized(newSize.x, newSize.y);
+            }
         }
 
         [[nodiscard]] rendering::RHIDevice* GetDevice() const { return device.get(); }
