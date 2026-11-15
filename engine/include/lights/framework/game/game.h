@@ -219,6 +219,10 @@ namespace OZZ::game {
                                                      .OnMouseMove =
                                                          [this](const glm::vec2 pos) {
                                                              input->NotifyMouseMove(pos);
+                                                         },
+                                                     .OnMouseScroll =
+                                                         [this](const glm::vec2 delta) {
+                                                             input->NotifyMouseScroll(delta);
                                                          }};
             window = std::make_shared<Window>(std::move(callbacks), resolvedBackend);
             input->SetTextModeFunc([this](bool bIsTextMode) {

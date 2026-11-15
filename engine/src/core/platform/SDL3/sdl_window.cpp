@@ -210,6 +210,12 @@ namespace OZZ::platform::SDL3 {
                     }
                     break;
                 }
+                case SDL_EVENT_MOUSE_WHEEL: {
+                    if (callbacks.OnMouseScroll) {
+                        callbacks.OnMouseScroll(glm::vec2(event.wheel.x, event.wheel.y));
+                    }
+                    break;
+                }
                 case SDL_EVENT_MOUSE_MOTION: {
                     if (callbacks.OnMouseMove) {
                         const auto mousePos = glm::vec2(event.motion.x, event.motion.y);
