@@ -6,6 +6,7 @@
 
 #include "ozz_rendering/utils/enums.h"
 #include <functional>
+#include <vector>
 
 namespace OZZ::util {
     struct StateDefs {
