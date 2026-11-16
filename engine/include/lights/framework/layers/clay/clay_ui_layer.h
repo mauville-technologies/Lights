@@ -124,6 +124,8 @@ private:
     std::unordered_map<uint32_t, OZZ::rendering::RHIBufferHandle> uiComponentSettings{};
 
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
+    // A text command holds only a pointer to its characters, which can be reused with new text of the same length.
+    std::unordered_map<uint32_t, std::string> currentRenderText{};
 
     // Image wrappers consumed once per Tick; render() may be called multiple times per frame safely.
     std::unordered_map<uint32_t, std::shared_ptr<OZZ::Texture>> frameImageTextures{};

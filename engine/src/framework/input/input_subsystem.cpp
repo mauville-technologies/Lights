@@ -19,6 +19,13 @@ namespace OZZ {
     void InputSubsystem::Shutdown() {}
 
     void InputSubsystem::NotifyInputEvent(const InputEvent& Event) {
+        if (Event.Key.DeviceID == EDeviceID::Mouse && Event.State == EKeyState::KeyPressed) {
+            const auto button = +std::get<EMouseButton>(Event.Key.Key);
+            if (button < mousePressedSinceTick.size()) {
+                mousePressedSinceTick[button] = true;
+                mousePressPosition[button] = latestMousePosition;
+            }
+        }
         // Notify all mappings
         for (auto& Mapping : mappings) {
             // loops through all chords, if one of them is triggered, call the callback
@@ -53,6 +60,7 @@ namespace OZZ {
 
     void InputSubsystem::NotifyMouseMove(glm::vec2 inMousePosition) {
         mousePosition = inMousePosition;
+        latestMousePosition = inMousePosition;
     }
 
     void InputSubsystem::NotifyMouseScroll(glm::vec2 inScrollDelta) {
@@ -69,6 +77,14 @@ namespace OZZ {
         keyStates = inKeyStates;
         controllerStates = inControllerStates;
         mouseButtonStates = inMouseButtonStates;
+        mousePosition = latestMousePosition;
+        for (size_t button = 0; button < mousePressedSinceTick.size(); ++button) {
+            if (mousePressedSinceTick[button] && mouseButtonStates[button] == EKeyState::KeyReleased) {
+                mouseButtonStates[button] = EKeyState::KeyPressed; // released next Tick
+                mousePosition = mousePressPosition[button];
+            }
+            mousePressedSinceTick[button] = false;
+        }
         scrollDelta = pendingScroll;
         pendingScroll = {};
 
