@@ -504,6 +504,7 @@ bool ClayUILayer::IsDebugPanelOpened() const {
 void ClayUILayer::reinitializeClay() {
     shutdownClay();
     currentRenderCommand.clear();
+    currentRenderText.clear();
     fontRegistry = {};
     fontLoader = std::make_unique<OZZ::FontLoader>();
     // The debug panel generates ~10x more elements than the game UI alone.
@@ -615,11 +616,19 @@ void ClayUILayer::shutdownClay() {
     }
 }
 
+namespace {
+    std::string textOf(const Clay_RenderCommand& command) {
+        const auto& text = command.renderData.text.stringContents;
+        return {text.chars, static_cast<size_t>(text.length)};
+    }
+} // namespace
+
 void ClayUILayer::refreshSceneObject(const uint32_t& id, const Clay_RenderCommand& command, const ScissorDef& scissor) {
     bool bBuildSceneObject = true;
     if (currentRenderCommand.contains(id)) {
         bBuildSceneObject =
             isRenderCommandChanged(command, currentRenderCommand[id]) ||
+            (command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT && currentRenderText[id] != textOf(command)) ||
             (scissor.bHasScissor && uiSceneObjects.at(id).Mat->GetSettings().Scissor != glm::ivec4{
                                                                                             scissor.ScissorBox.x,
                                                                                             scissor.ScissorBox.y,
@@ -642,6 +651,8 @@ void ClayUILayer::buildSceneObject(const uint32_t& id, const Clay_RenderCommand&
     // cache the command
     spdlog::trace("Building scene object for command ID: {}", id);
     currentRenderCommand[id] = command;
+    if (command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT)
+        currentRenderText[id] = textOf(command);
 
     Clay_CornerRadius borderRadius{0, 0, 0, 0};
     Clay_Color backgroundColor{0, 0, 0, 0};
