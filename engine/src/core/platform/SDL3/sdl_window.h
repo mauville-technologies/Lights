@@ -30,8 +30,8 @@ namespace OZZ::platform::SDL3 {
         [[nodiscard]] bool IsValid() const override { return bIsValid; };
 
     private:
-        void addGamepad(int sdlIndex);
-        void clearGamepad(int sdlIndex);
+        void addGamepad(int instanceID);
+        void clearGamepad(int instanceID);
 
     public:
     private:
@@ -40,7 +40,12 @@ namespace OZZ::platform::SDL3 {
         WindowCallbacks callbacks;
 
         std::unordered_map<EDeviceID, SDL_Gamepad*> gamepads{};
-        std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> gamepadIDs{-1};
+        // SDL instance id per gamepad slot; -1 = free. ({-1} alone would set only the first slot.)
+        std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> gamepadIDs = [] {
+            std::array<int, static_cast<size_t>(EDeviceID::NumberOfGamePads)> ids{};
+            ids.fill(-1);
+            return ids;
+        }();
         bool bIsValid{false};
     };
 } // namespace OZZ::platform::SDL3

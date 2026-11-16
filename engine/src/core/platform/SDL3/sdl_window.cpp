@@ -159,12 +159,12 @@ namespace OZZ::platform::SDL3 {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_EVENT_GAMEPAD_ADDED: {
-                    addGamepad(event.jdevice.which);
+                    addGamepad(static_cast<int>(event.gdevice.which));
                     break;
                 }
                 case SDL_EVENT_GAMEPAD_REMOVED: {
                     // does it exist in the sdlGamepads list
-                    clearGamepad(event.jdevice.which);
+                    clearGamepad(static_cast<int>(event.gdevice.which));
 
                     break;
                 }
@@ -308,48 +308,45 @@ namespace OZZ::platform::SDL3 {
         }
     }
 
-    void SDLWindow::addGamepad(int sdlIndex) {
-        if (auto* newGamepad = SDL_OpenGamepad(sdlIndex)) {
-            // Device ID is the next available index
-            const auto availableIndexIterator = std::ranges::find(gamepadIDs, -1);
-            if (availableIndexIterator == gamepadIDs.end()) {
-                spdlog::error("No available gamepad slots");
-                return;
-            }
-            const auto availableIndex =
-                static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), availableIndexIterator));
-            spdlog::info("Gamepad connected: {}", +availableIndex);
-            gamepads[availableIndex] = newGamepad;
-            controllerState[availableIndex] = {};
-            gamepadIDs[static_cast<size_t>(availableIndex)] = sdlIndex;
-            if (callbacks.OnControllerConnected) {
-                callbacks.OnControllerConnected(+availableIndex);
-            }
+    void SDLWindow::addGamepad(int instanceID) {
+        if (std::ranges::find(gamepadIDs, instanceID) != gamepadIDs.end())
+            return; // already connected (browsers can announce a pad more than once)
+        const auto freeSlot = std::ranges::find(gamepadIDs, -1);
+        if (freeSlot == gamepadIDs.end()) {
+            spdlog::error("No available gamepad slots");
+            return;
+        }
+        auto* newGamepad = SDL_OpenGamepad(instanceID);
+        if (!newGamepad) {
+            spdlog::error("Failed to open gamepad {}: {}", instanceID, SDL_GetError());
+            return;
+        }
+        const auto deviceIndex = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), freeSlot));
+        spdlog::info("Gamepad connected: {}", +deviceIndex);
+        gamepads[deviceIndex] = newGamepad;
+        controllerState[deviceIndex] = {};
+        *freeSlot = instanceID;
+        if (callbacks.OnControllerConnected) {
+            callbacks.OnControllerConnected(+deviceIndex);
         }
     }
 
-    void SDLWindow::clearGamepad(int deviceID) {
-        if (deviceID < 0 || deviceID >= static_cast<int>(gamepadIDs.size())) {
-            spdlog::error("Invalid device ID: {}", deviceID);
+    void SDLWindow::clearGamepad(int instanceID) {
+        const auto slot = std::ranges::find(gamepadIDs, instanceID);
+        if (slot == gamepadIDs.end()) {
+            spdlog::error("Gamepad with instance ID {} not found", instanceID);
             return;
         }
-        const auto idIterator = std::ranges::find(gamepadIDs, deviceID);
-        if (idIterator == gamepadIDs.end()) {
-            spdlog::error("Gamepad with device ID {} not found", deviceID);
-            return;
-        }
-        const auto deviceIndex = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), idIterator));
+        const auto deviceIndex = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), slot));
+        *slot = -1;
         if (const auto gamepadIterator = gamepads.find(deviceIndex); gamepadIterator != gamepads.end()) {
-            spdlog::info("Gamepad disconnected: {}", +deviceIndex);
             SDL_CloseGamepad(gamepadIterator->second);
             gamepads.erase(gamepadIterator);
-            controllerState.erase(deviceIndex);
-            gamepadIDs[static_cast<size_t>(deviceID)] = -1;
-            if (controllerState.erase(deviceIndex)) {
-                if (callbacks.OnControllerDisconnected) {
-                    callbacks.OnControllerDisconnected(+deviceIndex);
-                }
-            }
+        }
+        controllerState.erase(deviceIndex);
+        spdlog::info("Gamepad disconnected: {}", +deviceIndex);
+        if (callbacks.OnControllerDisconnected) {
+            callbacks.OnControllerDisconnected(+deviceIndex);
         }
     }
 } // namespace OZZ::platform::SDL3
