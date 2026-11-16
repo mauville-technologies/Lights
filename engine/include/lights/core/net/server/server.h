@@ -4,6 +4,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/error_code.hpp>
+#include <atomic>
 
 #include <cstddef>
 #include <cstdint>
@@ -62,7 +63,8 @@ namespace OZZ::net::server {
         tcp::acceptor acceptor;
         std::size_t nextTarget{0};
         ConnectionRegistry& registry;
-        bool running{false};
+        // Written by Start/Stop on the owner's thread, read by the accept handler on the acceptor thread.
+        std::atomic<bool> running{false};
         // Set only once open/bind/listen all succeed -- acceptor.is_open() alone stays
         // true after open() even if the later bind() (e.g. port in use) fails.
         bool listening{false};
