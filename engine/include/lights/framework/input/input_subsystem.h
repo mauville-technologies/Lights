@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <array>
 #include <chrono>
 #include <functional>
 #include <glm/glm.hpp>
@@ -146,5 +147,10 @@ namespace OZZ {
         KeyStateArrayType keyStates;
         ControllerStateMap controllerStates;
         MouseButtonStateArrayType mouseButtonStates;
+        // A press that is already released by the next Tick (a quick click during a slow frame) still reads as down for
+        // that one Tick, at the position it was pressed, so per-frame readers such as the UI do not miss it.
+        std::array<bool, +EMouseButton::ButtonCount> mousePressedSinceTick{};
+        std::array<glm::vec2, +EMouseButton::ButtonCount> mousePressPosition{};
+        glm::vec2 latestMousePosition{};
     };
 } // namespace OZZ
