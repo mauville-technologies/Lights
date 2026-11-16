@@ -21,6 +21,31 @@
 
 #include <spdlog/spdlog.h>
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+
+extern "C" EMSCRIPTEN_KEEPALIVE void ozzBrowserPasted(const char* text) {
+    SDL_SetClipboardText(text);
+}
+
+// SDL cancels the default of every Ctrl chord (so the browser never fires "paste") and its web clipboard is app-local.
+// Let Ctrl/Cmd+V through and copy what the browser pastes into SDL's clipboard before the next frame reads the key.
+EM_JS_DEPS(ozzBrowserPaste, "$stringToNewUTF8,free");
+EM_JS(void, ozzInstallBrowserPaste, (), {
+    window.addEventListener("keydown", (event) => {
+        const isV = event.code === "KeyV" || event.key === "v" || event.key === "V";
+        if ((event.ctrlKey || event.metaKey) && isV)
+            event.preventDefault = () => {};
+    }, true);
+    window.addEventListener("paste", (event) => {
+        const text = event.clipboardData ? event.clipboardData.getData("text/plain") : "";
+        const ptr = stringToNewUTF8(text);
+        _ozzBrowserPasted(ptr);
+        _free(ptr);
+    });
+});
+#endif
+
 namespace OZZ::platform::SDL3 {
     void SDLWindow::CreateWindow(const std::string& title, int width, int height) {
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
@@ -39,6 +64,10 @@ namespace OZZ::platform::SDL3 {
         }
 
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+#if defined(__EMSCRIPTEN__)
+        static const bool bPasteInstalled = (ozzInstallBrowserPaste(), true);
+        (void)bPasteInstalled;
+#endif
         bIsValid = true;
     }
 
