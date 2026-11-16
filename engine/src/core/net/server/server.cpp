@@ -60,8 +60,7 @@ namespace OZZ::net::server {
             spdlog::error("Server: not starting -- acceptor failed to open (see earlier error).");
             return;
         }
-        if (running) return;
-        running = true;
+        if (running.exchange(true)) return;
 
         acceptorWorkGuard.emplace(acceptorIoc.get_executor());
         pool.Start();
@@ -71,8 +70,7 @@ namespace OZZ::net::server {
     }
 
     void Server::Stop() {
-        if (!running) return;
-        running = false;
+        if (!running.exchange(false)) return;
 
         // Closing (not stop()-ing the io_context) aborts the pending async_accept, whose
         // handler then sees running == false and doesn't re-arm -- letting run() drain and
