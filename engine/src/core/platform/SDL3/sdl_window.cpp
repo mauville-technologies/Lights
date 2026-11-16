@@ -321,6 +321,16 @@ namespace OZZ::platform::SDL3 {
             spdlog::error("Failed to open gamepad {}: {}", instanceID, SDL_GetError());
             return;
         }
+#if defined(__EMSCRIPTEN__)
+        // SDL's web default mapping makes every Gamepad API device a gamepad (pen tablets, wheels...); keep only
+        // devices with at least the standard layout's 16 buttons and 4 axes.
+        if (auto* joystick = SDL_GetGamepadJoystick(newGamepad);
+            SDL_GetNumJoystickButtons(joystick) < 16 || SDL_GetNumJoystickAxes(joystick) < 4) {
+            spdlog::info("Ignoring '{}': not a standard gamepad", SDL_GetJoystickName(joystick));
+            SDL_CloseGamepad(newGamepad);
+            return;
+        }
+#endif
         const auto deviceIndex = static_cast<EDeviceID>(std::distance(gamepadIDs.begin(), freeSlot));
         spdlog::info("Gamepad connected: {}", +deviceIndex);
         gamepads[deviceIndex] = newGamepad;
