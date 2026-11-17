@@ -56,6 +56,7 @@ namespace OZZ {
         constexpr static std::pair<char32_t, char32_t> GlyphRanges[] = {
             {0x20, 0x7E}, {0xA0, 0xFF}, {0x100, 0x24F}, {0x370, 0x3FF},
             {0x400, 0x4FF}, {0x1E00, 0x1EFF}, {0x2010, 0x2027}, {0x20AC, 0x20AC},
+            {0xE000, 0xF8FF}, // private use: icon fonts (only glyphs a font has are baked)
         };
 
     private:
