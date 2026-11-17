@@ -86,6 +86,7 @@ private:
     std::vector<OZZ::scene::SceneObject> getSceneObjects();
 
     static bool isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand);
+    [[nodiscard]] OZZ::Texture* frameImageOf(uint32_t id) const;
 
     void generateSquareMesh(std::vector<OZZ::Vertex>& outVertices,
                             std::vector<uint32_t>& outIndices,
@@ -126,6 +127,8 @@ private:
     std::unordered_map<uint32_t, Clay_RenderCommand> currentRenderCommand{};
     // A text command holds only a pointer to its characters, which can be reused with new text of the same length.
     std::unordered_map<uint32_t, std::string> currentRenderText{};
+    // Likewise an image command's texture is compared apart from the command (its wrapper pointer changes every frame).
+    std::unordered_map<uint32_t, OZZ::Texture*> currentRenderImage{};
 
     // Image wrappers consumed once per Tick; render() may be called multiple times per frame safely.
     std::unordered_map<uint32_t, std::shared_ptr<OZZ::Texture>> frameImageTextures{};
