@@ -33,10 +33,11 @@ namespace OZZ {
         shader.reset();
     }
 
-    void Material::Bind(rendering::RHIFrameContext& frameContext) {
+    bool Material::Bind(rendering::RHIFrameContext& frameContext) {
         OZZ_PROFILE_FUNCTION;
         if (!shader)
-            return;
+            return false;
+        bool bReady = true;
 
         const auto layout = shader->GetLayoutDescriptor();
         const auto setLayouts = device->GetShaderDescriptorSetLayoutHandles(shader->GetRHIHandle());
@@ -49,8 +50,14 @@ namespace OZZ {
                 if (descriptorSets.contains(set)) {
                     device->FreeDescriptorSet(descriptorSets[set]);
                 }
-                descriptorSets[set] = device->CreateDescriptorSet(setLayout);
-                const auto descriptorSet = descriptorSets[set];
+                const auto descriptorSet = device->CreateDescriptorSet(setLayout);
+                if (!descriptorSet.IsValid()) {
+                    // Keep it dirty: an invalid handle cached here would never be retried.
+                    descriptorSets.erase(set);
+                    bReady = false;
+                    continue;
+                }
+                descriptorSets[set] = descriptorSet;
                 std::vector<rendering::RHIDescriptorWrite> writes;
                 for (const auto& [bindingPoint, resource] : binding) {
                     const auto* bd = findBindingByLogicalIndex(layout.Sets[set], bindingPoint);
@@ -100,6 +107,7 @@ namespace OZZ {
                                    .Height = static_cast<uint32_t>(settings.Scissor.w),
                                });
         }
+        return bReady;
     }
 
     bool Material::SetResource(const uint32_t set,

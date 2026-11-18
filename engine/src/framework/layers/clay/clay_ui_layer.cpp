@@ -9,9 +9,10 @@
 #include <lights/framework/layers/clay/clay_ui_layer.h>
 #include <lights/framework/layers/clay/clay_utils.h>
 
-#include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
 #include <span>
+#include <unordered_set>
 
 #include "spdlog/spdlog.h"
 
@@ -24,7 +25,8 @@ namespace {
     }
 
     glm::vec4 clayColorToLinear(const Clay_Color& color) {
-        return {srgbChannelToLinear(color.r), srgbChannelToLinear(color.g), srgbChannelToLinear(color.b), color.a / 255.f};
+        return {
+            srgbChannelToLinear(color.r), srgbChannelToLinear(color.g), srgbChannelToLinear(color.b), color.a / 255.f};
     }
 
     // Shared preamble: UBOs, texture, sampler, push constant, vertex entry point.
@@ -846,7 +848,9 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
 
     ScissorDef scissor{};
     uint32_t idx = 0;
+    std::unordered_set<uint32_t> drawn;
     for (const auto command : std::span(clayRenderCommandArray.internalArray, clayRenderCommandArray.length)) {
+        drawn.insert(command.id);
         if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
             scissor.bHasScissor = true;
             scissor.ScissorBox = command.boundingBox;
@@ -862,7 +866,29 @@ std::vector<OZZ::scene::SceneObject> ClayUILayer::getSceneObjects() {
 
         idx++;
     }
+    evictUndrawn(drawn);
     return sceneObjects;
+}
+
+void ClayUILayer::evictUndrawn(const std::unordered_set<uint32_t>& drawn) {
+    // Elements no longer laid out (closed panels, changed lists) would otherwise keep their GPU objects forever and
+    // exhaust descriptor sets over time. Frees go through the device's deferred deletion.
+    for (auto it = uiSceneObjects.begin(); it != uiSceneObjects.end();) {
+        if (drawn.contains(it->first)) {
+            ++it;
+            continue;
+        }
+        device->FreeBuffer(it->second.MeshData.VertexBuffer);
+        device->FreeBuffer(it->second.MeshData.IndexBuffer);
+        if (const auto settings = uiComponentSettings.find(it->first); settings != uiComponentSettings.end()) {
+            device->FreeBuffer(settings->second);
+            uiComponentSettings.erase(settings);
+        }
+        currentRenderCommand.erase(it->first);
+        currentRenderText.erase(it->first);
+        currentRenderImage.erase(it->first);
+        it = uiSceneObjects.erase(it);
+    }
 }
 
 bool ClayUILayer::isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand) {
@@ -1003,7 +1029,8 @@ bool ClayUILayer::render(OZZ::rendering::RHIFrameContext& frameContext) {
                              });
     for (auto& object : getSceneObjects()) {
         auto& [transform, mesh, objMat] = object;
-        objMat->Bind(frameContext);
+        if (!objMat->Bind(frameContext))
+            continue; // its descriptors are retried next frame
 
         auto pipelineLayout = device->GetShaderPipelineLayoutHandle(objMat->GetShader()->GetRHIHandle());
         device->SetPushConstants(
