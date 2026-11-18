@@ -47,7 +47,8 @@ namespace OZZ {
 
         ~Material();
 
-        void Bind(rendering::RHIFrameContext& frameContext);
+        /** Binds the shader and descriptor sets; false if a set could not be allocated (retried on the next Bind). */
+        bool Bind(rendering::RHIFrameContext& frameContext);
 
         void SetShader(std::shared_ptr<Shader> inShader) { this->shader = std::move(inShader); }
 

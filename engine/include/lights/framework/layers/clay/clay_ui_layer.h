@@ -9,6 +9,7 @@
 #include <clay/clay.h>
 #include <lights/framework/scene/scene_layer.h>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "lights/core/text/font_loader.h"
 
@@ -84,6 +85,8 @@ private:
     void buildSceneObject(const uint32_t& id, const Clay_RenderCommand& command, const ScissorDef& scissor);
 
     std::vector<OZZ::scene::SceneObject> getSceneObjects();
+    /** Frees the GPU objects of cached elements not in this frame's commands. */
+    void evictUndrawn(const std::unordered_set<uint32_t>& drawn);
 
     static bool isRenderCommandChanged(const Clay_RenderCommand& command, const Clay_RenderCommand& otherCommand);
     [[nodiscard]] OZZ::Texture* frameImageOf(uint32_t id) const;
